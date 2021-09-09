@@ -1,6 +1,8 @@
-#include <iostream>
+#include "persona/persona.hpp"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    Engine::initialize();
+    Engine::run();
+    Engine::shutdown();
     return 0;
 }
