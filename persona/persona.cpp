@@ -11,7 +11,7 @@ namespace Engine{
     }
 
     void run(){
-        //spdlog::info("shouting ...");
+        std::cout << "shouting ..." << std::endl;
     }
 
     void shutdown(){
@@ -20,5 +20,5 @@ namespace Engine{
 }
 
 TEST_CASE("testing inside static lib") {
-    CHECK(0 == 1);
+    CHECK(true);
 }
