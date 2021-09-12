@@ -3,22 +3,22 @@
 //
 
 #include "persona.hpp"
-#include <iostream>
 #include <doctest/doctest.h>
-namespace Engine{
-    void initialize(){
-        std::cout << "Initialization complete !" << std::endl;
-    }
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include <iostream>
 
-    void run(){
-        std::cout << "shouting ..." << std::endl;
-    }
-
-    void shutdown(){
-        std::cout << "Shutdown complete !" << std::endl;
-    }
+Dynamo::Dynamo() :
+        logger(spdlog::stdout_color_mt("Dynamo"))
+{
+    logger->set_level(spdlog::level::trace);
+    logger->set_pattern("[%n] %^(%8l)%$ %v");
+    logger->info("Initialization complete !");
 }
 
-TEST_CASE("testing inside static lib") {
-    CHECK(true);
+void Dynamo::run(){
+    logger->info("running ...");
+}
+
+void Dynamo::shutdown(){
+    logger->info("Shutdown complete !");
 }
