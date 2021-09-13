@@ -1,11 +1,9 @@
 //
 // Created by Tristan on 09/09/2021.
 //
+#include <dynamo/dynamo.hpp>
 
-#include "persona.hpp"
-#include <iostream>
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 Dynamo::Dynamo() :

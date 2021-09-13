@@ -1,8 +1,8 @@
 //
 // Created by Tristan on 09/09/2021.
 //
-#ifndef DYNAMO_PERSONA_HPP
-#define DYNAMO_PERSONA_HPP
+#ifndef DYNAMO_DYNAMO_HPP
+#define DYNAMO_DYNAMO_HPP
 
 #include <spdlog/spdlog.h>
 #include <flecs.h>
@@ -18,4 +18,4 @@ private:
     std::shared_ptr<spdlog::logger> logger;
 };
 
-#endif //DYNAMO_PERSONA_HPP
+#endif //DYNAMO_DYNAMO_HPP

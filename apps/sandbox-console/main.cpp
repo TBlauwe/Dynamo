@@ -1,4 +1,4 @@
-#include "persona/persona.hpp"
+#include <dynamo/dynamo.hpp>
 
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>

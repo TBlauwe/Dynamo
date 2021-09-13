@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7...3.21)
+cmake_minimum_required(VERSION 3.12...3.21)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -29,13 +29,16 @@ add_subdirectory(extern)    # fetch dependencies
 MESSAGE(STATUS " =======================================")
 MESSAGE(STATUS "                 BUILDING")
 MESSAGE(STATUS " =======================================")
-MESSAGE(STATUS " Building Persona")
-add_subdirectory(persona)   # library
+MESSAGE(STATUS " Building Dynamo")
+add_subdirectory(src)   # library
 
-MESSAGE(STATUS " Building Dynamo ")
-add_executable(Dynamo main.cpp)
-target_compile_features(Dynamo PRIVATE cxx_std_20)
-target_link_libraries(Dynamo PRIVATE persona)
+option(BUILD_APPS "Build applications" ON)
+if(BUILD_APPS)
+    MESSAGE(STATUS " Building applications ")
+    add_subdirectory(apps)
+else()
+    MESSAGE(STATUS " Skipping applications ")
+endif()
 
 # ==================
 #      TESTING
