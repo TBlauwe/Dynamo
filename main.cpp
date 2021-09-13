@@ -17,5 +17,3 @@ int main(int argc, char** argv) {
     dynamo.shutdown();
     return 0;
 }
-
-int factorial(int number) { return number <= 1 ? number : factorial(number - 1) * number; }

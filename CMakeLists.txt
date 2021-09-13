@@ -40,15 +40,15 @@ target_link_libraries(Dynamo PRIVATE persona)
 # ==================
 #      TESTING
 # ==================
-#[[if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    MESSAGE(STATUS " =======================================")
-    MESSAGE(STATUS "                 TESTING")
-    MESSAGE(STATUS " =======================================")
-    include(CTest)
-    list(APPEND CMAKE_MODULE_PATH ${doctest_SOURCE_DIR}/scripts/cmake)
-    include(doctest)
-    doctest_discover_tests(Dynamo)
-endif()]]
+#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+#    MESSAGE(STATUS " =======================================")
+#    MESSAGE(STATUS "                 TESTING")
+#    MESSAGE(STATUS " =======================================")
+#    include(CTest)
+#    list(APPEND CMAKE_MODULE_PATH ${doctest_SOURCE_DIR}/scripts/cmake)
+#    include(doctest)
+#    doctest_discover_tests(Dynamo)
+#endif()
 
 MESSAGE(STATUS " =======================================")
 MESSAGE(STATUS "                 WRAPPING")

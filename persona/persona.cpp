@@ -22,7 +22,3 @@ void Dynamo::run(){
 void Dynamo::shutdown(){
     logger->info("Shutdown complete !");
 }
-
-TEST_CASE("testing inside static lib") {
-    CHECK(true);
-}
