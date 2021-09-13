@@ -11,10 +11,11 @@ class Dynamo{
 public:
     Dynamo();
 
-    std::shared_ptr<spdlog::logger> logger;
-
     void run();
     void shutdown();
+
+private:
+    std::shared_ptr<spdlog::logger> logger;
 };
 
 #endif //DYNAMO_PERSONA_HPP

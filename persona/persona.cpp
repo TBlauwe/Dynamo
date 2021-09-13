@@ -3,13 +3,13 @@
 //
 
 #include "persona.hpp"
-#include <doctest/doctest.h>
-#include "spdlog/sinks/stdout_color_sinks.h"
 #include <iostream>
+#include <doctest/doctest.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 Dynamo::Dynamo() :
-        logger(spdlog::stdout_color_mt("Dynamo"))
-{
+        logger(spdlog::stdout_color_mt("Dynamo")){
     logger->set_level(spdlog::level::trace);
     logger->set_pattern("[%n] %^(%8l)%$ %v");
     logger->info("Initialization complete !");
@@ -21,4 +21,8 @@ void Dynamo::run(){
 
 void Dynamo::shutdown(){
     logger->info("Shutdown complete !");
+}
+
+TEST_CASE("testing inside static lib") {
+    CHECK(true);
 }
