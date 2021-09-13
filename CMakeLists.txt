@@ -11,6 +11,7 @@ endif()
 project(Dynamo
         VERSION 0.1
         DESCRIPTION "CMake experiment"
+        HOMEPAGE_URL "https://github.com/tblauwe/dynamo"
         LANGUAGES CXX
 )
 

@@ -3,7 +3,6 @@
 //
 #include <dynamo/dynamo.hpp>
 
-#include <doctest/doctest.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 Dynamo::Dynamo() :
