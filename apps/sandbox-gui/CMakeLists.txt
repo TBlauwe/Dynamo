@@ -1,34 +1,35 @@
 MESSAGE(STATUS ">>>>> Building Sandbox GUI")
 
-set(BUILD_SHARED_LIBS OFF)
-include(../../cmake/CPM.cmake)
+include(${Dynamo_SOURCE_DIR}/cmake/CPM.cmake)
 
-message(STATUS "Fetching SFML...")
+message(STATUS "Checking if vulkan sdk is installed")
+find_package(Vulkan REQUIRED FATAL_ERROR)
+MESSAGE(STATUS " ------------------------------------")
+
+message(STATUS "Fetching GLFW3")
 CPMAddPackage(
-        NAME SFML
-        GITHUB_REPOSITORY SFML/SFML
-        GIT_TAG 2.5.1
+        NAME glfw
+        GITHUB_REPOSITORY glfw/glfw
+        GIT_TAG 3.3.2
         OPTIONS
-            "SFML_BUILD_AUDIO FALSE"
-            "SFML_BUILD_NETWORK FALSE"
+        "GLFW_BUILD_TESTS OFF"
+        "GLFW_BUILD_EXAMPLES OFF"
+        "GLFW_BULID_DOCS OFF"
 )
+MESSAGE(STATUS " ------------------------------------")
 
-message(STATUS "Fetching imgui...")
-CPMAddPackage("gh:ocornut/imgui#docking")
-
-message(STATUS "Fetching imgui-sfml...")
-CPMAddPackage(
-        NAME imgui-sfml
-        GITHUB_REPOSITORY eliasdaler/imgui-sfml
-        GIT_TAG v2.3
-        OPTIONS
-            "IMGUI_DIR ${imgui_SOURCE_DIR}"
-            "IMGUI_SFML_FIND_SFML OFF"
-            "IMGUI_SFML_IMGUI_DEMO OFF"
-)
+message(STATUS "Building imgui")
+if (imgui_ADDED)
+    FILE(GLOB imgui_SOURCES ${imgui_SOURCE_DIR}/*.cpp)
+    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp)
+    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
+    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+    add_library(imgui STATIC ${imgui_SOURCES})
+    target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
+    target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
+endif()
+MESSAGE(STATUS " ------------------------------------")
 
 add_executable(Sandbox-GUI main.cpp)
-target_link_libraries(Sandbox-GUI PRIVATE ImGui-SFML::ImGui-SFML)
+target_link_libraries(Sandbox-GUI PRIVATE dynamo-gui imgui glfw)
 set_target_properties(Sandbox-GUI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/Sandbox-GUI")
-
-MESSAGE(STATUS "------------------------------")

@@ -20,9 +20,24 @@ project(Dynamo
 # =======================
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(BUILD_SHARED_LIBS OFF)
 
 set(FETCHCONTENT_QUIET TRUE)
-add_subdirectory(extern)    # fetch dependencies
+option(BUILD_DYNAMO_GUI "Build imgui lib for dynamo" ON)
+option(BUILD_APPS       "Build applications" ON)
+
+# =======================
+#      DEPENDENCIES
+# =======================
+MESSAGE(STATUS " =======================================")
+MESSAGE(STATUS "    Fetching third-party dependencies")
+MESSAGE(STATUS " =======================================")
+MESSAGE(STATUS " [----- Dynamo dependencies -----]")
+include(extern/dynamo_deps.cmake)    # fetch dependencies
+if(BUILD_DYNAMO_GUI)
+    MESSAGE(STATUS " [----- Dynamo-GUI dependencies -----]")
+    include(extern/dynamo_gui_deps.cmake)    # fetch dependencies
+endif()
 
 # ==================
 #      BUILDING
@@ -31,9 +46,15 @@ MESSAGE(STATUS " =======================================")
 MESSAGE(STATUS "                 BUILDING")
 MESSAGE(STATUS " =======================================")
 MESSAGE(STATUS " Building Dynamo")
-add_subdirectory(src)   # library
+add_subdirectory(dynamo)   # library
 
-option(BUILD_APPS "Build applications" ON)
+if(BUILD_DYNAMO_GUI)
+    MESSAGE(STATUS " Building Dynamo-GUI ")
+    add_subdirectory(dynamo-gui)
+else()
+    MESSAGE(STATUS " Skipping Dynamo-GUI ")
+endif()
+
 if(BUILD_APPS)
     MESSAGE(STATUS " Building applications ")
     add_subdirectory(apps)
