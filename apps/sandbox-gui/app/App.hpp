@@ -13,7 +13,8 @@ public:
             Application(1280,720,"Sandbox", "Sandbox"),
             sim()
     {
-
+        sim.world.entity("Arthur");
+        sim.world.entity("Bruno");
     }
 
 private:

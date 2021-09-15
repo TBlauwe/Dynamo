@@ -1,9 +1,13 @@
 #include <dynamo/gui/debug.hpp>
 #include <imnodes.h>
 
-void dynamo::gui::show(dynamo::Simulation&) {
+void dynamo::gui::show(dynamo::Simulation& sim) {
     ImGui::Begin("Dynamo");
-    ImGui::Text("Hello !");
+    // 2: Iterate all entities in the world
+    for (auto it : sim.world) {
+        flecs::type table_type = it.table_type();
+        ImGui::Text("Entity : {} , {}", table_type.str().c_str(), it.count().);
+    }
     ImGui::End();
 
     ImGui::Begin("simple node editor");
