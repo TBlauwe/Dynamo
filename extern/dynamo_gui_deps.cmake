@@ -1,10 +1,12 @@
-message(STATUS "Fetching imgui")
+message(STATUS "Fetching imgui and addons")
 CPMAddPackage("gh:ocornut/imgui#docking")
+CPMAddPackage("gh:Nelarius/imnodes#master")
 
-if (imgui_ADDED)
-    add_library(imgui_int INTERFACE)
-    target_include_directories(imgui_int INTERFACE ${imgui_SOURCE_DIR})
+if (imgui_ADDED AND imnodes_ADDED)
+    add_library(imgui_interface INTERFACE)
+    target_include_directories(imgui_interface INTERFACE ${imgui_SOURCE_DIR} ${imnodes_SOURCE_DIR})
 endif()
+MESSAGE(STATUS " ------------------------------------")
 
 message(STATUS "Fetching IconFontCppHeaders")
 CPMAddPackage("gh:juliettef/IconFontCppHeaders#main")
@@ -14,3 +16,4 @@ if (IconFontCppHeaders_ADDED)
     target_include_directories(icon_font INTERFACE ${IconFontCppHeaders_SOURCE_DIR})
 endif()
 MESSAGE(STATUS " ------------------------------------")
+
