@@ -3,12 +3,13 @@
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <spdlog/spdlog.h>
 
 namespace app {
 
     class Application {
     public:
-        explicit Application(int width = 1280, int height = 720, const char * title = "Title");
+        explicit Application(int width = 1280, int height = 720, const char * title = "Title", const char * logger_name = "Engine");
         ~Application();
         void run();
 
@@ -19,6 +20,8 @@ namespace app {
         GLFWwindow*     window;
         bool            show_demo_window = true;
         bool            is_dockspace_open = true;
+
+        std::shared_ptr<spdlog::logger> logger;
     };
 
     void on_initialization();
@@ -26,7 +29,7 @@ namespace app {
 
     namespace ImGuiWindows {
         void menu_bar();
-    };
-};
+    }
+}
 
 #endif //DYNAMO_APPLICATION_H

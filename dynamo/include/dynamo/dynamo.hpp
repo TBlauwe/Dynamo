@@ -16,9 +16,6 @@ namespace dynamo{
         void shutdown();
 
         flecs::world world;
-
-    private:
-        std::shared_ptr<spdlog::logger> logger;
     };
 }//namespace dynamo
 

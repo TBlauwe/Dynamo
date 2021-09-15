@@ -18,14 +18,9 @@
 #include <application/application.h>
 #include <vulkan/vulkan.h>
 #include <spdlog/spdlog.h>
+#include <imnodes.h>
 #include <IconsFontAwesome5.h>
-
-// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
-// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
-// Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
-#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
-#pragma comment(lib, "legacy_stdio_definitions")
-#endif
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
@@ -46,6 +41,9 @@ static ImGui_ImplVulkanH_Window g_MainWindowData;
 static int                      g_MinImageCount = 2;
 static bool                     g_SwapChainRebuild = false;
 
+#ifdef IMGUI_VULKAN_DEBUG_REPORT
+#endif // IMGUI_VULKAN_DEBUG_REPORT
+
 static void check_vk_result(VkResult err)
 {
     if (err == 0)
@@ -55,14 +53,12 @@ static void check_vk_result(VkResult err)
         abort();
 }
 
-#ifdef IMGUI_VULKAN_DEBUG_REPORT
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 {
     (void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
     fprintf(stderr, "[vulkan] Debug report from ObjectType: %i\nMessage: %s\n\n", objectType, pMessage);
     return VK_FALSE;
 }
-#endif // IMGUI_VULKAN_DEBUG_REPORT
 
 static void SetupVulkan(const char** extensions, uint32_t extensions_count)
 {
@@ -115,11 +111,11 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
     // Select GPU
     {
         uint32_t gpu_count;
-        err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, NULL);
+        err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, nullptr);
         check_vk_result(err);
         IM_ASSERT(gpu_count > 0);
 
-        VkPhysicalDevice* gpus = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * gpu_count);
+        auto* gpus = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * gpu_count);
         err = vkEnumeratePhysicalDevices(g_Instance, &gpu_count, gpus);
         check_vk_result(err);
 
@@ -352,14 +348,18 @@ static void glfw_error_callback(int error, const char* description)
 {
     spdlog::error("Glfw Error {}: {}\n", error, description);
 }
-
 constexpr auto ColorFromBytes = [](uint8_t r, uint8_t g, uint8_t b)
 {
     return ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f);
 };
 
-app::Application::Application(const int width, const int height, const char* title){
-    // Setup GLFW window
+app::Application::Application(const int width, const int height, const char* title, const char * logger_name):
+    logger(spdlog::stdout_color_mt(logger_name))
+{
+    logger->set_level(spdlog::level::trace);
+    logger->set_pattern("[%n] %^(%8l)%$ %v");
+    logger->info("Application setup in progress ...");
+// Setup GLFW window
     {
         glfwSetErrorCallback(glfw_error_callback);
         if (!glfwInit()) {
@@ -394,6 +394,7 @@ app::Application::Application(const int width, const int height, const char* tit
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImNodes::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
@@ -558,6 +559,7 @@ app::Application::Application(const int width, const int height, const char* tit
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
     app::on_initialization();
+    logger->info("Application setup done !");
 }
 
 void app::Application::run() {
@@ -616,7 +618,6 @@ void app::Application::run() {
             ImGui::PopStyleVar(2);
 
             // DockSpace
-            ImGuiIO &io = ImGui::GetIO();
             if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
                 ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
                 ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
@@ -653,12 +654,14 @@ void app::Application::run() {
 }
 
 app::Application::~Application() {
+    logger->info("Application shutting down ...");
     app::on_shutdown();
 
     VkResult err = vkDeviceWaitIdle(g_Device);
     check_vk_result(err);
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImNodes::DestroyContext();
     ImGui::DestroyContext();
 
     CleanupVulkanWindow();
@@ -666,4 +669,6 @@ app::Application::~Application() {
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    logger->info("Application shutdown !");
 }
