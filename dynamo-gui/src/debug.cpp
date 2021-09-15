@@ -6,7 +6,7 @@ void dynamo::gui::show(dynamo::Simulation& sim) {
     // 2: Iterate all entities in the world
     for (auto it : sim.world) {
         flecs::type table_type = it.table_type();
-        ImGui::Text("Entity : {} , {}", table_type.str().c_str(), it.count().);
+        ImGui::Text("Entity : {} , {}", table_type.str().c_str(), it.count());
     }
     ImGui::End();
 

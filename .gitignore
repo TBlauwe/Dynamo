@@ -1,5 +1,6 @@
 # Project exclude paths
 bin/
+/cmake-build-debug/
 /cmake-build-debug-windows/
 /cmake-build-debug-wsl/
 /.idea/
