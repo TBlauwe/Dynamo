@@ -18,6 +18,7 @@
 #include <application/application.h>
 #include <vulkan/vulkan.h>
 #include <spdlog/spdlog.h>
+#include <IconsFontAwesome5.h>
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -352,6 +353,11 @@ static void glfw_error_callback(int error, const char* description)
     spdlog::error("Glfw Error {}: {}\n", error, description);
 }
 
+constexpr auto ColorFromBytes = [](uint8_t r, uint8_t g, uint8_t b)
+{
+    return ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f);
+};
+
 app::Application::Application(const int width, const int height, const char* title){
     // Setup GLFW window
     {
@@ -397,12 +403,95 @@ app::Application::Application(const int width, const int height, const char* tit
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
+    io.Fonts->AddFontFromFileTTF("fonts/Roboto-Medium.ttf", 16.0f);
+    ImFontConfig config;
+    config.MergeMode = true;
+    config.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
+    static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+    io.Fonts->AddFontFromFileTTF("fonts/fa-solid-900.ttf", 16.0f, &config, icon_ranges);
+
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    ImGuiStyle &style = ImGui::GetStyle();
+    ImGuiStyle& style = ImGui::GetStyle();
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+    ImVec4* colors = style.Colors;
+
+    const ImVec4 bgColor = ColorFromBytes(37, 37, 38);
+    const ImVec4 lightBgColor = ColorFromBytes(82, 82, 85);
+    const ImVec4 veryLightBgColor = ColorFromBytes(90, 90, 95);
+
+    const ImVec4 panelColor = ColorFromBytes(51, 51, 55);
+    const ImVec4 panelHoverColor = ColorFromBytes(29, 151, 236);
+    const ImVec4 panelActiveColor = ColorFromBytes(0, 119, 200);
+
+    const ImVec4 textColor = ColorFromBytes(255, 255, 255);
+    const ImVec4 textDisabledColor = ColorFromBytes(151, 151, 151);
+    const ImVec4 borderColor = ColorFromBytes(78, 78, 78);
+
+    colors[ImGuiCol_Text] = textColor;
+    colors[ImGuiCol_TextDisabled] = textDisabledColor;
+    colors[ImGuiCol_TextSelectedBg] = panelActiveColor;
+    colors[ImGuiCol_WindowBg] = bgColor;
+    colors[ImGuiCol_ChildBg] = bgColor;
+    colors[ImGuiCol_PopupBg] = bgColor;
+    colors[ImGuiCol_Border] = borderColor;
+    colors[ImGuiCol_BorderShadow] = borderColor;
+    colors[ImGuiCol_FrameBg] = panelColor;
+    colors[ImGuiCol_FrameBgHovered] = panelHoverColor;
+    colors[ImGuiCol_FrameBgActive] = panelActiveColor;
+    colors[ImGuiCol_TitleBg] = bgColor;
+    colors[ImGuiCol_TitleBgActive] = bgColor;
+    colors[ImGuiCol_TitleBgCollapsed] = bgColor;
+    colors[ImGuiCol_MenuBarBg] = panelColor;
+    colors[ImGuiCol_ScrollbarBg] = panelColor;
+    colors[ImGuiCol_ScrollbarGrab] = lightBgColor;
+    colors[ImGuiCol_ScrollbarGrabHovered] = veryLightBgColor;
+    colors[ImGuiCol_ScrollbarGrabActive] = veryLightBgColor;
+    colors[ImGuiCol_CheckMark] = panelActiveColor;
+    colors[ImGuiCol_SliderGrab] = panelHoverColor;
+    colors[ImGuiCol_SliderGrabActive] = panelActiveColor;
+    colors[ImGuiCol_Button] = panelColor;
+    colors[ImGuiCol_ButtonHovered] = panelHoverColor;
+    colors[ImGuiCol_ButtonActive] = panelHoverColor;
+    colors[ImGuiCol_Header] = panelColor;
+    colors[ImGuiCol_HeaderHovered] = panelHoverColor;
+    colors[ImGuiCol_HeaderActive] = panelActiveColor;
+    colors[ImGuiCol_Separator] = borderColor;
+    colors[ImGuiCol_SeparatorHovered] = borderColor;
+    colors[ImGuiCol_SeparatorActive] = borderColor;
+    colors[ImGuiCol_ResizeGrip] = bgColor;
+    colors[ImGuiCol_ResizeGripHovered] = panelColor;
+    colors[ImGuiCol_ResizeGripActive] = lightBgColor;
+    colors[ImGuiCol_PlotLines] = panelActiveColor;
+    colors[ImGuiCol_PlotLinesHovered] = panelHoverColor;
+    colors[ImGuiCol_PlotHistogram] = panelActiveColor;
+    colors[ImGuiCol_PlotHistogramHovered] = panelHoverColor;
+    //colors[ImGuiCol_ModalWindowDarkening] = bgColor;
+    colors[ImGuiCol_DragDropTarget] = bgColor;
+    colors[ImGuiCol_NavHighlight] = bgColor;
+    colors[ImGuiCol_DockingPreview] = panelActiveColor;
+    colors[ImGuiCol_Tab] = bgColor;
+    colors[ImGuiCol_TabActive] = panelActiveColor;
+    colors[ImGuiCol_TabUnfocused] = bgColor;
+    colors[ImGuiCol_TabUnfocusedActive] = panelActiveColor;
+    colors[ImGuiCol_TabHovered] = panelHoverColor;
+
+    style.WindowRounding = 0.0f;
+    style.ChildRounding = 0.0f;
+    style.FrameRounding = 0.0f;
+    style.GrabRounding = 0.0f;
+    style.PopupRounding = 0.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.TabRounding = 0.0f;
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -534,38 +623,13 @@ void app::Application::run() {
             }
 
             if (ImGui::BeginMenuBar()) {
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,ImGui::GetIO().Framerate);
                 app::ImGuiWindows::menu_bar();
                 ImGui::EndMenuBar();
             }
             ImGui::End();
             if (show_demo_window)
                 ImGui::ShowDemoWindow(&show_demo_window);
-            {
-                static float f = 0.0f;
-                static int counter = 0;
-
-                ImGui::Begin(
-                        "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-                ImGui::Text(
-                        "This is some useful text.");               // Display some text (you can use a format strings too)
-                ImGui::Checkbox("Demo Window",
-                                &show_demo_window);      // Edit bools storing our window open/close state
-                ImGui::Checkbox("Another Window", &show_another_window);
-
-                ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-                ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
-
-                if (ImGui::Button(
-                        "Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                    counter++;
-                ImGui::SameLine();
-                ImGui::Text("counter = %d", counter);
-
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                            ImGui::GetIO().Framerate);
-                ImGui::End();
-            }
             on_update();
         }
 
@@ -573,10 +637,6 @@ void app::Application::run() {
         ImGui::Render();
         ImDrawData *main_draw_data = ImGui::GetDrawData();
         const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0f || main_draw_data->DisplaySize.y <= 0.0f);
-        wd->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
-        wd->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
-        wd->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
-        wd->ClearValue.color.float32[3] = clear_color.w;
         if (!main_is_minimized)
             FrameRender(wd, main_draw_data);
 

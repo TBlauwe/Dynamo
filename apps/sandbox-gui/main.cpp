@@ -1,6 +1,7 @@
 #include <application/application.h>
 #include <spdlog/spdlog.h>
 #include <dynamo/dynamo.hpp>
+#include <IconsFontAwesome5.h>
 
 class Sandbox : public app::Application{
 public:
@@ -16,7 +17,7 @@ private:
 
 private:
     void on_update() override {
-        simu.run();
+        ImGui::Text(ICON_FA_PAINT_BRUSH "Bonjour");
     }
 };
 
