@@ -18,4 +18,3 @@
        * Target: dynamo-gui
      * BUILD_APPS
        * Build several applications using dynamo
-     * 
