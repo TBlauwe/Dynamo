@@ -19,6 +19,7 @@
 #include <vulkan/vulkan.h>
 #include <spdlog/spdlog.h>
 #include <imnodes.h>
+#include <implot.h>
 #include <IconsFontAwesome5.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -394,6 +395,7 @@ app::Application::Application(const int width, const int height, const char* tit
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
     ImNodes::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
@@ -629,8 +631,10 @@ void app::Application::run() {
                 ImGui::EndMenuBar();
             }
             ImGui::End();
-            if (show_demo_window)
+            if (show_demo_window){
                 ImGui::ShowDemoWindow(&show_demo_window);
+                ImPlot::ShowDemoWindow();
+            }
             on_update();
         }
 
@@ -661,6 +665,7 @@ app::Application::~Application() {
     check_vk_result(err);
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
+    ImPlot::DestroyContext();
     ImNodes::DestroyContext();
     ImGui::DestroyContext();
 

@@ -1,10 +1,11 @@
 message(STATUS "Fetching imgui and addons")
 CPMAddPackage("gh:ocornut/imgui#docking")
 CPMAddPackage("gh:Nelarius/imnodes#master")
+CPMAddPackage("gh:epezent/implot#master")
 
 if (imgui_ADDED AND imnodes_ADDED)
     add_library(imgui_interface INTERFACE)
-    target_include_directories(imgui_interface INTERFACE ${imgui_SOURCE_DIR} ${imnodes_SOURCE_DIR})
+    target_include_directories(imgui_interface INTERFACE ${imgui_SOURCE_DIR} ${imnodes_SOURCE_DIR} ${implot_SOURCE_DIR})
 endif()
 MESSAGE(STATUS " ------------------------------------")
 

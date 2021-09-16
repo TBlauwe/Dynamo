@@ -26,9 +26,16 @@ if (imgui_ADDED)
     list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
     list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
     list(APPEND imgui_SOURCES ${imnodes_SOURCE_DIR}/imnodes.cpp)
+    list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot.cpp)
+    list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot_demo.cpp)
+    list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot_items.cpp)
     add_library(imgui STATIC ${imgui_SOURCES})
     target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
-    target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imnodes_SOURCE_DIR})
+    target_include_directories(imgui PUBLIC
+            ${imgui_SOURCE_DIR}
+            ${imnodes_SOURCE_DIR}
+            ${implot_SOURCE_DIR}
+            )
 endif()
 MESSAGE(STATUS " ------------------------------------")
 
