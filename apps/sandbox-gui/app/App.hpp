@@ -14,12 +14,10 @@ public:
             sim(),
             number_perception(sim.world)
     {
-        auto arthur = sim.world.entity("Arthur");
-        auto bruno = sim.world.entity("Bruno");
+        auto arthur = sim.add_agent("Arthur");
         logger->info("Arthur id : {}", arthur);
+        auto  bruno = sim.add_agent("Bruno");
         logger->info("Bruno id : {}", bruno);
-        number_perception.add_perception(arthur);
-        number_perception.add_perception(bruno);
     }
 
 private:
@@ -36,18 +34,19 @@ private:
         ImGui::DragInt("Number", &number);
         ImGui::DragInt("Entity", &entity);
         if(ImGui::Button("Send")){
-            number_perception.add_percept(flecs::entity(sim.world, entity), number);
+            number_perception.add_percept(2.0);
         }
 
-        sim.world.each([](flecs::entity e, const dynamo::Perception<int>::Buffer& buffer) {
+        sim.world.each([](flecs::entity e, const dynamo::Agent& agent) {
             ImGui::Text("[%llu] %s", e.id(), e.name().c_str());
-            ImGui::Text("Perceptions :");
-            ImGui::Indent();
-            for(auto number : buffer.data){
-                ImGui::BulletText("%d", number);
-            }
-            ImGui::Unindent();
         });
+
+        ImGui::Text("Percepts");
+        ImGui::Indent();
+        sim.world.each([](flecs::entity e, const dynamo::Perception<int>::Percept& percept) {
+            ImGui::BulletText("%f", percept.ttl);
+        });
+        ImGui::Unindent();
         ImGui::End();
     }
 };

@@ -8,9 +8,18 @@
 #include <flecs.h>
 
 namespace dynamo{
+
+    struct Agent{};
+
     class Simulation{
     public:
         Simulation();
+
+        flecs::entity add_agent(const char * name){
+            auto e = world.entity(name);
+            e.add<Agent>();
+            return e;
+        }
 
         void run();
         void shutdown();
@@ -19,38 +28,25 @@ namespace dynamo{
     };
 
     template<typename T>
-    struct Perception{
-        explicit Perception(flecs::world& world, float interval = 1.0){
-            world.system<Perception<T>::Buffer>()
-                .interval(interval)
-                .each([](flecs::entity e, const Perception<T>::Buffer& buffer) {
-                });
+    class Perception{
+    public:
+        struct Percept{
+            float ttl;
+        };
 
-            world.system<Perception<T>::Buffer>()
-                    .interval(1.0)
-                    .kind(flecs::PostUpdate)
-                    .each([](flecs::entity e, Perception<T>::Buffer& buffer) {
-                        buffer.data.clear();
-                    });
+        explicit Perception(flecs::world& world) : world{world}{
+            world.system<Perception<T>::Percept>()
+                .each([](flecs::entity e, Perception<T>::Percept& percept) {
+                    percept.ttl -= e.delta_time();
+                });
         }
 
-        struct Percept{
-            T data;
+        void add_percept(T percept){
+            world.entity().add<Perception<T>::Percept>(percept);
         };
 
-        struct Buffer{
-            std::vector<T> data;
-        };
-
-        void add_perception(flecs::entity entity){
-            entity.add<Perception<T>::Buffer>();
-        };
-
-        void add_percept(flecs::entity entity, T percept){
-            Perception<T>::Buffer* buffer = entity.template get_mut<Perception<T>::Buffer>();
-            buffer->data.emplace_back(percept);
-            entity.template modified<Perception<T>::Buffer>();
-        };
+    private:
+        flecs::world& world;
     };
 }//namespace dynamo
 
