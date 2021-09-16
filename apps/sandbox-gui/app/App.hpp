@@ -11,18 +11,44 @@ class Sandbox : public app::Application{
 public:
     Sandbox():
             Application(1280,720,"Sandbox", "Sandbox"),
-            sim()
+            sim(),
+            number_perception(sim.world)
     {
-        sim.world.entity("Arthur");
-        sim.world.entity("Bruno");
+        auto arthur = sim.world.entity("Arthur");
+        auto bruno = sim.world.entity("Bruno");
+        logger->info("Arthur id : {}", arthur);
+        logger->info("Bruno id : {}", bruno);
+        number_perception.add_perception(arthur);
+        number_perception.add_perception(bruno);
     }
 
 private:
     dynamo::Simulation sim;
+    dynamo::Perception<int> number_perception;
 
 private:
     void on_update() override {
-        dynamo::gui::show(sim);
+        sim.run();
+        ImGui::Begin("Dynamo");
+
+        static int number = 0;
+        static int entity = 0;
+        ImGui::DragInt("Number", &number);
+        ImGui::DragInt("Entity", &entity);
+        if(ImGui::Button("Send")){
+            number_perception.add_percept(flecs::entity(sim.world, entity), number);
+        }
+
+        sim.world.each([](flecs::entity e, const dynamo::Perception<int>::Buffer& buffer) {
+            ImGui::Text("[%llu] %s", e.id(), e.name().c_str());
+            ImGui::Text("Perceptions :");
+            ImGui::Indent();
+            for(auto number : buffer.data){
+                ImGui::BulletText("%d", number);
+            }
+            ImGui::Unindent();
+        });
+        ImGui::End();
     }
 };
 

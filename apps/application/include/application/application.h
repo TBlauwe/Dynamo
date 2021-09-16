@@ -16,12 +16,14 @@ namespace app {
     protected:
         virtual void on_update() = 0;
 
+    public:
+        std::shared_ptr<spdlog::logger> logger;
+
     private:
         GLFWwindow*     window;
         bool            show_demo_window = true;
         bool            is_dockspace_open = true;
 
-        std::shared_ptr<spdlog::logger> logger;
     };
 
     void on_initialization();

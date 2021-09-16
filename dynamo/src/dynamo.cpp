@@ -9,6 +9,7 @@ dynamo::Simulation::Simulation() :
 }
 
 void dynamo::Simulation::run(){
+    world.progress();
 }
 
 void dynamo::Simulation::shutdown(){
