@@ -6,6 +6,7 @@
 
 #include <spdlog/spdlog.h>
 #include <flecs.h>
+#include <iostream>
 
 namespace dynamo{
 
@@ -27,22 +28,30 @@ namespace dynamo{
         flecs::world world;
     };
 
-    template<typename T>
+    struct DecayingPercept{
+        float ttl;
+    };
+
     class Perception{
     public:
-        struct Percept{
-            float ttl;
-        };
 
         explicit Perception(flecs::world& world) : world{world}{
-            world.system<Perception<T>::Percept>()
-                .each([](flecs::entity e, Perception<T>::Percept& percept) {
-                    percept.ttl -= e.delta_time();
+            world.system<DecayingPercept>()
+                .kind(flecs::PreUpdate)
+                .each([](flecs::entity e, DecayingPercept& percept) {
+                    if(percept.ttl <= 0.f)
+                        e.destruct();
+                    else
+                        percept.ttl -= e.delta_time();
                 });
         }
 
-        void add_percept(T percept){
-            world.entity().add<Perception<T>::Percept>(percept);
+        template<class TPerceptType, class TData>
+        void add_percept(TPerceptType percept, TData data){
+            std::cout << "Time to live \n";
+            auto e = world.entity();
+            e.set<percept>(percept);
+            e.set<data>(data);
         };
 
     private:
