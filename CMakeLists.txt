@@ -50,6 +50,7 @@ add_subdirectory(dynamo)   # library
 
 if(BUILD_DYNAMO_GUI)
     MESSAGE(STATUS " Building Dynamo-GUI ")
+    add_subdirectory(imgui-addons)
     add_subdirectory(dynamo-gui)
 else()
     MESSAGE(STATUS " Skipping Dynamo-GUI ")
