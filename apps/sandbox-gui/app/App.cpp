@@ -31,23 +31,16 @@ void Sandbox::on_update() {
     sim.run();
     ImGui::Begin("Dynamo");
 
-    static int number {0};
-    static int entity {0};
-    static std::string event;
+    static std::string event = "Some event";
     static ImGui::Addons::ScrollingPlot<int> plot{"Perceptions", 1000};
-    static bool    send_event {false};
     bool    added {false};
 
-    ImGui::DragInt("Number", &number);
-    ImGui::DragInt("Entity", &entity);
     ImGui::InputText("Event", &event);
-    ImGui::Checkbox("Send with event ?", &send_event);
-    ImGui::SameLine();
-    if(ImGui::Button("Send")){
+    if(rand()%100==1){
         auto e = sim.world.entity();
         e.set<dynamo::DecayingPercept>({2.0f});
-        e.set<int>(2);
-        if(send_event){
+        e.set<int>(rand()%100);
+        if(rand()%1000==1){
             plot.add_point({true, event, sim.world.count<const dynamo::DecayingPercept>()});
             added = true;
         }
@@ -56,8 +49,7 @@ void Sandbox::on_update() {
     if(!added)
         plot.add_point({false, "", sim.world.count<const dynamo::DecayingPercept>()});
 
-    sim.world.each([](flecs::entity e, const dynamo::Agent& agent) {
-        ImGui::Text("[%llu] %s", e.id(), e.name().c_str());
+    sim.world.each([&](flecs::entity e, const dynamo::Agent& agent) {
     });
     plot.plot();
 

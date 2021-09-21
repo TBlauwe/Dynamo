@@ -44,18 +44,29 @@ namespace dynamo{
                     else
                         percept.ttl -= e.delta_time();
                 });
+
+            world.system<Agent>()
+                    .interval(1)
+                    .each([&](flecs::entity e, const Agent& agent) {
+                        world.each([&](const int data){
+                            std::cout << e.name() << " is perceiving " << data << std::endl;
+                        });
+                    });
         }
 
         template<class TPerceptType, class TData>
         void add_percept(TPerceptType percept, TData data){
-            std::cout << "Time to live \n";
-            auto e = world.entity();
-            e.set<percept>(percept);
-            e.set<data>(data);
+            auto pe = world.entity();
+            pe.set<percept>(percept);
+            pe.set<data>(data);
+            world.each([&](flecs::entity e, const Agent& agent) {
+                e.add(is_seen_by, pe);
+                    });
         };
 
     private:
         flecs::world& world;
+        flecs::entity is_seen_by;
     };
 }//namespace dynamo
 
