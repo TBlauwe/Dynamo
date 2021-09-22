@@ -24,8 +24,6 @@ namespace dynamo{
             flecs::world& world;
 
         public:
-
-        public:
             explicit Perception(flecs::world& world) :
                     world{world}
             {
@@ -40,7 +38,6 @@ namespace dynamo{
                                 percept.ttl -= e.delta_time();
                         });
 
-                // C++ triggers are created as a system with the phase set to the trigger event
                 world.system<tag::Percept>("OnSetPercept")
                         .kind(flecs::OnSet)
                         .each([&world](flecs::entity entity_percept, const tag::Percept){

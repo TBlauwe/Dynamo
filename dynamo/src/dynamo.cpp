@@ -19,6 +19,7 @@ dynamo::Simulation::Simulation() :
 
 void dynamo::Simulation::run() const{
     world.progress();
+
 }
 
 void dynamo::Simulation::shutdown() const{
