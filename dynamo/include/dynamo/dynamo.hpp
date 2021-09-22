@@ -16,21 +16,25 @@ namespace dynamo{
         flecs::world world;
         module::Perception perception;
 
+        flecs::query<const tag::Agent> agents_query;
+
     public:
         Simulation();
 
-        flecs::entity add_agent(const char * name){
+        flecs::entity add_agent(const char * name) const{
             auto e = world.entity(name);
             e.add<tag::Agent>();
+            logger->info("Added agent : {} - {}", name, e);
             return e;
         }
 
-        void add_event(const char * name){
+        void add_event(const char * name) const{
+            logger->info("Added event : {}", name);
             world.set<component::Event>({name});
         }
 
-        void run();
-        void shutdown();
+        void run() const;
+        void shutdown() const;
 
     };
 }//namespace dynamo

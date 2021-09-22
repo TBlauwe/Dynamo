@@ -14,7 +14,7 @@ namespace dynamo::gui{
         ImGui::Addons::ScrollingPlot<int> scrolling_plot_percepts{"Percepts", 1000};
 
     public:
-        bool is_enabled;
+        bool is_enabled = false;
 
         explicit MainWindow(dynamo::Simulation& sim);
 

@@ -9,6 +9,8 @@ namespace dynamo::gui{
 
     void MainWindow::show() {
         ImGui::Begin("Dynamo-Bar");
+            ImGui::Text("Ticks : [%d]", sim.world.get_tick());
+            ImGui::SameLine();
             if(ImGui::Button(!is_enabled ? ICON_FA_PLAY " Play" : ICON_FA_PAUSE " Pause")){
                 is_enabled = !is_enabled;
             }
@@ -36,7 +38,7 @@ namespace dynamo::gui{
         // ===== Display stats =====
         ImGui::Begin("Dynamo");
 
-            ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 1, ImGuiCond_Once);
+            ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 0.5, ImGuiCond_Once);
             if (ImPlot::BeginPlot("Delta-time", "Tick")) {
                 scrolling_plot_delta_time.plot();
                 ImPlot::EndPlot();

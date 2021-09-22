@@ -14,21 +14,20 @@ namespace dynamo{
         struct Percept{};
     }
 
+    namespace relation{
+        struct sees{};
+    }
+
     namespace module{
         class Perception{
         private:
             flecs::world& world;
-            flecs::query<const tag::Agent> agents_query;
 
         public:
-            // ===== Relations =====
-            flecs::entity sees;
 
         public:
             explicit Perception(flecs::world& world) :
-                    world{world},
-                    sees{world.entity()},
-                    agents_query{world.query<const tag::Agent>()}
+                    world{world}
             {
                 // ========== Phase ==========
                 // 1. --- OnLoad
@@ -41,19 +40,15 @@ namespace dynamo{
                                 percept.ttl -= e.delta_time();
                         });
 
-
+                // C++ triggers are created as a system with the phase set to the trigger event
+                world.system<tag::Percept>("OnSetPercept")
+                        .kind(flecs::OnSet)
+                        .each([&world](flecs::entity entity_percept, const tag::Percept){
+                            world.each([&entity_percept](flecs::entity entity_agent, const tag::Agent){
+                                entity_agent.add<relation::sees>(entity_percept);
+                            });
+                        });
             }
-
-            template<class TPerceptType, class TData>
-            void add(TPerceptType percept_type, TData data){
-                auto entity_percept = world.entity();
-                entity_percept.add<tag::Percept>();
-                entity_percept.set<TPerceptType>(percept_type);
-                entity_percept.set<TData>(data);
-                //agents_query.each([&](flecs::entity entity_agent, const tag::Agent agent) {
-                    //entity_agent.add(sees, entity_percept);
-                //});
-            };
         };
     }
 }
