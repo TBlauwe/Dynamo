@@ -13,7 +13,7 @@ public:
 
 private:
     dynamo::Simulation sim;
-    dynamo::Perception number_perception;
+    dynamo::gui::MainWindow debug;
 
 private:
     void on_update() override;

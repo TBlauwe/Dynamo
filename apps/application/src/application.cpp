@@ -358,7 +358,7 @@ app::Application::Application(const int width, const int height, const char* tit
     logger(spdlog::stdout_color_mt(logger_name))
 {
     logger->set_level(spdlog::level::trace);
-    logger->set_pattern("[%n] %^(%8l)%$ %v");
+    logger->set_pattern("[%10n] %^(%8l)%$ %v");
     logger->info("Application setup in progress ...");
 // Setup GLFW window
     {

@@ -1,7 +1,5 @@
 #include "App.hpp"
 #include <string>
-#include <boost/circular_buffer.hpp>
-#include <imgui-addons/imgui-addons.hpp>
 
 namespace app
 {
@@ -19,40 +17,30 @@ namespace app
 Sandbox::Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox"),
         sim(),
-        number_perception(sim.world)
+        debug(sim)
 {
     auto arthur = sim.add_agent("Arthur");
-    logger->info("Arthur id : {}", arthur);
-    auto  bruno = sim.add_agent("Bruno");
-    logger->info("Bruno id : {}", bruno);
+    sim.logger->info("Arthur id : {}", arthur);
+    auto bruno = sim.add_agent("Bruno");
+    sim.logger->info("Bruno id : {}", bruno);
 }
 
 void Sandbox::on_update() {
-    sim.run();
-    ImGui::Begin("Dynamo");
-
-    static std::string event = "Some event";
-    static ImGui::Addons::ScrollingPlot<int> plot{"Perceptions", 1000};
-    bool    added {false};
-
-    ImGui::InputText("Event", &event);
-    if(rand()%100==1){
-        auto e = sim.world.entity();
-        e.set<dynamo::DecayingPercept>({2.0f});
-        e.set<int>(rand()%100);
-        if(rand()%1000==1){
-            plot.add_point({true, event, sim.world.count<const dynamo::DecayingPercept>()});
-            added = true;
-        }
+    if(debug.is_enabled){
+        sim.run();
     }
 
-    if(!added)
-        plot.add_point({false, "", sim.world.count<const dynamo::DecayingPercept>()});
+    if(rand()%10==1){
+        //sim.perception.add<dynamo::component::DecayingPercept, int>({2.0f}, rand()%100);
+        auto entity_percept = sim.world.entity();
+        entity_percept.add<dynamo::tag::Percept>();
+        entity_percept.set<dynamo::component::DecayingPercept>({2.0f});
+        entity_percept.set<int>(rand()%100);
+        sim.world.each([&](flecs::entity entity_agent) {
+            //entity_agent.add(sim.perception.sees, entity_percept);
+        });
+    }
 
-    sim.world.each([&](flecs::entity e, const dynamo::Agent& agent) {
-    });
-    plot.plot();
-
-    ImGui::End();
+    debug.show();
 }
 

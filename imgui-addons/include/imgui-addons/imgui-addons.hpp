@@ -8,6 +8,7 @@
 #include <string>
 #include <imgui.h>
 #include <implot.h>
+#include <implot_internal.h>
 #include <boost/circular_buffer.hpp>
 
 namespace ImGui::Addons{
@@ -34,7 +35,7 @@ namespace ImGui::Addons{
         const auto* array = (boost::circular_buffer<DescriptivePoint<T>>*)data;
         const DescriptivePoint<T> descriptive_point = array->at(idx);
         if(descriptive_point.show_annotation)
-            ImPlot::AnnotateClamped(idx, descriptive_point.data, ImVec2(15, -15), ImPlot::GetColormapColor(0), descriptive_point.annotation.c_str());
+            ImPlot::AnnotateClamped(idx, descriptive_point.data, ImVec2(15, -15), ImPlot::GetColormapColor(5), descriptive_point.annotation.c_str());
         return {static_cast<double>(idx), static_cast<double>(descriptive_point.data)};
     }
 
@@ -46,17 +47,17 @@ namespace ImGui::Addons{
     public:
         ScrollingPlot(const char * title, int capacity) : title (title), buffer(capacity) {}
 
-        void add_point(DescriptivePoint<T> point){
+        void push(DescriptivePoint<T> point){
             buffer.push_back(point);
         };
 
         void plot() {
             buffer.linearize();
-            ImPlot::FitNextPlotAxes(true, true);
-            if (ImPlot::BeginPlot(title, "Tick")) {
-                ImPlot::PlotLineG(title, ImGui::Addons::descriptive_point_getter<T>, &buffer, buffer.size());
-                ImPlot::EndPlot();
-            }
+            ImPlot::PlotLineG(title, ImGui::Addons::descriptive_point_getter<T>, &buffer, buffer.size());
+        }
+
+        int capacity(){
+            return buffer.capacity();
         }
     };
 }
