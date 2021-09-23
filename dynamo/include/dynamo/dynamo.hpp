@@ -5,42 +5,33 @@
 #define DYNAMO_DYNAMO_HPP
 
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <dynamo/modules/perception.hpp>
 #include <flecs.h>
 
 namespace dynamo{
     class Simulation{
     public:
-        std::shared_ptr<spdlog::logger> logger;
+        std::shared_ptr<spdlog::logger> logger {spdlog::stdout_color_mt("Dynamo")};
 
-        flecs::world world;
-        module::Perception perception;
+        flecs::world world {};
+        module::Perception perception {world};
 
-        flecs::query<const tag::Agent> agents_query;
+        flecs::query<const tag::Agent>      agents_query    {world.query<const tag::Agent>()};
+        flecs::query<const tag::Artefact>   artefacts_query {world.query<const tag::Artefact>()};
 
     public:
         Simulation();
 
-        flecs::entity add_agent(const char * name) const{
-            auto e = world.entity(name);
-            e.add<tag::Agent>();
-            logger->info("Added agent : {} - {}", name, e);
-            return e;
-        }
-
-        void add_event(const char * name) const{
-            logger->info("Added event : {}", name);
-            world.set<component::Event>({name});
-        }
+        flecs::entity   add_agent(const char * name) const;
+        flecs::entity   add_artefact(const char * name) const;
+        void            add_event(const char * name) const;
 
         template<typename TPerceptType, typename TData>
-        void add_percept(TPerceptType percept_type, TData data){
-            perception.add_percept(percept_type, data);
-        }
+        [[maybe_unused]] void add_percept(TPerceptType percept_type, TData data);
 
         void run() const;
         void shutdown() const;
-
     };
 }//namespace dynamo
 

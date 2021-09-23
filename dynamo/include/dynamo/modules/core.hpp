@@ -6,6 +6,7 @@
 namespace dynamo{
     namespace tag{
         struct Agent{};
+        struct Artefact{};
     }
 
     namespace component{

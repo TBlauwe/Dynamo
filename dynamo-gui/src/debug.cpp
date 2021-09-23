@@ -40,7 +40,7 @@ namespace dynamo::gui{
             if(ImGui::BeginTabBar("DynamoTabBar")){
                 if(ImGui::BeginTabItem("Overall")){
                     ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 0.5, ImGuiCond_Once);
-                    if (ImPlot::BeginPlot("Delta-time", "Tick")) {
+                    if (ImPlot::BeginPlot("Delta-time", nullptr, nullptr, {-1,0}, ImPlotFlags_NoTitle, ImPlotAxisFlags_LockMin | ImPlotAxisFlags_NoLabel, ImPlotAxisFlags_LockMin)) {
                         scrolling_plot_delta_time.plot();
                         ImPlot::EndPlot();
                     }
@@ -48,7 +48,7 @@ namespace dynamo::gui{
                 }
                 if(ImGui::BeginTabItem("Perceptions")){
                     ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 100, ImGuiCond_Once);
-                    if (ImPlot::BeginPlot("Perception", "Tick")) {
+                    if (ImPlot::BeginPlot("Perceptions", nullptr, nullptr, {-1,0}, ImPlotFlags_NoTitle, ImPlotAxisFlags_LockMin | ImPlotAxisFlags_NoLabel, ImPlotAxisFlags_LockMin)) {
                         ImPlot::NextColormapColor();
                         scrolling_plot_percepts.plot();
                         ImPlot::EndPlot();
@@ -58,7 +58,7 @@ namespace dynamo::gui{
                 if(ImGui::BeginTabItem("Agents")){
                     if(ImGui::BeginTabBar("AgentsTabBar")) {
                         sim.agents_query.each([](flecs::entity entity_agent, const tag::Agent& agent) {
-                            ImGui::PushID(entity_agent);
+                            ImGui::PushID(static_cast<int>(entity_agent));
                             if (ImGui::BeginTabItem(entity_agent.name())) {
                                 entity_agent.each<relation::sees>([](flecs::entity obj){
                                     ImGui::BulletText("I'm seeing %d", obj.get<dynamo::component::Integer>()->value);
@@ -69,6 +69,15 @@ namespace dynamo::gui{
                         });
                         ImGui::EndTabBar();
                     }
+                    ImGui::EndTabItem();
+                }
+                if(ImGui::BeginTabItem("Artefacts")){
+                    ImGui::Text("Artefacts :");
+                    ImGui::Indent();
+                    sim.artefacts_query.each([](flecs::entity e, const tag::Artefact& artefact) {
+                        ImGui::BulletText("%s", e.name().c_str());
+                    });
+                    ImGui::Unindent();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();

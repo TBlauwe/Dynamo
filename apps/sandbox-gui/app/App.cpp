@@ -1,5 +1,4 @@
 #include "App.hpp"
-#include <string>
 
 namespace app
 {
@@ -21,6 +20,10 @@ Sandbox::Sandbox() :
 {
     sim.add_agent("Agent");
     sim.add_agent("Bruno");
+
+    auto emitter = sim.add_artefact("Radio");
+    emitter.set<dynamo::component::RandomIntEmitter>({0,5,1.0f,2.0f});
+
     sim.world.system<dynamo::tag::Agent>("Reasoner")
             .interval(1)
             .each([this](flecs::entity entity_agent, const dynamo::tag::Agent& agent){
@@ -35,9 +38,6 @@ Sandbox::Sandbox() :
 void Sandbox::on_update() {
     debug.show();
     if(debug.is_enabled){
-        if(rand()%10==1){
-            sim.add_percept<dynamo::component::DecayingPercept, dynamo::component::Integer>({2.0f}, {rand()%100});
-        }
         sim.run();
     }
 }

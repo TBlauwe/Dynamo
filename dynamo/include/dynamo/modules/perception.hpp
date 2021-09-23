@@ -12,6 +12,14 @@ namespace dynamo{
         struct Integer{
             int value;
         };
+
+        struct RandomIntEmitter{
+            int value_min {0};
+            int value_max {10};
+            float delay_min {1.0f};
+            float delay_max {2.0f};
+            float last_emission {0.f};
+        };
     }
 
     namespace tag{
@@ -28,11 +36,8 @@ namespace dynamo{
             flecs::world& world;
 
         public:
-            explicit Perception(flecs::world& world) :
-                    world{world}
-            {
+            explicit Perception(flecs::world& world) : world{world}{
                 // ========== Phase ==========
-                // 1. --- OnLoad
                 world.system<component::DecayingPercept>()
                         .kind(flecs::OnLoad)
                         .each([](flecs::entity e, component::DecayingPercept& percept) {
@@ -40,6 +45,21 @@ namespace dynamo{
                                 e.destruct();
                             else
                                 percept.ttl -= e.delta_time();
+                        });
+
+                world.system<component::RandomIntEmitter>()
+                        .kind(flecs::OnUpdate)
+                        .each([](flecs::entity e, component::RandomIntEmitter& emitter) {
+                            if(emitter.last_emission <= 0.f){
+                                emitter.last_emission = emitter.delay_min + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(emitter.delay_max-emitter.delay_min)));
+                                auto percept = e.world().entity();
+                                percept.add<tag::Percept>();
+                                percept.set<component::DecayingPercept>({2.0f});
+                                percept.set<component::Integer>({emitter.value_min + rand() % emitter.value_max});
+                                e.world().set<component::Event>({fmt::format("{} is emitting", e.name())});
+                            }
+                            else
+                                emitter.last_emission -= e.delta_time();
                         });
 
                 world.system<tag::Percept>("OnAddPercept")
