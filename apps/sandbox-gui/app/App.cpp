@@ -18,11 +18,13 @@ Sandbox::Sandbox() :
         sim(),
         debug(sim)
 {
-    sim.add_agent("Agent");
-    sim.add_agent("Bruno");
+    auto e = sim.add_agent("Agent");
+    e.set<dynamo::component::IntSensor>({5,10});
+    e = sim.add_agent("Bruno");
+    e.set<dynamo::component::IntSensor>({0,4});
 
     auto emitter = sim.add_artefact("Radio");
-    emitter.set<dynamo::component::RandomIntEmitter>({0,5,1.0f,2.0f});
+    emitter.set<dynamo::component::RandomIntEmitter>({0,11,1.0f,2.0f});
 
     sim.world.system<dynamo::tag::Agent>("Reasoner")
             .interval(1)
@@ -31,7 +33,7 @@ Sandbox::Sandbox() :
                 entity_agent.each<dynamo::relation::sees>([&sum](flecs::entity entity_percept){
                     sum += entity_percept.get<dynamo::component::Integer>()->value;
                 }) ;
-                sim.logger->info("{} is counting {}", entity_agent.name(), sum);
+                sim.logger->info("{} is counting {}", entity_agent.name().c_str(), sum);
             });
 }
 

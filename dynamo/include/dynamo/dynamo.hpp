@@ -27,9 +27,6 @@ namespace dynamo{
         flecs::entity   add_artefact(const char * name) const;
         void            add_event(const char * name) const;
 
-        template<typename TPerceptType, typename TData>
-        [[maybe_unused]] void add_percept(TPerceptType percept_type, TData data);
-
         void run() const;
         void shutdown() const;
     };

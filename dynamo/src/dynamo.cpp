@@ -26,11 +26,6 @@ void dynamo::Simulation::add_event(const char * name) const{
     world.set<component::Event>({name});
 }
 
-template<typename TPerceptType, typename TData>
-void dynamo::Simulation::add_percept(TPerceptType percept_type, TData data){
-    perception.add_percept(percept_type, data);
-}
-
 void dynamo::Simulation::run() const{
     world.progress();
 }
