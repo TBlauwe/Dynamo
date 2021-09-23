@@ -33,6 +33,11 @@ namespace dynamo{
             world.set<component::Event>({name});
         }
 
+        template<typename TPerceptType, typename TData>
+        void add_percept(TPerceptType percept_type, TData data){
+            perception.add_percept(percept_type, data);
+        }
+
         void run() const;
         void shutdown() const;
 

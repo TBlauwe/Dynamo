@@ -37,20 +37,42 @@ namespace dynamo::gui{
 
         // ===== Display stats =====
         ImGui::Begin("Dynamo");
-
-            ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 0.5, ImGuiCond_Once);
-            if (ImPlot::BeginPlot("Delta-time", "Tick")) {
-                scrolling_plot_delta_time.plot();
-                ImPlot::EndPlot();
+            if(ImGui::BeginTabBar("DynamoTabBar")){
+                if(ImGui::BeginTabItem("Overall")){
+                    ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 0.5, ImGuiCond_Once);
+                    if (ImPlot::BeginPlot("Delta-time", "Tick")) {
+                        scrolling_plot_delta_time.plot();
+                        ImPlot::EndPlot();
+                    }
+                    ImGui::EndTabItem();
+                }
+                if(ImGui::BeginTabItem("Perceptions")){
+                    ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 100, ImGuiCond_Once);
+                    if (ImPlot::BeginPlot("Perception", "Tick")) {
+                        ImPlot::NextColormapColor();
+                        scrolling_plot_percepts.plot();
+                        ImPlot::EndPlot();
+                    }
+                    ImGui::EndTabItem();
+                }
+                if(ImGui::BeginTabItem("Agents")){
+                    if(ImGui::BeginTabBar("AgentsTabBar")) {
+                        sim.agents_query.each([](flecs::entity entity_agent, const tag::Agent& agent) {
+                            ImGui::PushID(entity_agent);
+                            if (ImGui::BeginTabItem(entity_agent.name())) {
+                                entity_agent.each<relation::sees>([](flecs::entity obj){
+                                    ImGui::BulletText("I'm seeing %d", obj.get<dynamo::component::Integer>()->value);
+                                });
+                                ImGui::EndTabItem();
+                            }
+                            ImGui::PopID();
+                        });
+                        ImGui::EndTabBar();
+                    }
+                    ImGui::EndTabItem();
+                }
+                ImGui::EndTabBar();
             }
-
-            ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 100, ImGuiCond_Once);
-            if (ImPlot::BeginPlot("Perception", "Tick")) {
-                ImPlot::NextColormapColor();
-                scrolling_plot_percepts.plot();
-                ImPlot::EndPlot();
-            }
-
             ImGui::Begin("simple node editor");
                 ImNodes::BeginNodeEditor();
                 ImNodes::BeginNode(1);

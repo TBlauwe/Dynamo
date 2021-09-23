@@ -8,7 +8,7 @@ dynamo::Simulation::Simulation() :
         logger(spdlog::stdout_color_mt("Dynamo")),
         world{},
         perception{world},
-        agents_query{world.query_builder<const tag::Agent>().build()}
+        agents_query{world.query<const tag::Agent>()}
 {
     logger->set_level(spdlog::level::trace);
     logger->set_pattern("[%10n] %^(%8l)%$ %v");

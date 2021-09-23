@@ -6,7 +6,6 @@
 #include <dynamo/dynamo.hpp>
 #include <dynamo/gui/debug.hpp>
 
-
 class Sandbox : public app::Application{
 public:
     Sandbox();

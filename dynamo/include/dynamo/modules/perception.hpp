@@ -8,6 +8,10 @@ namespace dynamo{
         struct DecayingPercept{
             float ttl;
         };
+
+        struct Integer{
+            int value;
+        };
     }
 
     namespace tag{
@@ -38,13 +42,22 @@ namespace dynamo{
                                 percept.ttl -= e.delta_time();
                         });
 
-                world.system<tag::Percept>("OnSetPercept")
-                        .kind(flecs::OnSet)
-                        .each([&world](flecs::entity entity_percept, const tag::Percept){
-                            world.each([&entity_percept](flecs::entity entity_agent, const tag::Agent){
+                world.system<tag::Percept>("OnAddPercept")
+                        .kind(flecs::OnAdd)
+                        .each([&world](flecs::entity entity_percept, const tag::Percept&){
+                            world.each([&entity_percept](flecs::entity entity_agent, const tag::Agent&){
                                 entity_agent.add<relation::sees>(entity_percept);
                             });
                         });
+            }
+
+            template<typename TPerceptType, typename TData>
+            flecs::entity add_percept(TPerceptType percept_type, TData data){
+                auto entity_percept = world.entity();
+                entity_percept.add<dynamo::tag::Percept>();
+                entity_percept.set<TPerceptType>(percept_type);
+                entity_percept.set<TData>(data);
+                return entity_percept;
             }
         };
     }
