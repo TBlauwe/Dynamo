@@ -31,7 +31,7 @@ Sandbox::Sandbox() :
     //e.set<dynamo::component::IntSensor>({0,4});
 
     auto emitter = sim.add_artefact("Radio");
-    emitter.set<dynamo::component::RandomIntEmitter>({0,11,1.0f,2.0f});
+    emitter.set<dynamo::component::RandomIntEmitter>({0,11,0.0f,2.0f});
 
     sim.world.system<dynamo::tag::Agent>("Reasoner")
             .interval(1)
