@@ -10,6 +10,7 @@
 namespace dynamo::gui::widgets {
     void show_agent_widget(bool* open, flecs::entity& entity);
     void show_artefact_widget(bool* open, flecs::entity& entity);
+    void show_percept_widget(bool* open, flecs::entity& entity);
 }
 
 #endif //DYNAMO_ENTITY_WIDGETS_HPP
