@@ -6,12 +6,24 @@
 #include <imgui-addons/imgui-addons.hpp>
 
 namespace dynamo::gui{
+    namespace component{
+        struct GUI{
+            bool show_window = false;
+        };
+    }
+
     class MainWindow{
     private:
         dynamo::Simulation& sim;
 
-        ImGui::Addons::ScrollingPlot<float> scrolling_plot_delta_time{"Delta time", 1000};
-        ImGui::Addons::ScrollingPlot<int> scrolling_plot_percepts{"Percepts", 1000};
+        ImGui::Addons::ScrollingPlot<float>     scrolling_plot_delta_time{"Delta time", 1000};
+        ImGui::Addons::ScrollingPlot<int>       scrolling_plot_percepts{"Percepts", 1000};
+
+        flecs::query<const tag::Agent, component::GUI> agents_query ;
+        flecs::query<const tag::Artefact, component::GUI> artefacts_query ;
+
+        ImGuiTextFilter agents_list_filter;
+        ImGuiTextFilter artefacts_list_filter;
 
     public:
         bool is_enabled = false;

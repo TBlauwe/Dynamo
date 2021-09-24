@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include <implot.h>
 #include <implot_internal.h>
+#include <IconsFontAwesome5.h>
 #include <boost/circular_buffer.hpp>
 
 namespace ImGui::Addons{
@@ -60,6 +61,8 @@ namespace ImGui::Addons{
             return buffer.capacity();
         }
     };
+
+    void HelpMarker(const char* desc);
 }
 
 #endif //DYNAMO_IMGUI_ADDONS_HPP
