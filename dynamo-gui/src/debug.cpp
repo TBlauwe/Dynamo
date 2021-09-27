@@ -10,6 +10,7 @@ namespace dynamo::gui{
         agents_query = sim.world.query<const tag::Agent, component::GUI>();
         artefacts_query = sim.world.query<const tag::Artefact, component::GUI>();
         percepts_query = sim.world.query<const tag::Percept, component::GUI>();
+        organisations_query = sim.world.query<const tag::Organisation, component::GUI>();
 
         sim.world.system<const tag::Agent>("OnAddAgentTagForGUI")
                 .kind(flecs::OnAdd)
@@ -26,6 +27,12 @@ namespace dynamo::gui{
         sim.world.system<const tag::Percept>("OnAddPerceptTagForGUI")
                 .kind(flecs::OnAdd)
                 .each([](flecs::entity e, const tag::Percept& percept){
+                    e.set<component::GUI>({});
+                });
+
+        sim.world.system<const tag::Organisation>("OnAddOrganisationTagForGUI")
+                .kind(flecs::OnAdd)
+                .each([](flecs::entity e, const tag::Organisation& organisation){
                     e.set<component::GUI>({});
                 });
 
@@ -195,6 +202,41 @@ namespace dynamo::gui{
                             ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
                             if (gui.show_window) {
                                 dynamo::gui::widgets::show_artefact_widget(&gui.show_window, e);
+                            }
+                        }
+                        ImGui::PopID();
+                    });
+                    ImGui::EndTable();
+                }
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Organisation")) {
+                organisations_list_filter.Draw();
+                ImGui::Spacing();
+                if (ImGui::BeginTable("Organisations##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
+                    ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableHeadersRow();
+                    organisations_query.each([this](flecs::entity e, const tag::Organisation &organisation,
+                                                dynamo::gui::component::GUI &gui) {
+                        ImGui::PushID(static_cast<int>(e.id()));
+                        if (organisations_list_filter.PassFilter(e.name())) {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text("%llu", e.id());
+
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%s", e.name().c_str());
+
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("%s", "...");
+
+                            ImGui::TableSetColumnIndex(3);
+                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
+                            if (gui.show_window) {
+                                dynamo::gui::widgets::show_organisation_widget(&gui.show_window, e);
                             }
                         }
                         ImGui::PopID();
