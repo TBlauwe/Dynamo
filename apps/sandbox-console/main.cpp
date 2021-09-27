@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     dynamo.world.system<Position>()
             .interval(1.0)
             .each([](flecs::entity e, Position& p) {
-                spdlog::info("[{}] : {},{}", e.name(), p.x, p.y);
+                e.world().get<singleton::Logger>()->logger->info("[{}] : {},{}", e.name(), p.x, p.y);
             });
 
     dynamo.world.entity("Arthur")
@@ -38,6 +38,5 @@ int main(int argc, char** argv) {
     dynamo.world.set_target_fps(60);
     while (dynamo.world.progress()) {}
 
-    dynamo.shutdown();
     return 0;
 }

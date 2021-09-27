@@ -37,14 +37,13 @@ namespace dynamo{
     }
 
     namespace module{
-        class Perception{
-        private:
-            flecs::world& world;
+        struct Perception{
+            explicit Perception(flecs::world& world){
+                world.module<Perception>();
+                world.import<module::Core>();
 
-        public:
-            explicit Perception(flecs::world& world) : world{world}{
                 // ========== Phase ==========
-                world.system<component::DecayingPercept>()
+                world.system<component::DecayingPercept>("DecayPercepts")
                         .kind(flecs::OnLoad)
                         .each([](flecs::entity e, component::DecayingPercept& percept) {
                             if(percept.ttl <= 0.f)
@@ -53,7 +52,7 @@ namespace dynamo{
                                 percept.ttl -= e.delta_time();
                         });
 
-                world.system<component::RandomIntEmitter>()
+                world.system<component::RandomIntEmitter>("RandomIntEmitter")
                         .kind(flecs::OnUpdate)
                         .each([](flecs::entity e, component::RandomIntEmitter& emitter) {
                             if(emitter.last_emission <= 0.f){
@@ -71,7 +70,7 @@ namespace dynamo{
                                 emitter.last_emission -= e.delta_time();
                         });
 
-                world.system<const component::Integer>("OnAddIntegerPercept")
+                world.system<const component::Integer>("OnAddInteger")
                         .kind(flecs::OnAdd)
                         .each([](flecs::entity entity_percept, const component::Integer& integer){
                             entity_percept.world().each([&entity_percept, &integer](flecs::entity entity_agent, const tag::Agent&, const component::IntSensor& int_sensor){

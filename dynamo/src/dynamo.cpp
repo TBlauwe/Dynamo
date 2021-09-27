@@ -3,11 +3,8 @@
 //
 #include <dynamo/dynamo.hpp>
 
-dynamo::Simulation::Simulation()
-{
-    logger->set_level(spdlog::level::trace);
-    logger->set_pattern("[%10n] %^(%8l)%$ %v");
-    logger->info("Dynamo launching ...");
+dynamo::Simulation::Simulation() {
+    world.import<module::Perception>();
 }
 
 flecs::entity dynamo::Simulation::add_agent(const char *name) const{
@@ -28,8 +25,4 @@ void dynamo::Simulation::add_event(const char * name) const{
 
 void dynamo::Simulation::run() const{
     world.progress();
-}
-
-void dynamo::Simulation::shutdown() const{
-    logger->info("Dynamo shutting down ...");
 }

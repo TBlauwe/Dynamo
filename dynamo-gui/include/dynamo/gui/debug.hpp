@@ -1,8 +1,8 @@
 #ifndef DYNAMO_DEBUG_HPP
 #define DYNAMO_DEBUG_HPP
 
-#include <imgui.h>
 #include <dynamo/dynamo.hpp>
+#include <imgui.h>
 #include <imgui-addons/imgui-addons.hpp>
 
 namespace dynamo::gui{

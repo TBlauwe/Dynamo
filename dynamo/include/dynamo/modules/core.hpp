@@ -2,16 +2,40 @@
 #define DYNAMO_CORE_H
 
 #include <flecs.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace dynamo{
     namespace tag{
         struct Agent{};
         struct Artefact{};
+        struct Organisation{};
     }
 
     namespace component{
         struct Event{
             std::string name;
+        };
+    }
+
+    namespace singleton{
+        struct Logger{
+            std::shared_ptr<spdlog::logger> logger {spdlog::stdout_color_mt("Dynamo")};
+
+            Logger(){
+                logger->set_level(spdlog::level::trace);
+                logger->set_pattern("[%10n] %^(%8l)%$ %v");
+                logger->info("Dynamo launching ...");
+            };
+        };
+    }
+
+    namespace module{
+        struct Core{
+            explicit Core(flecs::world& world){
+                world.module<Core>();
+                world.add<singleton::Logger>();
+            }
         };
     }
 }

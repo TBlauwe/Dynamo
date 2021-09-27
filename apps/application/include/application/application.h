@@ -26,13 +26,6 @@ namespace app {
         bool            is_dockspace_open = true;
 
     };
-
-    void on_initialization();
-    void on_shutdown();
-
-    namespace ImGuiWindows {
-        void menu_bar();
-    }
 }
 
 #endif //DYNAMO_APPLICATION_H

@@ -143,7 +143,7 @@ static void SetupVulkan(const char** extensions, uint32_t extensions_count)
     {
         uint32_t count;
         vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, NULL);
-        VkQueueFamilyProperties* queues = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * count);
+        auto* queues = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * count);
         vkGetPhysicalDeviceQueueFamilyProperties(g_PhysicalDevice, &count, queues);
         for (uint32_t i = 0; i < count; i++)
             if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -560,7 +560,6 @@ app::Application::Application(const int width, const int height, const char* tit
         check_vk_result(err);
         ImGui_ImplVulkan_DestroyFontUploadObjects();
     }
-    app::on_initialization();
     logger->info("Application setup done !");
 }
 
@@ -627,7 +626,6 @@ void app::Application::run() {
 
             if (ImGui::BeginMenuBar()) {
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,ImGui::GetIO().Framerate);
-                app::ImGuiWindows::menu_bar();
                 ImGui::EndMenuBar();
             }
             ImGui::End();
@@ -659,7 +657,6 @@ void app::Application::run() {
 
 app::Application::~Application() {
     logger->info("Application shutting down ...");
-    app::on_shutdown();
 
     VkResult err = vkDeviceWaitIdle(g_Device);
     check_vk_result(err);
