@@ -36,7 +36,7 @@ namespace ImGui::Addons{
         const auto* array = (boost::circular_buffer<DescriptivePoint<T>>*)data;
         const DescriptivePoint<T> descriptive_point = array->at(idx);
         if(descriptive_point.show_annotation)
-            ImPlot::AnnotateClamped(idx, descriptive_point.data, ImVec2(15, -15), ImPlot::GetColormapColor(5), descriptive_point.annotation.c_str());
+            ImPlot::AnnotateClamped(idx, descriptive_point.data, ImVec2(15, -15), ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive), descriptive_point.annotation.c_str());
         return {static_cast<double>(idx), static_cast<double>(descriptive_point.data)};
     }
 
