@@ -19,10 +19,6 @@ flecs::entity dynamo::Simulation::add_artefact(const char * name) const{
     return e;
 }
 
-void dynamo::Simulation::add_event(const char * name) const{
-    world.set<component::Event>({name});
-}
-
 void dynamo::Simulation::run() const{
     world.progress();
 }

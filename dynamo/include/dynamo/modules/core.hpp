@@ -13,9 +13,23 @@ namespace dynamo{
     }
 
     namespace component{
+        template<typename T>
         struct Event{
             std::string name;
         };
+    }
+
+    namespace event{
+        struct MINOR{};
+        struct MAJOR{};
+        struct CUSTOM_A{};
+        struct CUSTOM_B{};
+        struct CUSTOM_C{};
+        struct CUSTOM_D{};
+    }
+
+    namespace relation{
+        struct is_in{};
     }
 
     namespace singleton{

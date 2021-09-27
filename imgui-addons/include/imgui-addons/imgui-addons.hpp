@@ -45,6 +45,7 @@ namespace ImGui::Addons{
     private:
         boost::circular_buffer<DescriptivePoint<T>> buffer;
         const char * title;
+
     public:
         ScrollingPlot(const char * title, int capacity) : title (title), buffer(capacity) {}
 

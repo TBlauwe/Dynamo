@@ -4,6 +4,7 @@
 #include <dynamo/dynamo.hpp>
 #include <imgui.h>
 #include <imgui-addons/imgui-addons.hpp>
+#include <dynamo/gui/widgets/plot.hpp>
 
 namespace dynamo::gui{
     namespace component{
@@ -16,8 +17,8 @@ namespace dynamo::gui{
     private:
         dynamo::Simulation& sim;
 
-        ImGui::Addons::ScrollingPlot<float>     scrolling_plot_delta_time{"Delta time", 1000};
-        ImGui::Addons::ScrollingPlot<int>       scrolling_plot_percepts{"Percepts", 1000};
+        widgets::EventScrollingPlot<float, ::dynamo::event::MAJOR>     scrolling_plot_delta_time{sim.world, "Delta time", 1000};
+        widgets::EventScrollingPlot<int, ::dynamo::event::MINOR>       scrolling_plot_percepts{sim.world, "Percepts", 1000};
 
         flecs::query<const tag::Agent, component::GUI> agents_query ;
         flecs::query<const tag::Artefact, component::GUI> artefacts_query ;
@@ -26,6 +27,8 @@ namespace dynamo::gui{
         ImGuiTextFilter agents_list_filter;
         ImGuiTextFilter artefacts_list_filter;
         ImGuiTextFilter percepts_list_filter;
+
+        float timescale = 1.0f;
 
     public:
         bool is_enabled = false;

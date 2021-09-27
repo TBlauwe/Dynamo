@@ -28,34 +28,41 @@ namespace dynamo::gui{
                 .each([](flecs::entity e, const tag::Percept& percept){
                     e.set<component::GUI>({});
                 });
+
+        timescale = sim.world.get_time_scale();
     }
 
     void MainWindow::show() {
         ImGui::Begin("Dynamo-Bar");
+        ImGui::Spacing();
+        ImGui::SameLine();
         ImGui::Text("Ticks : [%d]", sim.world.get_tick());
         ImGui::SameLine();
         if(ImGui::Button(!is_enabled ? ICON_FA_PLAY " Play" : ICON_FA_PAUSE " Pause")){
             is_enabled = !is_enabled;
         }
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(50.f);
+        if(ImGui::SliderFloat("TimeScale", &timescale, 0.1f, 5.f)){
+            sim.world.set_time_scale(timescale);
+        }
+        ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
+        ImGui::SameLine();
+        ImGui::Spacing();
         ImGui::End();
 
         static std::string event = "Some event";
         ImGui::Begin("Dynamo");
         ImGui::InputText("Event", &event);
         if(ImGui::Button("Add Event")){
-            sim.add_event(event.c_str());
+            sim.add_event<event::MAJOR>(event.c_str());
         }
         ImGui::End();
 
         // ===== Update stats =====
         if(is_enabled){
-            bool add_event = sim.world.has<::dynamo::component::Event>();
-            std::string event_name = add_event ? sim.world.get<::dynamo::component::Event>()->name : "";
-            if(add_event){
-                sim.world.remove<::dynamo::component::Event>();
-            }
-            scrolling_plot_percepts.push({add_event, event_name, sim.world.count<const dynamo::tag::Percept>()});
-            scrolling_plot_delta_time.push({add_event, event_name, sim.world.delta_time()});
+            scrolling_plot_percepts.add(sim.world.count<const dynamo::tag::Percept>());
+            scrolling_plot_delta_time.add(sim.world.delta_time());
         }
 
         // ===== Display stats =====

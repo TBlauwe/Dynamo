@@ -63,7 +63,7 @@ namespace dynamo{
                                 percept.set<component::DecayingPercept>({2.0f});
                                 int value = emitter.value_min + rand() % emitter.value_max;
                                 percept.set<component::Integer>({value});
-                                e.world().set<component::Event>({fmt::format("{}", value)});
+                                e.world().set<component::Event<event::MINOR>>({fmt::format("{}", value)});
 
                             }
                             else

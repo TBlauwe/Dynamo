@@ -25,10 +25,6 @@ Sandbox::Sandbox() :
         int max = min + rand()%11;
         e.set<dynamo::component::IntSensor>({min,max});
     }
-    //auto e = sim.add_agent("Agent");
-    //e.set<dynamo::component::IntSensor>({5,10});
-    //e = sim.add_agent("Bruno");
-    //e.set<dynamo::component::IntSensor>({0,4});
 
     auto emitter = sim.add_artefact("Radio");
     emitter.set<dynamo::component::RandomIntEmitter>({0,11,0.0f,2.0f});

@@ -20,10 +20,16 @@ namespace dynamo{
 
         flecs::entity   add_agent(const char * name) const;
         flecs::entity   add_artefact(const char * name) const;
-        void            add_event(const char * name) const;
+
+        template<typename T>
+        void add_event(const char * name) const{
+            world.set<component::Event<T>>({name});
+        }
 
         void run() const;
     };
+
+
 }//namespace dynamo
 
 #endif //DYNAMO_DYNAMO_HPP
