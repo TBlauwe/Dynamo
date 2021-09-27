@@ -24,11 +24,13 @@ namespace dynamo::gui{
         flecs::query<const tag::Artefact, component::GUI> artefacts_query ;
         flecs::query<const tag::Percept, component::GUI> percepts_query ;
         flecs::query<const tag::Organisation, component::GUI> organisations_query ;
+        flecs::query<const tag::Action, component::GUI> actions_query ;
 
         ImGuiTextFilter agents_list_filter;
         ImGuiTextFilter artefacts_list_filter;
         ImGuiTextFilter percepts_list_filter;
         ImGuiTextFilter organisations_list_filter;
+        ImGuiTextFilter actions_list_filter;
 
         float timescale = 1.0f;
 

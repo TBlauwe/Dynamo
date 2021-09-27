@@ -11,6 +11,7 @@ namespace dynamo::gui{
         artefacts_query = sim.world.query<const tag::Artefact, component::GUI>();
         percepts_query = sim.world.query<const tag::Percept, component::GUI>();
         organisations_query = sim.world.query<const tag::Organisation, component::GUI>();
+        actions_query = sim.world.query<const tag::Action, component::GUI>();
 
         sim.world.system<const tag::Agent>("OnAddAgentTagForGUI")
                 .kind(flecs::OnAdd)
@@ -210,7 +211,7 @@ namespace dynamo::gui{
                 }
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("Organisation")) {
+            if (ImGui::BeginTabItem("Organisations")) {
                 organisations_list_filter.Draw();
                 ImGui::Spacing();
                 if (ImGui::BeginTable("Organisations##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
@@ -237,6 +238,41 @@ namespace dynamo::gui{
                             ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
                             if (gui.show_window) {
                                 dynamo::gui::widgets::show_organisation_widget(&gui.show_window, e);
+                            }
+                        }
+                        ImGui::PopID();
+                    });
+                    ImGui::EndTable();
+                }
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Actions")) {
+                actions_list_filter.Draw();
+                ImGui::Spacing();
+                if (ImGui::BeginTable("Organisations##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
+                    ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableHeadersRow();
+                    actions_query.each([this](flecs::entity e, const tag::Action &action,
+                                                    dynamo::gui::component::GUI &gui) {
+                        ImGui::PushID(static_cast<int>(e.id()));
+                        if (actions_list_filter.PassFilter(e.name())) {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text("%llu", e.id());
+
+                            ImGui::TableSetColumnIndex(1);
+                            ImGui::Text("%s", e.name().c_str());
+
+                            ImGui::TableSetColumnIndex(2);
+                            ImGui::Text("%s", "...");
+
+                            ImGui::TableSetColumnIndex(3);
+                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
+                            if (gui.show_window) {
+                                dynamo::gui::widgets::show_action_widget(&gui.show_window, e);
                             }
                         }
                         ImGui::PopID();

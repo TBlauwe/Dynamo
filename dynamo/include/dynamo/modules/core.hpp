@@ -9,6 +9,7 @@ namespace dynamo{
     namespace tag{
         struct Agent{};
         struct Artefact{};
+        struct Action{};
         struct Organisation{};
     }
 
