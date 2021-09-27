@@ -42,10 +42,6 @@ namespace dynamo::gui{
 
     void MainWindow::show() {
         ImGui::Begin("Dynamo-Bar");
-        ImGui::Spacing();
-        ImGui::SameLine();
-        ImGui::Text("Ticks : [%d]", sim.world.get_tick());
-        ImGui::SameLine();
         if(ImGui::Button(!is_enabled ? ICON_FA_PLAY " Play" : ICON_FA_PAUSE " Pause")){
             is_enabled = !is_enabled;
         }
@@ -54,9 +50,8 @@ namespace dynamo::gui{
         if(ImGui::SliderFloat("TimeScale", &timescale, 0.1f, 5.f)){
             sim.world.set_time_scale(timescale);
         }
-        ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
         ImGui::SameLine();
-        ImGui::Spacing();
+        ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
         ImGui::End();
 
         static std::string event = "Some event";

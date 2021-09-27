@@ -412,6 +412,9 @@ app::Application::Application(const int width, const int height, const char* tit
     config.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
     static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
     io.Fonts->AddFontFromFileTTF("fonts/fa-solid-900.ttf", 16.0f, &config, icon_ranges);
+    io.Fonts->Build();
+    io.Fonts->AddFontFromFileTTF("fonts/LiquidCrystal-Normal.otf", 18.0f);
+
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
