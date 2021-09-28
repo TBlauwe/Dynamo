@@ -12,7 +12,7 @@ public:
 
 private:
     dynamo::Simulation sim;
-    dynamo::gui::MainWindow debug;
+    dynamo_gui::Inspector debug;
 
 private:
     void on_update() override;

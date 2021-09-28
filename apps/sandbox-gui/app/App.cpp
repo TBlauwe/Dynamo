@@ -1,18 +1,5 @@
 #include "App.hpp"
 
-namespace app
-{
-    void on_initialization(){
-    }
-
-    void on_shutdown(){
-    }
-    namespace ImGuiWindows{
-        void menu_bar(){
-        }
-    }
-}
-
 Sandbox::Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox"),
         sim(),

@@ -4,43 +4,49 @@
 #include <misc/cpp/imgui_stdlib.h>
 #include <IconsFontAwesome5.h>
 
-namespace dynamo::gui{
+namespace dynamo_gui{
 
-    MainWindow::MainWindow(Simulation &sim):sim{sim} {
-        agents_query = sim.world.query<const tag::Agent, component::GUI>();
-        artefacts_query = sim.world.query<const tag::Artefact, component::GUI>();
-        percepts_query = sim.world.query<const tag::Percept, component::GUI>();
-        organisations_query = sim.world.query<const tag::Organisation, component::GUI>();
-        actions_query = sim.world.query<const tag::Action, component::GUI>();
+    Inspector::Inspector(dynamo::Simulation &sim):sim{sim} {
+        agents_query = sim.world.query<const dynamo::tag::Agent, component::GUI>();
+        artefacts_query = sim.world.query<const dynamo::tag::Artefact, component::GUI>();
+        percepts_query = sim.world.query<const dynamo::tag::Percept, component::GUI>();
+        organisations_query = sim.world.query<const dynamo::tag::Organisation, component::GUI>();
+        actions_query = sim.world.query<const dynamo::tag::Action, component::GUI>();
 
-        sim.world.system<const tag::Agent>("OnAddAgentTagForGUI")
+        sim.world.system<const dynamo::tag::Agent>("AddAgentToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const tag::Agent& agent){
+                .each([](flecs::entity e, const dynamo::tag::Agent& agent){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const tag::Artefact>("OnAddArtefactTagForGUI")
+        sim.world.system<const dynamo::tag::Artefact>("AddArtefactToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const tag::Artefact& artefact){
+                .each([](flecs::entity e, const dynamo::tag::Artefact& artefact){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const tag::Percept>("OnAddPerceptTagForGUI")
+        sim.world.system<const dynamo::tag::Percept>("AddPerceptToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const tag::Percept& percept){
+                .each([](flecs::entity e, const dynamo::tag::Percept& percept){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const tag::Organisation>("OnAddOrganisationTagForGUI")
+        sim.world.system<const dynamo::tag::Organisation>("AddOrganisationToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const tag::Organisation& organisation){
+                .each([](flecs::entity e, const dynamo::tag::Organisation& organisation){
+                    e.set<component::GUI>({});
+                });
+
+        sim.world.system<const dynamo::tag::Action>("AddActionToGui")
+                .kind(flecs::OnAdd)
+                .each([](flecs::entity e, const dynamo::tag::Action& action){
                     e.set<component::GUI>({});
                 });
 
         timescale = sim.world.get_time_scale();
     }
 
-    void MainWindow::show() {
+    void Inspector::show() {
         ImGui::Begin("Dynamo-Bar");
         if(ImGui::Button(!is_enabled ? ICON_FA_PLAY " Play" : ICON_FA_PAUSE " Pause")){
             is_enabled = !is_enabled;
@@ -58,7 +64,7 @@ namespace dynamo::gui{
         ImGui::Begin("Dynamo");
         ImGui::InputText("Event", &event);
         if(ImGui::Button("Add Event")){
-            sim.add_event<event::MAJOR>(event.c_str());
+            sim.add_event<dynamo::event::MAJOR>(event.c_str());
         }
         ImGui::End();
 
@@ -96,13 +102,13 @@ namespace dynamo::gui{
                     ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    percepts_query.each([this](flecs::entity e, const tag::Percept &agent, dynamo::gui::component::GUI &gui) {
+                    percepts_query.each([this](flecs::entity e, const dynamo::tag::Percept &agent, component::GUI& gui) {
                         if (agents_list_filter.PassFilter(e.name())) {
                             ImGui::PushID(static_cast<int>(e.id()));
                             ImGui::TableNextRow();
 
                             ImGui::TableSetColumnIndex(0);
-                            e.each<relation::from>([](flecs::entity obj) {
+                            e.each<dynamo::relation::from>([](flecs::entity obj) {
                                 ImGui::Text("%s", obj.name().c_str());
                             });
 
@@ -125,9 +131,9 @@ namespace dynamo::gui{
                             }
 
                             ImGui::TableSetColumnIndex(3);
-                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
-                            if (gui.show_window) {
-                                dynamo::gui::widgets::show_percept_widget(&gui.show_window, e);
+                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
+                            if (gui.show_widget) {
+                                dynamo_gui::widget::show_percept_widget(&gui.show_widget, e);
                             }
                             ImGui::PopID();
                         }
@@ -145,8 +151,7 @@ namespace dynamo::gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    agents_query.each(
-                            [this](flecs::entity e, const tag::Agent &agent, dynamo::gui::component::GUI &gui) {
+                    agents_query.each([this](flecs::entity e, const dynamo::tag::Agent &agent, component::GUI& gui) {
                                 ImGui::PushID(static_cast<int>(e.id()));
                                 if (agents_list_filter.PassFilter(e.name())) {
                                     ImGui::TableNextRow();
@@ -160,9 +165,9 @@ namespace dynamo::gui{
                                     ImGui::Text("%s", "...");
 
                                     ImGui::TableSetColumnIndex(3);
-                                    ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
-                                    if (gui.show_window) {
-                                        dynamo::gui::widgets::show_agent_widget(&gui.show_window, e);
+                                    ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
+                                    if (gui.show_widget) {
+                                        dynamo_gui::widget::show_agent_widget(&gui.show_widget, e);
                                     }
                                 }
                                 ImGui::PopID();
@@ -180,8 +185,7 @@ namespace dynamo::gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    artefacts_query.each([this](flecs::entity e, const tag::Artefact &artefact,
-                                                dynamo::gui::component::GUI &gui) {
+                    artefacts_query.each([this](flecs::entity e, const dynamo::tag::Artefact &artefact, component::GUI& gui) {
                         ImGui::PushID(static_cast<int>(e.id()));
                         if (artefacts_list_filter.PassFilter(e.name())) {
                             ImGui::TableNextRow();
@@ -195,9 +199,9 @@ namespace dynamo::gui{
                             ImGui::Text("%s", "...");
 
                             ImGui::TableSetColumnIndex(3);
-                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
-                            if (gui.show_window) {
-                                dynamo::gui::widgets::show_artefact_widget(&gui.show_window, e);
+                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
+                            if (gui.show_widget) {
+                                dynamo_gui::widget::show_artefact_widget(&gui.show_widget, e);
                             }
                         }
                         ImGui::PopID();
@@ -206,6 +210,7 @@ namespace dynamo::gui{
                 }
                 ImGui::EndTabItem();
             }
+
             if (ImGui::BeginTabItem("Organisations")) {
                 organisations_list_filter.Draw();
                 ImGui::Spacing();
@@ -215,8 +220,7 @@ namespace dynamo::gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    organisations_query.each([this](flecs::entity e, const tag::Organisation &organisation,
-                                                dynamo::gui::component::GUI &gui) {
+                    organisations_query.each([this](flecs::entity e, const dynamo::tag::Organisation &organisation, component::GUI& gui) {
                         ImGui::PushID(static_cast<int>(e.id()));
                         if (organisations_list_filter.PassFilter(e.name())) {
                             ImGui::TableNextRow();
@@ -230,9 +234,9 @@ namespace dynamo::gui{
                             ImGui::Text("%s", "...");
 
                             ImGui::TableSetColumnIndex(3);
-                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
-                            if (gui.show_window) {
-                                dynamo::gui::widgets::show_organisation_widget(&gui.show_window, e);
+                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
+                            if (gui.show_widget) {
+                                dynamo_gui::widget::show_organisation_widget(&gui.show_widget, e);
                             }
                         }
                         ImGui::PopID();
@@ -250,8 +254,7 @@ namespace dynamo::gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    actions_query.each([this](flecs::entity e, const tag::Action &action,
-                                                    dynamo::gui::component::GUI &gui) {
+                    actions_query.each([this](flecs::entity e, const dynamo::tag::Action &action, component::GUI& gui){
                         ImGui::PushID(static_cast<int>(e.id()));
                         if (actions_list_filter.PassFilter(e.name())) {
                             ImGui::TableNextRow();
@@ -265,9 +268,9 @@ namespace dynamo::gui{
                             ImGui::Text("%s", "...");
 
                             ImGui::TableSetColumnIndex(3);
-                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_window);
-                            if (gui.show_window) {
-                                dynamo::gui::widgets::show_action_widget(&gui.show_window, e);
+                            ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
+                            if (gui.show_widget) {
+                                dynamo_gui::widget::show_action_widget(&gui.show_widget, e);
                             }
                         }
                         ImGui::PopID();

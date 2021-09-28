@@ -1,5 +1,4 @@
 #include <dynamo/gui/widgets/entity_widgets.hpp>
-
 #include <imgui.h>
 
 void list_components(flecs::entity& entity){
@@ -15,11 +14,11 @@ void list_components(flecs::entity& entity){
     }
 }
 
-namespace dynamo::gui::widgets {
-    void show_agent_widget(bool* open, flecs::entity& entity){
+namespace dynamo_gui::widget {
+    void show_agent_widget(bool* show, flecs::entity& entity){
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, open)){
+        if(!ImGui::Begin(name, show)){
             ImGui::End();
             return;
         }
@@ -27,10 +26,10 @@ namespace dynamo::gui::widgets {
         ImGui::End();
     }
 
-    void show_artefact_widget(bool* open, flecs::entity& entity){
+    void show_artefact_widget(bool* show, flecs::entity& entity){
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, open)){
+        if(!ImGui::Begin(name, show)){
             ImGui::End();
             return;
         }
@@ -38,9 +37,9 @@ namespace dynamo::gui::widgets {
         ImGui::End();
     }
 
-    void show_percept_widget(bool* open, flecs::entity& entity){
+    void show_percept_widget(bool* show, flecs::entity& entity){
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin("Percept", open)){
+        if(!ImGui::Begin("Percept", show)){
             ImGui::End();
             return;
         }
@@ -48,25 +47,25 @@ namespace dynamo::gui::widgets {
         ImGui::End();
     }
 
-    void show_organisation_widget(bool* open, flecs::entity& entity){
+    void show_organisation_widget(bool* show, flecs::entity& entity){
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, open)){
+        if(!ImGui::Begin(name, show)){
             ImGui::End();
             return;
         }
-        ImGui::Text("Bonjour");
+        list_components(entity);
         ImGui::End();
     }
 
-    void show_action_widget(bool* open, flecs::entity& entity){
+    void show_action_widget(bool* show, flecs::entity& entity){
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, open)){
+        if(!ImGui::Begin(name, show)){
             ImGui::End();
             return;
         }
-        ImGui::Text("Bonjour");
+        list_components(entity);
         ImGui::End();
     }
 }
