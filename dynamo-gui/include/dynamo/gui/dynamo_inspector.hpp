@@ -10,7 +10,6 @@ namespace dynamo_gui{
     private:
         flecs::world& world;
 
-        dynamo_gui::widget::EventScrollingPlot<float, float>     scrolling_plot_delta_time{world, "Delta time", 1000};
         dynamo_gui::widget::EventScrollingPlot<int, float>       scrolling_plot_percepts{world, "Percepts", 1000};
 
         flecs::query<const dynamo::type::Agent, component::GUI> agents_query ;
@@ -25,11 +24,7 @@ namespace dynamo_gui{
         ImGuiTextFilter organisations_list_filter;
         ImGuiTextFilter actions_list_filter;
 
-        float timescale = 1.0f;
-
     public:
-        bool is_enabled = false;
-
         explicit Inspector(flecs::world& world);
 
         void show();

@@ -5,6 +5,7 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <spdlog/spdlog.h>
+#include <IconsFontAwesome5.h>
 
 namespace app {
 
@@ -15,6 +16,7 @@ namespace app {
         void run();
 
     protected:
+        virtual void on_menu_bar() = 0;
         virtual void on_update() = 0;
 
     public:

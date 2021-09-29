@@ -44,52 +44,16 @@ namespace dynamo_gui{
                 .each([](flecs::entity e, const dynamo::type::Action& action){
                     e.set<component::GUI>({});
                 });
-
-        timescale = world.get_time_scale();
     }
 
     void Inspector::show() {
-        ImGui::Begin("Dynamo-Bar");
-        if(ImGui::Button(!is_enabled ? ICON_FA_PLAY " Play" : ICON_FA_PAUSE " Pause")){
-            is_enabled = !is_enabled;
-        }
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(50.f);
-        if(ImGui::SliderFloat("TimeScale", &timescale, 0.1f, 5.f)){
-            world.set_time_scale(timescale);
-        }
-        ImGui::SameLine();
-        ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
-        ImGui::End();
-
-        static std::string event = "Some event";
-        ImGui::Begin("Dynamo");
-        ImGui::InputText("Event", &event);
-        if(ImGui::Button("Add Event")){
-            //sim.add_event<float>(event.c_str());
-        }
-        ImGui::End();
-
-        // ===== Update stats =====
-        if(is_enabled){
-            scrolling_plot_percepts.add(world.count<const dynamo::type::Percept>());
-            scrolling_plot_delta_time.add(world.delta_time());
-        }
+        scrolling_plot_percepts.add(world.count<const dynamo::type::Percept>());
 
         // ===== Display stats =====
         ImGui::Begin("Dynamo");
         if(ImGui::BeginTabBar("DynamoTabBar")) {
-            if (ImGui::BeginTabItem("Overall")) {
-                ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 0.5, ImGuiCond_Once);
-                if (ImPlot::BeginPlot("Delta-time", nullptr, nullptr, {-1, 0}, ImPlotFlags_NoTitle,
-                                      ImPlotAxisFlags_LockMin | ImPlotAxisFlags_NoLabel, ImPlotAxisFlags_LockMin)) {
-                    scrolling_plot_delta_time.plot();
-                    ImPlot::EndPlot();
-                }
-                ImGui::EndTabItem();
-            }
             if (ImGui::BeginTabItem("Perceptions")) {
-                ImPlot::SetNextPlotLimits(0, scrolling_plot_delta_time.capacity(), 0, 100, ImGuiCond_Once);
+                ImPlot::SetNextPlotLimits(0, scrolling_plot_percepts.capacity(), 0, 100, ImGuiCond_Once);
                 if (ImPlot::BeginPlot("Perceptions", nullptr, nullptr, {-1, 0}, ImPlotFlags_NoTitle,
                                       ImPlotAxisFlags_LockMin | ImPlotAxisFlags_NoLabel, ImPlotAxisFlags_LockMin)) {
                     ImPlot::NextColormapColor();

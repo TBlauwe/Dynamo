@@ -39,7 +39,7 @@ namespace dynamo{
                     e.remove<tag::CurrentFrame>();
                 });
 
-        world.system<const type::Event>("SetTickValueWhenEventSpawn")
+        world.system<const type::Event>("SetupEventOnAdd")
                 .kind(flecs::OnAdd)
                 .each([](flecs::entity e, const type::Event event) {
                     e.set<component::Tick>({e.world().get_tick()});
