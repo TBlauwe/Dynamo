@@ -1,4 +1,4 @@
-#include <dynamo/gui/debug.hpp>
+#include <dynamo/gui/dynamo_inspector.hpp>
 #include <dynamo/gui/widgets/entity_widgets.hpp>
 #include <imnodes.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -6,44 +6,46 @@
 
 namespace dynamo_gui{
 
-    Inspector::Inspector(dynamo::Simulation &sim):sim{sim} {
-        agents_query = sim.world.query<const dynamo::tag::Agent, component::GUI>();
-        artefacts_query = sim.world.query<const dynamo::tag::Artefact, component::GUI>();
-        percepts_query = sim.world.query<const dynamo::tag::Percept, component::GUI>();
-        organisations_query = sim.world.query<const dynamo::tag::Organisation, component::GUI>();
-        actions_query = sim.world.query<const dynamo::tag::Action, component::GUI>();
+    Inspector::Inspector(flecs::world& world):
+        world{world}
+    {
+        agents_query = world.query<const dynamo::type::Agent, component::GUI>();
+        artefacts_query = world.query<const dynamo::type::Artefact, component::GUI>();
+        percepts_query = world.query<const dynamo::type::Percept, component::GUI>();
+        organisations_query = world.query<const dynamo::type::Organisation, component::GUI>();
+        actions_query = world.query<const dynamo::type::Action, component::GUI>();
 
-        sim.world.system<const dynamo::tag::Agent>("AddAgentToGui")
+        world.system<const dynamo::type::Agent>("AddAgentToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::tag::Agent& agent){
+                .each([](flecs::entity e, const dynamo::type::Agent& agent){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const dynamo::tag::Artefact>("AddArtefactToGui")
+        world.system<const dynamo::type::Artefact>("AddArtefactToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::tag::Artefact& artefact){
+                .each([](flecs::entity e, const dynamo::type::Artefact& artefact){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const dynamo::tag::Percept>("AddPerceptToGui")
+        world.system<const dynamo::type::Percept>("AddPerceptToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::tag::Percept& percept){
+                .each([](flecs::entity e, const dynamo::type::Percept& percept){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const dynamo::tag::Organisation>("AddOrganisationToGui")
+        world.system<const dynamo::type::Organisation>("AddOrganisationToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::tag::Organisation& organisation){
+                .each([](flecs::entity e, const dynamo::type::Organisation& organisation){
                     e.set<component::GUI>({});
                 });
 
-        sim.world.system<const dynamo::tag::Action>("AddActionToGui")
+        world.system<const dynamo::type::Action>("AddActionToGui")
                 .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::tag::Action& action){
+                .each([](flecs::entity e, const dynamo::type::Action& action){
                     e.set<component::GUI>({});
                 });
 
-        timescale = sim.world.get_time_scale();
+        timescale = world.get_time_scale();
     }
 
     void Inspector::show() {
@@ -54,7 +56,7 @@ namespace dynamo_gui{
         ImGui::SameLine();
         ImGui::SetNextItemWidth(50.f);
         if(ImGui::SliderFloat("TimeScale", &timescale, 0.1f, 5.f)){
-            sim.world.set_time_scale(timescale);
+            world.set_time_scale(timescale);
         }
         ImGui::SameLine();
         ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
@@ -64,14 +66,14 @@ namespace dynamo_gui{
         ImGui::Begin("Dynamo");
         ImGui::InputText("Event", &event);
         if(ImGui::Button("Add Event")){
-            sim.add_event<dynamo::event::MAJOR>(event.c_str());
+            //sim.add_event<float>(event.c_str());
         }
         ImGui::End();
 
         // ===== Update stats =====
         if(is_enabled){
-            scrolling_plot_percepts.add(sim.world.count<const dynamo::tag::Percept>());
-            scrolling_plot_delta_time.add(sim.world.delta_time());
+            scrolling_plot_percepts.add(world.count<const dynamo::type::Percept>());
+            scrolling_plot_delta_time.add(world.delta_time());
         }
 
         // ===== Display stats =====
@@ -102,13 +104,13 @@ namespace dynamo_gui{
                     ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    percepts_query.each([this](flecs::entity e, const dynamo::tag::Percept &agent, component::GUI& gui) {
+                    percepts_query.each([this](flecs::entity e, const dynamo::type::Percept &agent, component::GUI& gui) {
                         if (agents_list_filter.PassFilter(e.name())) {
                             ImGui::PushID(static_cast<int>(e.id()));
                             ImGui::TableNextRow();
 
                             ImGui::TableSetColumnIndex(0);
-                            e.each<dynamo::relation::from>([](flecs::entity obj) {
+                            e.each<dynamo::relation::source>([](flecs::entity obj) {
                                 ImGui::Text("%s", obj.name().c_str());
                             });
 
@@ -116,17 +118,17 @@ namespace dynamo_gui{
                             ImGui::Text("%s", e.name().c_str());
 
                             ImGui::TableSetColumnIndex(2);
-                            if(e.has<::dynamo::component::DecayingPercept>()){
-                                auto* decaying_percept = e.get_mut<::dynamo::component::DecayingPercept>();
+                            if(e.has<::dynamo::component::Decay>()){
+                                auto* decay = e.get_mut<::dynamo::component::Decay>();
                                 ImGui::SetNextItemWidth(100);
                                 float min = 0;
                                 float max = 2;
-                                float gradient = decaying_percept->ttl / (max * 3);
+                                float gradient = decay->ttl / (max * 3);
                                 ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(gradient, 0.5f, 0.5f));
                                 ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor::HSV(gradient, 0.6f, 0.5f));
                                 ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
                                 ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
-                                ImGui::SliderFloat("", &(*decaying_percept).ttl, min, max, "%.3f", ImGuiSliderFlags_ReadOnly);
+                                ImGui::SliderFloat("", &(*decay).ttl, min, max, "%.3f", ImGuiSliderFlags_ReadOnly);
                                 ImGui::PopStyleColor(4);
                             }
 
@@ -151,7 +153,7 @@ namespace dynamo_gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    agents_query.each([this](flecs::entity e, const dynamo::tag::Agent &agent, component::GUI& gui) {
+                    agents_query.each([this](flecs::entity e, const dynamo::type::Agent &agent, component::GUI& gui) {
                                 ImGui::PushID(static_cast<int>(e.id()));
                                 if (agents_list_filter.PassFilter(e.name())) {
                                     ImGui::TableNextRow();
@@ -185,7 +187,7 @@ namespace dynamo_gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    artefacts_query.each([this](flecs::entity e, const dynamo::tag::Artefact &artefact, component::GUI& gui) {
+                    artefacts_query.each([this](flecs::entity e, const dynamo::type::Artefact &artefact, component::GUI& gui) {
                         ImGui::PushID(static_cast<int>(e.id()));
                         if (artefacts_list_filter.PassFilter(e.name())) {
                             ImGui::TableNextRow();
@@ -220,7 +222,7 @@ namespace dynamo_gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    organisations_query.each([this](flecs::entity e, const dynamo::tag::Organisation &organisation, component::GUI& gui) {
+                    organisations_query.each([this](flecs::entity e, const dynamo::type::Organisation &organisation, component::GUI& gui) {
                         ImGui::PushID(static_cast<int>(e.id()));
                         if (organisations_list_filter.PassFilter(e.name())) {
                             ImGui::TableNextRow();
@@ -254,7 +256,7 @@ namespace dynamo_gui{
                     ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
-                    actions_query.each([this](flecs::entity e, const dynamo::tag::Action &action, component::GUI& gui){
+                    actions_query.each([this](flecs::entity e, const dynamo::type::Action &action, component::GUI& gui){
                         ImGui::PushID(static_cast<int>(e.id()));
                         if (actions_list_filter.PassFilter(e.name())) {
                             ImGui::TableNextRow();

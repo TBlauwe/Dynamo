@@ -6,52 +6,76 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace dynamo{
-    namespace tag{
-        struct Agent{};
-        struct Artefact{};
-        struct Action{};
-        struct Organisation{};
-    }
-
-    namespace component{
-        template<typename T>
-        struct Event{
-            std::string name;
-        };
-    }
-
-    namespace event{
-        struct MINOR{};
-        struct MAJOR{};
-        struct CUSTOM_A{};
-        struct CUSTOM_B{};
-        struct CUSTOM_C{};
-        struct CUSTOM_D{};
-    }
-
-    namespace relation{
-        struct is_in{};
-    }
 
     namespace singleton{
         struct Logger{
             std::shared_ptr<spdlog::logger> logger {spdlog::stdout_color_mt("Dynamo")};
+            Logger();
+        };
+    }
+    std::shared_ptr<spdlog::logger> logger(flecs::entity e);
+    std::shared_ptr<spdlog::logger> logger(flecs::id id);
+    std::shared_ptr<spdlog::logger> logger(flecs::world& world);
 
-            Logger(){
-                logger->set_level(spdlog::level::trace);
-                logger->set_pattern("[%10n] %^(%8l)%$ %v");
-                logger->info("Dynamo launching ...");
-            };
+    enum class Level{
+        Minor,
+        Medium,
+        Major
+    };
+
+    namespace type{
+        struct Action{};
+        struct Agent{};
+        struct Artefact{};
+        struct Event{
+            Level   level{Level::Minor};
+        };
+        struct Organisation{};
+        struct Percept{};
+    }
+
+    namespace tag{
+        struct CurrentFrame{};
+    }
+
+    namespace relation{
+        template<typename TType>
+        struct perceive{};
+        struct source{};
+        struct belongs{};
+    }
+    namespace component{
+        struct Decay{
+            float ttl;
+        };
+
+        struct Tick{
+            int32_t tick;
         };
     }
 
     namespace module{
         struct Core{
-            explicit Core(flecs::world& world){
-                world.module<Core>();
-                world.add<singleton::Logger>();
-            }
+            explicit Core(flecs::world& world);
+
+            // ===== PREFAB =====
+            flecs::entity Action;
+            flecs::entity Agent;
+            flecs::entity Artefact;
+            flecs::entity Event;
+            flecs::entity Organisation;
+            flecs::entity Percept;
         };
+    }
+
+    template<typename T>
+    T& module_ref(flecs::entity e) {
+        return *e.get_mut<T>();
+    }
+
+    template<typename T>
+    const T& module_cref(flecs::entity e) {
+        return *e.get<T>();
     }
 }
 

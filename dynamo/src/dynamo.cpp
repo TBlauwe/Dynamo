@@ -1,24 +1,8 @@
-//
-// Created by Tristan on 09/09/2021.
-//
 #include <dynamo/dynamo.hpp>
 
-dynamo::Simulation::Simulation() {
-    world.import<module::Perception>();
-}
+dynamo::Simulation::Simulation(flecs::world& world) {
+    world.module<Simulation>();
+    auto e = world.import<module::Core>();
+    logger(world)->info("Loading module : Simulation");
 
-flecs::entity dynamo::Simulation::add_agent(const char *name) const{
-    auto e = world.entity(name);
-    e.add<tag::Agent>();
-    return e;
-}
-
-flecs::entity dynamo::Simulation::add_artefact(const char * name) const{
-    auto e = world.entity(name);
-    e.add<tag::Artefact>();
-    return e;
-}
-
-void dynamo::Simulation::run() const{
-    world.progress();
 }

@@ -13,21 +13,25 @@
 #include <boost/circular_buffer.hpp>
 
 namespace ImGui::Addons{
+
     template<typename T>
     struct DescriptivePoint{
-        bool        show_annotation;
-        std::string annotation{};
         T           data;
+        std::string annotation {};
+        ImVec4      color {ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive)};
 
-        explicit DescriptivePoint(T data):
-                show_annotation     {false},
-                data                {data}
+        DescriptivePoint(T data):
+                data {data}
         {}
 
-        DescriptivePoint(bool show_annotation, std::string annotation, T data):
-                show_annotation{show_annotation},
-                annotation {std::move(annotation)},
-                data{data}
+        DescriptivePoint(T data, std::string annotation):
+                DescriptivePoint(data),
+                annotation {std::move(annotation)}
+        {}
+
+        DescriptivePoint(T data, std::string annotation, ImVec4 color):
+                DescriptivePoint(data, annotation),
+                color {color}
         {}
     };
 
@@ -35,8 +39,8 @@ namespace ImGui::Addons{
     ImPlotPoint descriptive_point_getter(void* data, int idx){
         const auto* array = (boost::circular_buffer<DescriptivePoint<T>>*)data;
         const DescriptivePoint<T> descriptive_point = array->at(idx);
-        if(descriptive_point.show_annotation)
-            ImPlot::AnnotateClamped(idx, descriptive_point.data, ImVec2(15, -15), ImGui::GetStyleColorVec4(ImGuiCol_HeaderActive), descriptive_point.annotation.c_str());
+        if(!descriptive_point.annotation.empty())
+            ImPlot::AnnotateClamped(idx, descriptive_point.data, ImVec2(15, -15), descriptive_point.color, descriptive_point.annotation.c_str());
         return {static_cast<double>(idx), static_cast<double>(descriptive_point.data)};
     }
 

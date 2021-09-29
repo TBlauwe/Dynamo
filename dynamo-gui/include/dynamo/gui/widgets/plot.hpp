@@ -5,28 +5,20 @@
 #include <flecs.h>
 
 namespace dynamo_gui::widget {
-    template<typename TData, typename TEvent>
+    template<typename TData, typename TEventType>
     class EventScrollingPlot : public ImGui::Addons::ScrollingPlot<TData> {
     private:
-        flecs::world &world;
+        flecs::query<const dynamo::type::Event, const TEventType> query ;
 
     public:
         EventScrollingPlot(flecs::world &world, const char *title, int capacity) :
-                ImGui::Addons::ScrollingPlot<TData>(title, capacity),
-                world{world}{
-            world.system<const dynamo::component::Event<TEvent>>()
-                    .kind(flecs::OnStore)
-                    .each([](flecs::entity e, const dynamo::component::Event<TEvent> event){
-                        e.remove<dynamo::component::Event<TEvent>>();
-                    });
-        }
+            ImGui::Addons::ScrollingPlot<TData>(title, capacity),
+            query{world.query<const dynamo::type::Event, const TEventType>()}
+            {}
 
         void add(TData data) {
-            this->push({world.has<dynamo::component::Event<TEvent>>(),
-                world.has<dynamo::component::Event<TEvent>>() ? world.get<dynamo::component::Event<TEvent>>()->name: "",
-                data});
+            this->push({data});
         };
-
     };
 }
 
