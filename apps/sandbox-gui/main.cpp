@@ -35,8 +35,7 @@ public:
                 }
             });
         }
-
-        world.entity("Radio").is_a(core->Artefact);
+        world.entity("Radio").is_a(core->Artefact).set<dynamo::component::Cooldown>({0.5f});
     }
 
 private:

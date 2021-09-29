@@ -2,6 +2,7 @@
 #define DYNAMO_DYNAMO_HPP
 
 #include <dynamo/modules/core.hpp>
+#include <dynamo/modules/basic_perception.hpp>
 
 namespace dynamo{
     struct Simulation{

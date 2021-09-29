@@ -2,7 +2,8 @@
 
 dynamo::Simulation::Simulation(flecs::world& world) {
     world.module<Simulation>();
-    auto e = world.import<module::Core>();
+    world.import<module::Core>();
+    world.import<module::GlobalPerception>();
     logger(world)->info("Loading module : Simulation");
 
 }
