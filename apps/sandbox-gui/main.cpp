@@ -8,7 +8,7 @@ class Sandbox : public app::Application{
 private:
     flecs::world world {};
     FlecsInspector flecs_inspector {world};
-    dynamo_gui::Inspector debug {world};
+    dynamo_gui::DynamoInspector debug {world};
 
     bool    is_enabled  {false};
     float   timescale   {1.0f};
