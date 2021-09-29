@@ -8,7 +8,7 @@ class Sandbox : public app::Application{
 private:
     flecs::world world {};
     FlecsInspector flecs_inspector {world};
-    dynamo_gui::DynamoInspector debug {world};
+    dynamo_gui::DynamoInspector dynamo_inspector {world};
 
     bool    is_enabled  {false};
     float   timescale   {1.0f};
@@ -67,7 +67,7 @@ private:
 
     void on_update() override{
         flecs_inspector.show();
-        debug.show();
+        dynamo_inspector.show();
         if(is_enabled){
             world.progress();
         }

@@ -1,7 +1,6 @@
 #include <dynamo/gui/dynamo_inspector.hpp>
 #include <dynamo/gui/widgets/entity_widgets.hpp>
 #include <imnodes.h>
-#include <misc/cpp/imgui_stdlib.h>
 #include <IconsFontAwesome5.h>
 
 namespace dynamo_gui{
@@ -49,16 +48,6 @@ namespace dynamo_gui{
                 .kind(flecs::PreStore)
                 .iter([this](flecs::iter& iter){
                     scrolling_plot_percepts.add(iter.count());
-                });
-
-        world.system<>("ShowPlot_PerceptsCount")
-                .kind(flecs::OnStore)
-                .iter([this](flecs::iter& iter){
-                    ImGui::Begin("Dynamo");
-                    if(ImGui::BeginTabBar("DynamoTabBar")) {
-                        ImGui::EndTabBar();
-                    }
-                    ImGui::End();
                 });
     }
 
