@@ -11,6 +11,7 @@ private:
     dynamo_gui::DynamoInspector dynamo_inspector {world};
 
     bool    is_enabled  {false};
+    bool    step_once   {false};
     float   timescale   {1.0f};
     float   min_timescale   {.05f};
     float   max_timescale   {10.0f};
@@ -25,17 +26,19 @@ public:
 
         int n = 10;
         for(int i = 0; i<n; i++){
-            auto e = world.entity(fmt::format("Agent {}", i).c_str()).is_a(core->Agent);
-
-            e.each([](flecs::id &id) {
-                if (id.is_pair()) {
-                    dynamo::logger(id)->info("( {} - {} )", id.relation().name().c_str(), id.object().name().c_str());
-                } else {
-                    dynamo::logger(id)->info("( {} )", id.object().name().c_str());
-                }
-            });
+            world.entity(fmt::format("Agent {}", i).c_str())
+                .is_a(core->Agent);
         }
-        world.entity("Radio").is_a(core->Artefact).set<dynamo::component::Cooldown>({0.5f});
+        world.entity("Radio")
+            .is_a(core->Artefact)
+            .set<dynamo::component::Cooldown>({0.5f});
+                //auto core = e.world().get<dynamo::module::Core>();
+
+                //e.world().entity()
+                //        .is_a(core->Percept)
+                //        .add<dynamo::senses::Hearing>()
+                //        .set<dynamo::component::Decay>({2.0f})
+                //        .add<dynamo::relation::source>(e);
     }
 
 private:
@@ -46,6 +49,13 @@ private:
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.3f, 0.7f, 0.7f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.3f, 0.8f, 0.8f));
         }else{
+            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.1f, 0.6f, 0.6f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.1f, 0.7f, 0.7f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.1f, 0.8f, 0.8f));
+            if(ImGui::Button("  " ICON_FA_STEP_FORWARD " Step  ")){
+                step_once = true;
+            }
+            ImGui::PopStyleColor(3);
             ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.f, 0.6f, 0.6f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.f, 0.7f, 0.7f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.f, 0.8f, 0.8f));
@@ -67,8 +77,9 @@ private:
     void on_update() override{
         flecs_inspector.show();
         dynamo_inspector.show();
-        if(is_enabled){
+        if(is_enabled || step_once){
             world.progress(ImGui::GetIO().DeltaTime);
+            step_once = false;
         }
     }
 };
