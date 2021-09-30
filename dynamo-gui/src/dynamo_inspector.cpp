@@ -1,4 +1,5 @@
 #include <dynamo/gui/dynamo_inspector.hpp>
+#include <dynamo/gui/widgets/component_widgets.hpp>
 #include <dynamo/gui/widgets/entity_widgets.hpp>
 #include <imnodes.h>
 #include <IconsFontAwesome5.h>
@@ -231,7 +232,7 @@ namespace dynamo_gui{
             if (ImGui::BeginTable("Percepts##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
                 ImGui::TableSetupColumn("From", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_WidthFixed);
+                ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
                 percepts_query.each([this](flecs::entity e, const dynamo::type::Percept &agent, component::GUI& gui) {
@@ -248,18 +249,8 @@ namespace dynamo_gui{
                         ImGui::Text("%s", e.name().c_str());
 
                         ImGui::TableSetColumnIndex(2);
-                        if(e.has<::dynamo::component::Decay>()){
-                            auto* decay = e.get_mut<::dynamo::component::Decay>();
-                            ImGui::SetNextItemWidth(100);
-                            float min = 0;
-                            float max = 2;
-                            float gradient = decay->ttl / (max * 3);
-                            ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(gradient, 0.5f, 0.5f));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor::HSV(gradient, 0.6f, 0.5f));
-                            ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
-                            ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
-                            ImGui::SliderFloat("", &(*decay).ttl, min, max, "%.3f", ImGuiSliderFlags_ReadOnly);
-                            ImGui::PopStyleColor(4);
+                        if(e.has<dynamo::component::Decay>()){
+                            widget::show<dynamo::component::Decay>(e);
                         }
 
                         ImGui::TableSetColumnIndex(3);

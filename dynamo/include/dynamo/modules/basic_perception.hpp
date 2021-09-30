@@ -17,10 +17,6 @@ namespace dynamo{
         struct Cooldown{
             float   value;
         };
-
-        struct CooldownInitialValue{
-            float   value;
-        };
     }
 
     namespace module{
@@ -33,14 +29,14 @@ namespace dynamo{
                 world.system<const component::Cooldown>("OnSet_Cooldown_RememberInitialValue")
                         .kind(flecs::OnSet)
                         .each([](flecs::entity e, const component::Cooldown& cooldown) {
-                            e.set<component::CooldownInitialValue>({cooldown.value});
+                            e.set<component::InitialValue<component::Cooldown>>({cooldown.value});
                         });
 
-                world.system<component::Cooldown, const component::CooldownInitialValue>("Cooldown_Perception")
+                world.system<component::Cooldown, const component::InitialValue<component::Cooldown>>("Cooldown_Perception")
                         .kind(flecs::PreFrame)
-                        .each([&core](flecs::entity e, component::Cooldown& cooldown, const component::CooldownInitialValue& cooldown_initial_value) {
+                        .each([&core](flecs::entity e, component::Cooldown& cooldown, const component::InitialValue<component::Cooldown>& initial_value) {
                             if(cooldown.value <= 0.f){
-                                cooldown.value = cooldown_initial_value.value;
+                                cooldown.value = initial_value.memory.value;
                                 e.world().entity()
                                         .is_a(core.Percept)
                                         .set<component::Decay>({2.0f})

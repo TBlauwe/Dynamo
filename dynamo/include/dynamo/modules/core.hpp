@@ -45,6 +45,11 @@ namespace dynamo{
         struct belongs{};
     }
     namespace component{
+        template<typename T>
+        struct InitialValue{
+            T   memory;
+        };
+
         struct Decay{
             float ttl;
         };

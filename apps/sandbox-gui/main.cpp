@@ -68,7 +68,7 @@ private:
         flecs_inspector.show();
         dynamo_inspector.show();
         if(is_enabled){
-            world.progress();
+            world.progress(ImGui::GetIO().DeltaTime);
         }
     }
 };

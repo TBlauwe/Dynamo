@@ -4,19 +4,17 @@
 #include <IconsFontAwesome5.h>
 
 
-
-
 namespace dynamo_gui::widget {
-    void inspect(const flecs::entity& entity){
-        if(ImGui::CollapsingHeader("Inspector")){
+    void inspect(flecs::entity& entity){
+        if(ImGui::CollapsingHeader(fmt::format("Inspector : {}##{}", entity.name(), entity.id()).c_str())){
             ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10.f, 10.f));
-            if (ImGui::BeginTable("Table##entity", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
+            if (ImGui::BeginTable("Table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
                 ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableSetupColumn("Role", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableHeadersRow();
-                entity.each([](flecs::id &id) {
+                entity.each([&entity](flecs::id &id) {
                     ID_TYPE id_type = type_of(id);
                     if(id_type != ID_TYPE::SKIP){
                         ImGui::TableNextRow();
@@ -53,7 +51,7 @@ namespace dynamo_gui::widget {
                         ImGui::TableSetColumnIndex(2);
                         ImGui::Text("%s", id.role_str().c_str());
                         ImGui::TableSetColumnIndex(3);
-                        show_component_widget(id_type, id);
+                        show_component_widget(entity, id_type, id);
                     }
                 });
                 ImGui::PopStyleVar();

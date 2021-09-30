@@ -46,6 +46,12 @@ namespace dynamo{
                     e.add<tag::CurrentFrame>();
                 });
 
+        world.system<const component::Decay>("OnSet_Decay_RememberInitialValue")
+                .kind(flecs::OnSet)
+                .each([](flecs::entity e, const component::Decay& decay) {
+                    e.set<component::InitialValue<component::Decay>>({decay.ttl});
+                });
+
         Action = world.prefab("action_prefab")
                 .add<type::Action>()
                 .add_owned<type::Action>()
