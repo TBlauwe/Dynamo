@@ -1,6 +1,7 @@
 #include <dynamo/gui/widgets/component_widgets.hpp>
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <dynamo/modules/basic_perception.hpp>
 
 namespace dynamo_gui::widget {
 
@@ -16,6 +17,21 @@ namespace dynamo_gui::widget {
         ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
         ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
         ImGui::SliderFloat("", &(*decay).ttl, min, max, "%.3f");
+        ImGui::PopStyleColor(4);
+    }
+
+    template<>
+    void show<dynamo::component::Cooldown>(flecs::entity& e){
+        auto* cooldown = e.get_mut<dynamo::component::Cooldown>();
+        auto* initial_cooldown = e.get<dynamo::component::InitialValue<dynamo::component::Cooldown>>();
+        float min = 0;
+        float max = initial_cooldown->memory.value;
+        float gradient = cooldown->value / (max * 3);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(gradient, 0.5f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor::HSV(gradient, 0.6f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
+        ImGui::SliderFloat("", &(*cooldown).value, min, max, "%.3f");
         ImGui::PopStyleColor(4);
     }
 
@@ -44,6 +60,8 @@ namespace dynamo_gui::widget {
             case ID_TYPE::COMPONENT:
                 if(e.name()=="Decay") {
                     show<dynamo::component::Decay>(entity);
+                }else if(e.name()=="Cooldown"){
+                    show<dynamo::component::Cooldown>(entity);
                 }else{
                     inspect(e);
                 }
