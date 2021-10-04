@@ -11,12 +11,15 @@ void FlecsInspector::update() {
     scrolling_plot_fps.push({ImGui::GetIO().Framerate});
     table_count = 0;
     entities_count = 0;
+    float delta = 0;
     for (auto it : world) {
+        delta += it.delta_system_time();
         //flecs::type table_type = it.table_type();
         table_count += 1;
         entities_count += it.count();
         //std::cout << it.type().str() << std::endl;
     }
+    scrolling_plot_system_delta_time.push({delta});
 }
 
 void FlecsInspector::show() {
@@ -39,6 +42,7 @@ void FlecsInspector::show() {
             )) {
                 scrolling_plot_delta_time.plot();
                 scrolling_plot_world_delta_time.plot();
+                scrolling_plot_system_delta_time.plot();
                 ImPlot::SetPlotYAxis(ImPlotYAxis_2);
                 scrolling_plot_fps.plot();
                 ImPlot::EndPlot();

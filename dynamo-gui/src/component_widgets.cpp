@@ -3,6 +3,7 @@
 #include <imgui-addons/imgui-addons.hpp>
 #include <dynamo/modules/basic_perception.hpp>
 #include <dynamo/gui/core.hpp>
+#include <limits>
 
 namespace dynamo_gui::widget {
 
@@ -22,7 +23,14 @@ namespace dynamo_gui::widget {
 
     template<>
     void show<dynamo::component::InitialValue<dynamo::component::Decay>>(flecs::entity& e){
-        show<dynamo::component::Decay>(e);
+        auto* initial_cooldown = e.get_mut<dynamo::component::InitialValue<dynamo::component::Decay>>();
+        ImGui::SliderFloat("Initial TTL", &initial_cooldown->memory.ttl, 0.f, 3600.f);
+    }
+
+    template<>
+    void show<dynamo::component::InitialValue<dynamo::component::Cooldown>>(flecs::entity& e){
+        auto* initial_cooldown = e.get_mut<dynamo::component::InitialValue<dynamo::component::Cooldown>>();
+        ImGui::SliderFloat("Refresh rate", &initial_cooldown->memory.value, 0.f, 3600.f);
     }
 
     template<>
@@ -66,6 +74,10 @@ namespace dynamo_gui::widget {
                     show<dynamo::component::Decay>(entity);
                 }else if(id == world.id<dynamo::component::Cooldown>()) {
                     show<dynamo::component::Cooldown>(entity);
+                }else if(id == world.id<dynamo::component::InitialValue<dynamo::component::Cooldown>>()) {
+                    show<dynamo::component::InitialValue<dynamo::component::Cooldown>>(entity);
+                }else if(id == world.id<dynamo::component::InitialValue<dynamo::component::Decay>>()) {
+                    show<dynamo::component::InitialValue<dynamo::component::Decay>>(entity);
                 }else if(id == world.id<dynamo_gui::component::GUI>()) {
                     show<dynamo_gui::component::GUI>(entity);
                 }else{

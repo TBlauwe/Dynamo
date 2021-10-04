@@ -37,8 +37,6 @@ namespace dynamo{
                         .each([&core](flecs::entity e, component::Cooldown& cooldown, const component::InitialValue<component::Cooldown>& initial_value) {
                             if(cooldown.value <= 0.f){
                                 cooldown.value = initial_value.memory.value;
-                                //auto core = e.world().get<dynamo::module::Core>();
-
                                 e.world().entity()
                                         .is_a(core.Percept)
                                         .add<dynamo::senses::Hearing>()
