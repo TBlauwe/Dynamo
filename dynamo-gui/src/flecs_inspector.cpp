@@ -1,6 +1,7 @@
 #include <dynamo/gui/flecs_inspector.hpp>
 #include <imgui.h>
 #include <spdlog/fmt/bundled/format.h>
+#include <string>
 
 FlecsInspector::FlecsInspector(flecs::world &world) : world{world} {}
 
@@ -164,25 +165,39 @@ void FlecsInspector::show_components_panel() {
 void FlecsInspector::show_systems_panel() {
     systems_list_filter.Draw();
     ImGui::Spacing();
-    if (ImGui::BeginTable("Systems##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
+    if (ImGui::BeginTable("Systems##table", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Alignment", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Kind", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
-        systems_query.each([this](flecs::entity e) {
-            ImGui::PushID(static_cast<int>(e.id()));
-            {
-                if (systems_list_filter.PassFilter(fmt::format("{}", e.name()).c_str())) {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("%llu", e.id());
+        systems_query.iter([this](flecs::iter& it) {
+            for(auto i : it){
+                auto e = it.entity(i);
+                ImGui::PushID(static_cast<int>(e.id()));
+                {
+                    bool is_inactive = e.has(flecs::Inactive) || e.has(flecs::Disabled);
+                    if (systems_list_filter.PassFilter(fmt::format("{}", e.name()).c_str())) {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(is_inactive ? 0.0f : 0.35f, 0.6f, 0.5f, 0.65f))));
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text("%llu", e.id());
 
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::Text("%s", e.name().c_str());
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%s", e.name().c_str());
+
+                        ImGui::TableSetColumnIndex(2);
+                        e.each([](flecs::id id){
+                            std::string name {id.str()};
+                            std::string filter {"flecs.pipeline"};
+                            std::string filter2 {"On"};
+                            if(name.rfind(filter, 0) == 0 || name.rfind(filter2, 0) == 0){
+                                ImGui::Text("%s", name.c_str());
+                            }
+                        });
+                    }
                 }
+                ImGui::PopID();
             }
-            ImGui::PopID();
         });
         ImGui::EndTable();
     }
