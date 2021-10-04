@@ -31,13 +31,19 @@ namespace dynamo{
 
         info_module_header(logger(world), "Core");
 
+
+
         // ========== Log ==========
 
-        world.system<EcsComponent>("OnAdd_Component_Log")
+        auto test = world.system<EcsComponent>("OnAdd_Component_Log")
                 .kind(flecs::OnAdd)
                 .each([](flecs::entity e, EcsComponent& component) {
                     logger(e)->info("Registering {:>9} : {}", component.size ? "component" : "tag", e.name());
                 });
+
+        dynamo::logger(world)->info("System : {}", test.str());
+        dynamo::logger(world)->info("System : {}", test.role_str());
+        dynamo::logger(world)->info("System : {}", test.type().str());
 
         // ========== Trigger ==========
 
@@ -76,31 +82,31 @@ namespace dynamo{
         Action = world.prefab("action_prefab")
                 .add<type::Action>()
                 .add_owned<type::Action>()
-                        ;
+                ;
 
         Agent = world.prefab("agent_prefab")
                 .add<type::Agent>()
                 .add_owned<type::Agent>()
-                        ;
+                ;
 
         Artefact = world.prefab("artefact_prefab")
                 .add<type::Artefact>()
                 .add_owned<type::Artefact>()
-                        ;
+                ;
 
         Event = world.prefab("event_prefab")
                 .add<type::Event>()
                 .add_owned<type::Event>()
-                        ;
+                ;
 
         Organisation = world.prefab("organisation_prefab")
                 .add<type::Organisation>()
                 .add_owned<type::Organisation>()
-                        ;
+                ;
 
         Percept = world.prefab("percept_prefab")
                 .add<type::Percept>()
                 .add_owned<type::Percept>()
-                        ;
+                ;
     }
 }

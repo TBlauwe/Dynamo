@@ -3,7 +3,6 @@
 #include <imgui-addons/imgui-addons.hpp>
 #include <dynamo/modules/basic_perception.hpp>
 #include <dynamo/gui/core.hpp>
-#include <limits>
 
 namespace dynamo_gui::widget {
 
