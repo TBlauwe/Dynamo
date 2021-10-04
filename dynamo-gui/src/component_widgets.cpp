@@ -94,8 +94,10 @@ namespace dynamo_gui::widget {
                 break;
             case ID_TYPE::TAG:
                 ImGui::Text("Tag have no associated data");
+                break;
             case ID_TYPE::OWNED:
                 ImGui::Text("See child instance");
+                break;
             default:
                 break;
         }
