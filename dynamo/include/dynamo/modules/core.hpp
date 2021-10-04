@@ -16,6 +16,7 @@ namespace dynamo{
     std::shared_ptr<spdlog::logger> logger(flecs::entity e);
     std::shared_ptr<spdlog::logger> logger(flecs::id id);
     std::shared_ptr<spdlog::logger> logger(flecs::world& world);
+    void info_module_header(const std::shared_ptr<spdlog::logger>& logger, const char * name);
 
     enum class Level{
         Minor,
@@ -47,7 +48,7 @@ namespace dynamo{
     namespace component{
         template<typename T>
         struct InitialValue{
-            T   memory;
+            T memory;
         };
 
         struct Decay{
@@ -73,6 +74,15 @@ namespace dynamo{
         };
     }
 
+    template<typename TTag, typename TTerm>
+    void add_tag_to(flecs::world& world, const char * tag_name, const char * term_name){
+        world.system<const TTerm>(fmt::format("OnAdd_{}_Add{}", term_name, tag_name).c_str())
+                .kind(flecs::OnAdd)
+                .each([](flecs::entity e, const TTerm& term){
+                    e.set<TTag>({});
+                });
+    }
+
     template<typename T>
     T& module_ref(flecs::entity e) {
         return *e.get_mut<T>();
@@ -81,6 +91,7 @@ namespace dynamo{
     template<typename T>
     const T& module_cref(flecs::entity e) {
         return *e.get<T>();
+
     }
 }
 

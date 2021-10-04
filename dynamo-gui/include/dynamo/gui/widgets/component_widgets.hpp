@@ -10,11 +10,13 @@ namespace dynamo_gui::widget {
     void show(flecs::entity& e);
 
 
-enum class ID_TYPE{
+    enum class ID_TYPE{
+        TAG,
         COMPONENT,
         RELATION,
         IS_A,
         CHILD_OF,
+        OWNED,
         SKIP
     };
 

@@ -19,37 +19,52 @@ namespace dynamo{
         return world.get<singleton::Logger>()->logger;
     }
 
+    void info_module_header(const std::shared_ptr<spdlog::logger>& logger, const char *name) {
+        logger->info("|{0:-^{2}}|", "", fmt::format("Module : {}", name), 75);
+        logger->info("|{1: ^{2}}|", "", fmt::format("Module : {}", name), 75);
+        logger->info("|{0:-^{2}}|", "", fmt::format("Module : {}", name), 75);
+    }
+
     module::Core::Core(flecs::world &world) {
         world.module<Core>();
         world.add<singleton::Logger>();
-        logger(world)->info("Loading module : Core");
 
-        world.system<component::Decay>("Decay")
-                .kind(flecs::PreFrame)
-                .each([](flecs::entity e, component::Decay& decay) {
-                    if(decay.ttl <= 0.f)
-                        e.destruct();
-                    else
-                        decay.ttl -= e.delta_time();
+        info_module_header(logger(world), "Core");
+
+        // ========== Log ==========
+
+        world.system<EcsComponent>("OnAdd_Component_Log")
+                .kind(flecs::OnAdd)
+                .each([](flecs::entity e, EcsComponent& component) {
+                    logger(e)->info("Registering {:>9} : {}", component.size ? "component" : "tag", e.name());
                 });
 
-        world.system<tag::CurrentFrame>("RemoveCurrentFrameTag")
-                .kind(flecs::PostFrame)
-                .each([](flecs::entity e, tag::CurrentFrame) {
-                    e.remove<tag::CurrentFrame>();
-                });
+        // ========== Trigger ==========
 
-        world.system<const type::Event>("SetupEventOnAdd")
+        world.system<const type::Event>("OnAdd_Event_AddCurrentFrameTag")
                 .kind(flecs::OnAdd)
                 .each([](flecs::entity e, const type::Event event) {
                     e.set<component::Tick>({e.world().get_tick()});
                     e.add<tag::CurrentFrame>();
                 });
 
-        world.system<const component::Decay>("OnSet_Decay_RememberInitialValue")
-                .kind(flecs::OnSet)
-                .each([](flecs::entity e, const component::Decay& decay) {
-                    e.set<component::InitialValue<component::Decay>>({decay.ttl});
+        // ========== Pipeline ==========
+
+        world.system<component::Decay>("Decay")
+                .kind(flecs::PreFrame)
+                .each([](flecs::entity e, component::Decay& decay) {
+                    if(decay.ttl <= 0.f){
+                        e.destruct();
+                    }
+                    else{
+                        decay.ttl -= e.delta_time();
+                    }
+                });
+
+        world.system<tag::CurrentFrame>("RemoveCurrentFrameTag")
+                .kind(flecs::PostFrame)
+                .each([](flecs::entity e, tag::CurrentFrame) {
+                    e.remove<tag::CurrentFrame>();
                 });
 
         Action = world.prefab("action_prefab")

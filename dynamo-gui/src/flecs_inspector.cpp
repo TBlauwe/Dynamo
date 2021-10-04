@@ -1,11 +1,13 @@
 #include <dynamo/gui/flecs_inspector.hpp>
 #include <imgui.h>
+#include <iostream>
 
 FlecsInspector::FlecsInspector(flecs::world &world) : world{world} {}
 
 void FlecsInspector::update() {
     scrolling_plot_delta_time.push({ImGui::GetIO().DeltaTime});
     scrolling_plot_world_delta_time.push({world.delta_time()});
+    //scrolling_plot_system_delta_time.push({world.de()});
     scrolling_plot_fps.push({ImGui::GetIO().Framerate});
     table_count = 0;
     entities_count = 0;
@@ -13,6 +15,7 @@ void FlecsInspector::update() {
         //flecs::type table_type = it.table_type();
         table_count += 1;
         entities_count += it.count();
+        //std::cout << it.type().str() << std::endl;
     }
 }
 

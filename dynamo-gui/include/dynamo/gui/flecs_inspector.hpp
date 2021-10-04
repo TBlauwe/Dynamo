@@ -11,6 +11,7 @@ private:
     ImGui::Addons::ScrollingPlot<float> scrolling_plot_fps {"FPS", 1000};
     ImGui::Addons::ScrollingPlot<float> scrolling_plot_delta_time {"Delta time (renderer)", 1000};
     ImGui::Addons::ScrollingPlot<float> scrolling_plot_world_delta_time {"Delta time (world)", 1000};
+    ImGui::Addons::ScrollingPlot<float> scrolling_plot_system_delta_time {"Delta time (system)", 1000};
 
     size_t table_count {0};
     size_t entities_count {0};

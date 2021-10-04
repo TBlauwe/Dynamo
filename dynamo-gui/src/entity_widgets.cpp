@@ -19,31 +19,45 @@ namespace dynamo_gui::widget {
                     if(id_type != ID_TYPE::SKIP){
                         ImGui::TableNextRow();
                         switch(id_type){
+                            case ID_TYPE::TAG:
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.15f, 0.6f, 0.6f))));
+                                ImGui::Text("TAG");
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::Text("%s", id.object().name().c_str());
+                                break;
                             case ID_TYPE::COMPONENT:
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.5f, 0.6f, 0.6f))));
-                                ImGui::Text("COMPONENT/TAG");
+                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.3f, 0.6f, 0.6f))));
+                                ImGui::Text("COMPONENT");
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::Text("%s", id.object().name().c_str());
                                 break;
                             case ID_TYPE::RELATION:
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.55f, 0.6f, 0.6f))));
+                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.45f, 0.6f, 0.6f))));
                                 ImGui::Text("RELATION");
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::Text("%s " ICON_FA_LONG_ARROW_ALT_RIGHT " %s ", id.relation().name().c_str(), id.object().name().c_str());
                                 break;
                             case ID_TYPE::IS_A:
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.60f, 0.6f, 0.6f))));
+                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.6f, 0.6f, 0.6f))));
                                 ImGui::Text("IS A");
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::Text("%s ", id.object().name().c_str());
                                 break;
                             case ID_TYPE::CHILD_OF:
                                 ImGui::TableSetColumnIndex(0);
-                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.65f, 0.6f, 0.6f))));
+                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.75f, 0.6f, 0.6f))));
                                 ImGui::Text("CHILD OF");
+                                ImGui::TableSetColumnIndex(1);
+                                ImGui::Text("%s ", id.object().name().c_str());
+                                break;
+                            case ID_TYPE::OWNED:
+                                ImGui::TableSetColumnIndex(0);
+                                ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.90f, 0.6f, 0.6f))));
+                                ImGui::Text("PREFAB");
                                 ImGui::TableSetColumnIndex(1);
                                 ImGui::Text("%s ", id.object().name().c_str());
                                 break;

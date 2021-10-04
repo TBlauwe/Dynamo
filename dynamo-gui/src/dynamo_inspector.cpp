@@ -15,35 +15,11 @@ namespace dynamo_gui{
         organisations_query = world.query<const dynamo::type::Organisation, component::GUI>();
         actions_query = world.query<const dynamo::type::Action, component::GUI>();
 
-        world.system<const dynamo::type::Agent>("AddAgentToGui")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::type::Agent& agent){
-                    e.set<component::GUI>({});
-                });
-
-        world.system<const dynamo::type::Artefact>("AddArtefactToGui")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::type::Artefact& artefact){
-                    e.set<component::GUI>({});
-                });
-
-        world.system<const dynamo::type::Percept>("AddPerceptToGui")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::type::Percept& percept){
-                    e.set<component::GUI>({});
-                });
-
-        world.system<const dynamo::type::Organisation>("AddOrganisationToGui")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::type::Organisation& organisation){
-                    e.set<component::GUI>({});
-                });
-
-        world.system<const dynamo::type::Action>("AddActionToGui")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const dynamo::type::Action& action){
-                    e.set<component::GUI>({});
-                });
+        dynamo::add_tag_to<component::GUI, dynamo::type::Action>(world, "GUI", "Action");
+        dynamo::add_tag_to<component::GUI, dynamo::type::Agent>(world, "GUI", "Agent");
+        dynamo::add_tag_to<component::GUI, dynamo::type::Artefact>(world, "GUI", "Artefact");
+        dynamo::add_tag_to<component::GUI, dynamo::type::Organisation>(world, "GUI", "Organisation");
+        dynamo::add_tag_to<component::GUI, dynamo::type::Percept>(world, "GUI", "Percept");
 
         world.system<const dynamo::type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)
