@@ -14,6 +14,11 @@
 
 namespace ImGui::Addons{
 
+    // ImPLOT
+    void SliderFloatColor(float& value, float min = 0.0f, float max = 1.0f);
+
+    // ImPLOT
+
     template<typename T>
     struct DescriptivePoint{
         T           data;

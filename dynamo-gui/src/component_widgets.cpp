@@ -1,5 +1,6 @@
 #include <dynamo/gui/widgets/component_widgets.hpp>
 #include <imgui.h>
+#include <imgui-addons/imgui-addons.hpp>
 #include <dynamo/modules/basic_perception.hpp>
 #include <dynamo/gui/core.hpp>
 
@@ -9,30 +10,14 @@ namespace dynamo_gui::widget {
     void show<dynamo::component::Decay>(flecs::entity& e){
         auto* decay = e.get_mut<dynamo::component::Decay>();
         auto* initial_decay = e.get<dynamo::component::InitialValue<dynamo::component::Decay>>();
-        float min = 0;
-        float max = initial_decay->memory.ttl;
-        float gradient = decay->ttl / (max * 3);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(gradient, 0.5f, 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor::HSV(gradient, 0.6f, 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
-        ImGui::SliderFloat("", &(*decay).ttl, min, max, "%.3f");
-        ImGui::PopStyleColor(4);
+        ImGui::Addons::SliderFloatColor(decay->ttl, 0.f, initial_decay->memory.ttl);
     }
 
     template<>
     void show<dynamo::component::Cooldown>(flecs::entity& e){
         auto* cooldown = e.get_mut<dynamo::component::Cooldown>();
         auto* initial_cooldown = e.get<dynamo::component::InitialValue<dynamo::component::Cooldown>>();
-        float min = 0;
-        float max = initial_cooldown->memory.value;
-        float gradient = cooldown->value / (max * 3);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(gradient, 0.5f, 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor::HSV(gradient, 0.6f, 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
-        ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
-        ImGui::SliderFloat("", &(*cooldown).value, min, max, "%.3f");
-        ImGui::PopStyleColor(4);
+        ImGui::Addons::SliderFloatColor(cooldown->value, 0.f, initial_cooldown->memory.value);
     }
 
     template<>

@@ -13,4 +13,14 @@ namespace ImGui::Addons{
             ImGui::EndTooltip();
         }
     }
+
+    void SliderFloatColor(float& value, float min, float max){
+        float gradient = value / (max * 3);
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor::HSV(gradient, 0.5f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor::HSV(gradient, 0.6f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor::HSV(gradient, 0.7f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::HSV(gradient, 0.9f, 0.9f));
+        ImGui::SliderFloat("", &value, min, max, "%.3f");
+        ImGui::PopStyleColor(4);
+    }
 }
