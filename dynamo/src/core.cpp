@@ -62,7 +62,7 @@ namespace dynamo{
 
         // ========== Pipeline ==========
 
-        world.system<component::Decay>("Decay")
+        auto decay_system = world.system<component::Decay>("Decay")
                 .kind(flecs::PreFrame)
                 .each([](flecs::entity e, component::Decay& decay) {
                     if(decay.ttl <= 0.f){
@@ -72,6 +72,13 @@ namespace dynamo{
                         decay.ttl -= e.delta_time();
                     }
                 });
+
+        auto feature_decay = world.type("Feature_Decay")
+                .add(decay_system);
+
+        feature_decay.entity().each([](flecs::id id){
+            dynamo::logger(id)->info("Feature : {}", id.str());
+        });
 
         world.system<tag::CurrentFrame>("RemoveCurrentFrameTag")
                 .kind(flecs::PostFrame)

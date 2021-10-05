@@ -3,6 +3,9 @@
 
 #include <flecs.h>
 #include <imgui-addons/imgui-addons.hpp>
+#include <set>
+
+struct DisabledFeature{};
 
 class FlecsInspector {
 private:
@@ -16,20 +19,16 @@ private:
     size_t entities_count {0};
     ImGui::Addons::ScrollingPlot<int> scrolling_plot_entities {"Entities", 1000};
 
-    ImGuiTextFilter entities_list_filter;
+    ImGuiTextFilter type_list_filter;
     ImGuiTextFilter components_list_filter;
     ImGuiTextFilter systems_list_filter;
-    ImGuiTextFilter pipeline_list_filter;
 
     flecs::query<>  systems_query {world.query_builder<>()
             .term(flecs::System)
             .build()
     };
 
-    flecs::query<>  pipeline_query {world.query_builder<>()
-        .term(flecs::Pipeline)
-        .build()
-    };
+    std::set<uint64_t> disabled_features {};
 
 public:
     explicit FlecsInspector(flecs::world& world);

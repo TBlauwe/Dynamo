@@ -100,18 +100,20 @@ void FlecsInspector::show_overall_panel() {
 }
 
 void FlecsInspector::show_entities_panel() {
-    entities_list_filter.Draw();
+    type_list_filter.Draw();
     ImGui::Spacing();
     if (ImGui::BeginTable("Entities##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
-        ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn("Description", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
-        world.each<>([this](flecs::entity e) {
+        world.each<EcsType>([this](flecs::entity e, EcsType& type) {
             ImGui::PushID(static_cast<int>(e.id()));
-            if (entities_list_filter.PassFilter(fmt::format("{}", e.name()).c_str())) {
+            if (type_list_filter.PassFilter(fmt::format("{}", e.name()).c_str())) {
                 ImGui::TableNextRow();
+                bool is_disabled = disabled_features.contains(e.id());
+                ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(is_disabled ? 0.0f : 0.35f, 0.6f, 0.5f, 0.65f))));
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("%llu", e.id());
 
@@ -119,9 +121,27 @@ void FlecsInspector::show_entities_panel() {
                 ImGui::Text("%s", e.name().c_str());
 
                 ImGui::TableSetColumnIndex(2);
-                ImGui::Text("%s", "...");
+                ImGui::Text("%s", e.str().c_str());
 
                 ImGui::TableSetColumnIndex(3);
+                if(is_disabled){
+                    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 0.6f, 0.6f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 0.7f, 0.7f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 0.8f, 0.8f));
+                    if(ImGui::Button("Toggle")){
+                        e.enable();
+                        disabled_features.erase(e.id());
+                    }
+                }else{
+                    ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.3f, 0.6f, 0.6f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.3f, 0.7f, 0.7f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.3f, 0.8f, 0.8f));
+                    if(ImGui::Button("Toggle")){
+                        e.disable();
+                        disabled_features.emplace(e.id());
+                    }
+                }
+                ImGui::PopStyleColor(3);
             }
             ImGui::PopID();
         });
