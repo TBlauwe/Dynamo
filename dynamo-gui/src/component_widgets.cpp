@@ -1,7 +1,6 @@
 #include <dynamo/gui/widgets/component_widgets.hpp>
 #include <imgui.h>
 #include <imgui-addons/imgui-addons.hpp>
-#include <dynamo/modules/basic_perception.hpp>
 #include <dynamo/gui/core.hpp>
 
 namespace dynamo_gui::widget {
@@ -9,20 +8,13 @@ namespace dynamo_gui::widget {
     template<>
     void show<dynamo::component::Decay>(flecs::entity& e){
         auto* decay = e.get_mut<dynamo::component::Decay>();
-        auto* initial_decay = e.get<dynamo::component::InitialValue<dynamo::component::Decay>>();
-        ImGui::Addons::SliderFloatColor(decay->ttl, 0.f, initial_decay->memory.ttl);
+        ImGui::Addons::InputFloatColor(decay->ttl);
     }
 
     template<>
     void show<dynamo::component::Cooldown>(flecs::entity& e){
         auto* cooldown = e.get_mut<dynamo::component::Cooldown>();
-        ImGui::Addons::SliderFloatColor(cooldown->remaining_time, 0.f, 6.0f);
-    }
-
-    template<>
-    void show<dynamo::component::InitialValue<dynamo::component::Decay>>(flecs::entity& e){
-        auto* initial_cooldown = e.get_mut<dynamo::component::InitialValue<dynamo::component::Decay>>();
-        ImGui::InputFloat("Initial TTL", &initial_cooldown->memory.ttl, 0.5f, 1.f);
+        ImGui::Addons::InputFloatColor(cooldown->remaining_time);
     }
 
     template<>
@@ -64,10 +56,6 @@ namespace dynamo_gui::widget {
             case ID_TYPE::COMPONENT:
                 if(id == world.id<dynamo::component::Decay>()) {
                     show<dynamo::component::Decay>(entity);
-                }else if(id == world.id<dynamo::component::Cooldown>()) {
-                    show<dynamo::component::Cooldown>(entity);
-                }else if(id == world.id<dynamo::component::InitialValue<dynamo::component::Decay>>()) {
-                    show<dynamo::component::InitialValue<dynamo::component::Decay>>(entity);
                 }else if(id == world.id<dynamo_gui::component::GUI>()) {
                     show<dynamo_gui::component::GUI>(entity);
                 }else{

@@ -14,8 +14,7 @@
 
 namespace ImGui::Addons{
 
-    // ImPLOT
-    void SliderFloatColor(float& value, float min = 0.0f, float max = 1.0f);
+    void InputFloatColor(float& value);
 
     // ImPLOT
 

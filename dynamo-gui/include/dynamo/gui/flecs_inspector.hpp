@@ -36,7 +36,7 @@ public:
 private:
     void update();
     void show_overall_panel();
-    void show_entities_panel();
+    void show_features_panel();
     void show_components_panel();
     void show_systems_panel();
 

@@ -29,8 +29,8 @@ void FlecsInspector::show() {
             show_overall_panel();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Entities")) {
-            show_entities_panel();
+        if (ImGui::BeginTabItem("Features")) {
+            show_features_panel();
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Components")) {
@@ -99,10 +99,10 @@ void FlecsInspector::show_overall_panel() {
     }
 }
 
-void FlecsInspector::show_entities_panel() {
+void FlecsInspector::show_features_panel() {
     type_list_filter.Draw();
     ImGui::Spacing();
-    if (ImGui::BeginTable("Entities##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
+    if (ImGui::BeginTable("Features##table", 4, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders)) {
         ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("Description", ImGuiTableColumnFlags_WidthStretch);
