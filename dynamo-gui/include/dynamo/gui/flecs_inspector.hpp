@@ -5,8 +5,6 @@
 #include <imgui-addons/imgui-addons.hpp>
 #include <set>
 
-struct DisabledFeature{};
-
 class FlecsInspector {
 private:
     flecs::world& world;

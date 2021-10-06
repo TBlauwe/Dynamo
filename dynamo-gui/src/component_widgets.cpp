@@ -16,20 +16,13 @@ namespace dynamo_gui::widget {
     template<>
     void show<dynamo::component::Cooldown>(flecs::entity& e){
         auto* cooldown = e.get_mut<dynamo::component::Cooldown>();
-        auto* initial_cooldown = e.get<dynamo::component::InitialValue<dynamo::component::Cooldown>>();
-        ImGui::Addons::SliderFloatColor(cooldown->value, 0.f, initial_cooldown->memory.value);
+        ImGui::Addons::SliderFloatColor(cooldown->remaining_time, 0.f, 6.0f);
     }
 
     template<>
     void show<dynamo::component::InitialValue<dynamo::component::Decay>>(flecs::entity& e){
         auto* initial_cooldown = e.get_mut<dynamo::component::InitialValue<dynamo::component::Decay>>();
-        ImGui::SliderFloat("Initial TTL", &initial_cooldown->memory.ttl, 0.f, 3600.f);
-    }
-
-    template<>
-    void show<dynamo::component::InitialValue<dynamo::component::Cooldown>>(flecs::entity& e){
-        auto* initial_cooldown = e.get_mut<dynamo::component::InitialValue<dynamo::component::Cooldown>>();
-        ImGui::SliderFloat("Refresh rate", &initial_cooldown->memory.value, 0.f, 3600.f);
+        ImGui::InputFloat("Initial TTL", &initial_cooldown->memory.ttl, 0.5f, 1.f);
     }
 
     template<>
@@ -73,8 +66,6 @@ namespace dynamo_gui::widget {
                     show<dynamo::component::Decay>(entity);
                 }else if(id == world.id<dynamo::component::Cooldown>()) {
                     show<dynamo::component::Cooldown>(entity);
-                }else if(id == world.id<dynamo::component::InitialValue<dynamo::component::Cooldown>>()) {
-                    show<dynamo::component::InitialValue<dynamo::component::Cooldown>>(entity);
                 }else if(id == world.id<dynamo::component::InitialValue<dynamo::component::Decay>>()) {
                     show<dynamo::component::InitialValue<dynamo::component::Decay>>(entity);
                 }else if(id == world.id<dynamo_gui::component::GUI>()) {

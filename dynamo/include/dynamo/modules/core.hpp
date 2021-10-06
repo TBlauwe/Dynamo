@@ -55,8 +55,16 @@ namespace dynamo{
             float ttl;
         };
 
+        struct Cooldown{
+            float remaining_time;
+        };
+
         struct Tick{
             int32_t tick;
+        };
+
+        struct Targets{
+            std::vector<flecs::entity_view> entities;
         };
     }
 
@@ -71,6 +79,12 @@ namespace dynamo{
             flecs::entity Event;
             flecs::entity Organisation;
             flecs::entity Percept;
+
+            // ===== QUERY =====
+            flecs::query<type::Agent> agents_query;
+
+            // ===== INTERNAL =====
+            flecs::entity Feature;
         };
     }
 
@@ -82,6 +96,8 @@ namespace dynamo{
                     e.set<TTag>({});
                 });
     }
+
+    flecs::type create_feature(flecs::world& world, const char *name, const char * description = "");
 
     template<typename T>
     T& module_ref(flecs::entity e) {

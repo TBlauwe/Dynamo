@@ -23,6 +23,13 @@ namespace dynamo{
         logger->info("|{0:-^{2}}|", "", fmt::format("Module : {}", name), 75);
         logger->info("|{1: ^{2}}|", "", fmt::format("Module : {}", name), 75);
         logger->info("|{0:-^{2}}|", "", fmt::format("Module : {}", name), 75);
+
+    }
+
+    // Do not add systems that are not in the pipeline
+    flecs::type create_feature(flecs::world& world, const char *name, const char * description) {
+        auto feature = world.type(fmt::format("Feature_{}", name).c_str());
+        return feature;
     }
 
     module::Core::Core(flecs::world &world) {
@@ -30,20 +37,16 @@ namespace dynamo{
         world.add<singleton::Logger>();
 
         info_module_header(logger(world), "Core");
-
-
+        Feature = world.entity("Feature");
+        agents_query = world.query<dynamo::type::Agent>();
 
         // ========== Log ==========
-
-        auto test = world.system<EcsComponent>("OnAdd_Component_Log")
+        world.system<EcsComponent>("OnAdd_Component_Log")
                 .kind(flecs::OnAdd)
                 .each([](flecs::entity e, EcsComponent& component) {
                     logger(e)->info("Registering {:>9} : {}", component.size ? "component" : "tag", e.name());
                 });
 
-        dynamo::logger(world)->info("System : {}", test.str());
-        dynamo::logger(world)->info("System : {}", test.role_str());
-        dynamo::logger(world)->info("System : {}", test.type().str());
 
         // ========== Trigger ==========
 
@@ -73,18 +76,28 @@ namespace dynamo{
                     }
                 });
 
-        auto feature_decay = world.type("Feature_Decay")
-                .add(decay_system);
+        world.type("Feature_Decay")
+            .add(decay_system);
 
-        feature_decay.entity().each([](flecs::id id){
-            dynamo::logger(id)->info("Feature : {}", id.str());
-        });
+        world.system<component::Cooldown>()
+                .arg(1).object(flecs::Wildcard) // <- Cooldown is actually a pair type with anything
+                .kind(flecs::PreFrame)
+                .iter([](flecs::iter& iter, component::Cooldown* cooldown) {
+                    for(auto i : iter){
+                        cooldown[i].remaining_time -= iter.delta_time();
+                        if(cooldown[i].remaining_time <= 0){
+                            iter.entity(i).remove<component::Cooldown>(iter.term_id(1).object());
+                        }
+                    }
+                });
 
         world.system<tag::CurrentFrame>("RemoveCurrentFrameTag")
                 .kind(flecs::PostFrame)
                 .each([](flecs::entity e, tag::CurrentFrame) {
                     e.remove<tag::CurrentFrame>();
                 });
+
+        // ========== Prefab ==========
 
         Action = world.prefab("action_prefab")
                 .add<type::Action>()
@@ -115,5 +128,6 @@ namespace dynamo{
                 .add<type::Percept>()
                 .add_owned<type::Percept>()
                 ;
+
     }
 }

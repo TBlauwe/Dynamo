@@ -23,7 +23,7 @@
 #include <IconsFontAwesome5.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-//#define IMGUI_UNLIMITED_FRAME_RATE
+#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif

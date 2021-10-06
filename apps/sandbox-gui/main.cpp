@@ -29,16 +29,16 @@ public:
             world.entity(fmt::format("Agent {}", i).c_str())
                 .is_a(core->Agent);
         }
+
+        std::vector<flecs::entity_view> agents {};
+        core->agents_query.each([&agents](flecs::entity agent, dynamo::type::Agent& _){
+            agents.emplace_back(agent);
+        });
+
         world.entity("Radio")
             .is_a(core->Artefact)
-            .set<dynamo::component::Cooldown>({0.5f});
-                //auto core = e.world().get<dynamo::module::Core>();
-
-                //e.world().entity()
-                //        .is_a(core->Percept)
-                //        .add<dynamo::senses::Hearing>()
-                //        .set<dynamo::component::Decay>({2.0f})
-                //        .add<dynamo::relation::source>(e);
+            .set<dynamo::component::PeriodicEmitter>({0.5f})
+            .set<dynamo::component::Targets>({agents});
     }
 
 private:
