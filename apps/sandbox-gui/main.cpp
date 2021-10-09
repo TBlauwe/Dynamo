@@ -37,7 +37,7 @@ public:
 
         world.entity("Radio")
             .is_a(core->Artefact)
-            .set<dynamo::component::PeriodicEmitter>({0.5f})
+            .set<dynamo::component::PeriodicEmitter, dynamo::component::Message>({0.5f})
             .set<dynamo::component::Targets>({agents});
     }
 

@@ -46,11 +46,6 @@ namespace dynamo{
         struct belongs{};
     }
     namespace component{
-        template<typename T>
-        struct InitialValue{
-            T memory;
-        };
-
         struct Decay{
             float ttl;
         };
@@ -102,12 +97,6 @@ namespace dynamo{
     template<typename T>
     T& module_ref(flecs::entity e) {
         return *e.get_mut<T>();
-    }
-
-    template<typename T>
-    const T& module_cref(flecs::entity e) {
-        return *e.get<T>();
-
     }
 }
 
