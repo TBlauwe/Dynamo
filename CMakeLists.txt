@@ -23,9 +23,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF)
 
 set(FETCHCONTENT_QUIET TRUE)
-option(BUILD_DYNAMO_GUI "Build imgui lib for dynamo" ON)
-option(BUILD_APPS       "Build applications" ON)
-option(BUILD_BENCHMARKS "Build benchmarks" ON)
+option(BUILD_DYNAMO_GUI     "Build imgui lib for dynamo" ON)
+option(BUILD_APPS           "Build applications" ON)
+option(BUILD_BENCHMARKS     "Build benchmarks" ON)
+option(BUILD_DOCS           "Build documentation" ON)
 
 # =======================
 #      DEPENDENCIES
@@ -76,6 +77,37 @@ endif()
 #    include(doctest)
 #    doctest_discover_tests(Dynamo)
 #endif()
+
+# =========================
+#       DOCUMENTATION
+# =========================
+if(BUILD_DOCS)
+    MESSAGE(STATUS " =======================================")
+    MESSAGE(STATUS "                 DOCUMENTATION")
+    MESSAGE(STATUS " =======================================")
+    find_package(Doxygen)
+    if (DOXYGEN_FOUND)
+        # set input and output files
+        add_custom_target(build-time-make-directory ALL
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/bin/docs)
+
+        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_SOURCE_DIR}/bin/docs/Doxyfile.out)
+
+        # request to configure the file
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+        message("Doxygen build started")
+
+        # note the option ALL which allows to build the docs together with the application
+        add_custom_target(doc_doxygen ALL
+                COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                COMMENT "Generating API documentation with Doxygen"
+                VERBATIM )
+    else (DOXYGEN_FOUND)
+        message("Doxygen need to be installed to generate the doxygen documentation : https://www.doxygen.nl/download.html")
+    endif (DOXYGEN_FOUND)
+endif()
 
 MESSAGE(STATUS " =======================================")
 MESSAGE(STATUS "                 WRAPPING")
