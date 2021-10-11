@@ -5,6 +5,29 @@ dynamo::Simulation::Simulation() {
     _world.import<module::GlobalPerception>();
 }
 
+flecs::entity dynamo::Simulation::agent(const char * name) {
+    auto core = _world.get<module::Core>();
+    return _world.entity()
+        .is_a(core->Agent)
+        ;
+}
+
+flecs::entity dynamo::Simulation::artefact(const char *name) {
+    auto core = _world.get<module::Core>();
+    return _world.entity()
+            .is_a(core->Artefact)
+            ;
+}
+
+flecs::entity dynamo::Simulation::percept(flecs::entity source, float ttl, const char *name) {
+    auto core = _world.get<module::Core>();
+    return  _world.entity()
+                .is_a(core->Percept)
+                .set<dynamo::component::Decay>({ttl})
+                .add<dynamo::relation::source>(source)
+                        ;
+}
+
 void dynamo::Simulation::step(float elapsed_time) {
     _world.progress(elapsed_time);
 }

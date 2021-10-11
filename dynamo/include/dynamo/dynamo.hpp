@@ -11,13 +11,34 @@ namespace dynamo{
      */
     class Simulation{
     private:
-        flecs::world _world {};
+        flecs::world    _world {};
 
     public:
         /**
          * Create an empty simulation.
          */
         Simulation();
+
+        /**
+         * Create a ready to use "Agent" entity with the specified name.
+         * @param name Handle for this entity.
+         */
+        flecs::entity agent(const char * name = "");
+
+        /**
+         * Create a ready to use "Artefact" entity with the specified name.
+         * @param name Handle for this entity.
+         */
+        flecs::entity artefact(const char * name = "");
+
+        /**
+         * Create a ready to use "Percept" entity with the specified name and the specified source.
+         * @param source    From which entity this percept comes from ?
+         * @param ttl       How much time should this percept stay alive ? Default: 2.0f
+         * @param name      Identifier (can be empty).
+         * @return
+         */
+        flecs::entity percept(flecs::entity source, float ttl = 2.0f, const char * name = "");
 
         /**
          * Advance simulation by one-step and specify elapsed time.
