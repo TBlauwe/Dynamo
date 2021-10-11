@@ -94,7 +94,7 @@ namespace dynamo{
 
     namespace module{
         /**
-         * Core module defining basics concepts used throughout the simulation.
+         * Defines basics concepts and entities used throughout the simulation.
          */
         struct Core{
             explicit Core(flecs::world& world);
@@ -107,6 +107,9 @@ namespace dynamo{
             flecs::entity Percept;
 
             // ===== QUERY =====
+            /**
+             * Use this query to quickly iterate over all agents.
+             */
             flecs::query<type::Agent> agents_query;
         };
     }
