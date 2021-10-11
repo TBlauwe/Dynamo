@@ -35,7 +35,6 @@ namespace dynamo{
                         .iter([&core](flecs::iter& iter, component::PeriodicEmitter* periodic_emitter, component::Targets* targets) {
                             for(auto i : iter){
                                 auto e = iter.entity(i);
-                                dynamo::logger(e)->info("Entity {} : {}", e.name().c_str(), iter.term_id(1).object().name());
                                 flecs::entity percept = e.world().entity()
                                         .is_a(core.Percept)
                                         .set<dynamo::component::Decay>({2.0f})
