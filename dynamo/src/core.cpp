@@ -1,26 +1,12 @@
 #include <dynamo/modules/core.hpp>
 
 namespace dynamo{
-    // Do not add systems that are not in the pipeline
-    flecs::type create_feature(flecs::world& world, const char *name, const char * description) {
-        auto feature = world.type(fmt::format("Feature_{}", name).c_str());
-        return feature;
-    }
-
     module::Core::Core(flecs::world &world) {
         world.module<Core>();
 
-        Feature = world.entity("Feature");
         agents_query = world.query<dynamo::type::Agent>();
 
         // ========== Trigger ==========
-
-        world.system<const type::Event>("OnAdd_Event_AddCurrentFrameTag")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const type::Event event) {
-                    e.set<component::Tick>({e.world().get_tick()});
-                    e.add<tag::CurrentFrame>();
-                });
 
         world.system<const component::Decay>("OnSet_Decay_RememberInitialValue")
                 .kind(flecs::OnSet)
@@ -45,7 +31,7 @@ namespace dynamo{
             .add(decay_system);
 
         world.system<component::Cooldown>()
-                .arg(1).object(flecs::Wildcard) // <- Cooldown is actually a pair type with anything
+                .arg(1).object(flecs::Wildcard) // <- Cooldown is actually a pair of type with anything
                 .kind(flecs::PreFrame)
                 .iter([](flecs::iter& iter, component::Cooldown* cooldown) {
                     for(auto i : iter){
@@ -77,11 +63,6 @@ namespace dynamo{
         Artefact = world.prefab("artefact_prefab")
                 .add<type::Artefact>()
                 .add_owned<type::Artefact>()
-                ;
-
-        Event = world.prefab("event_prefab")
-                .add<type::Event>()
-                .add_owned<type::Event>()
                 ;
 
         Organisation = world.prefab("organisation_prefab")

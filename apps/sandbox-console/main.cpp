@@ -11,10 +11,9 @@ struct Velocity {
 
 using namespace dynamo;
 int main(int argc, char** argv) {
-    Simulation dynamo;
-    dynamo.run();
+    Simulation sim;
 
-    dynamo.world.system<Position, Velocity>()
+    sim.world().system<Position, Velocity>()
             .iter([](flecs::iter it, Position *p, Velocity *v) {
                 for (auto i : it) {
                     p[i].x += v[i].x * it.delta_time();
@@ -23,20 +22,24 @@ int main(int argc, char** argv) {
             });
 
     /* Create system that is invoked once per second */
-    dynamo.world.system<Position>()
+    sim.world().system<Position>()
             .interval(1.0)
             .each([](flecs::entity e, Position& p) {
-                e.world().get<singleton::Logger>()->logger->info("[{}] : {},{}", e.name(), p.x, p.y);
+                std::cout << "Entity : " << e.name() << " | Position : {" << p.x << "," << p.y << "}\n";
             });
 
-    dynamo.world.entity("Arthur")
+    sim.world().entity("Arthur")
             .set([](Position& p, Velocity& v) {
-                p = {10, 20};
+                p = {0, 0};
                 v = {1, 2};
             });
 
-    dynamo.world.set_target_fps(60);
-    while (dynamo.world.progress()) {}
+    sim.world().set_target_fps(60);
+    sim.step_n(100, 1.0f);
+
+    // Arthur position won't be multiplied by 2 !
+    // It should take very few seconds to run 100 iterations (1 sec for example).
+    sim.step_n(100);
 
     return 0;
 }

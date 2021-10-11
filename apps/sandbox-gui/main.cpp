@@ -6,9 +6,9 @@
 class Sandbox : public app::Application{
 
 private:
-    flecs::world world {};
-    FlecsInspector flecs_inspector {world};
-    dynamo_gui::DynamoInspector dynamo_inspector {world};
+    dynamo::Simulation sim{};
+    FlecsInspector flecs_inspector {sim.world()};
+    dynamo_gui::DynamoInspector dynamo_inspector {sim.world()};
 
     bool    is_enabled  {false};
     bool    step_once   {false};
@@ -20,13 +20,11 @@ public:
     Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox")
     {
-        auto& sim = dynamo::module_ref<dynamo::Simulation>(world.import<dynamo::Simulation>());
-
-        auto core = world.get<dynamo::module::Core>();
+        auto core = sim.world().get<dynamo::module::Core>();
 
         int n = 10;
         for(int i = 0; i<n; i++){
-            world.entity(fmt::format("Agent {}", i).c_str())
+            sim.world().entity(fmt::format("Agent {}", i).c_str())
                 .is_a(core->Agent);
         }
 
@@ -35,7 +33,7 @@ public:
             agents.emplace_back(agent);
         });
 
-        world.entity("Radio")
+        sim.world().entity("Radio")
             .is_a(core->Artefact)
             .set<dynamo::component::PeriodicEmitter>({0.5f})
             .set<dynamo::component::Targets>({agents});
@@ -68,7 +66,7 @@ private:
         ImGui::Separator();
         ImGui::SetNextItemWidth(150.f);
         if(ImGui::SliderFloat("TimeScale", &timescale, min_timescale, max_timescale)){
-            world.set_time_scale(timescale);
+            sim.world().set_time_scale(timescale);
         }
         ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
         ImGui::Separator();
@@ -78,7 +76,7 @@ private:
         flecs_inspector.show();
         dynamo_inspector.show();
         if(is_enabled || step_once){
-            world.progress(ImGui::GetIO().DeltaTime);
+            sim.step(ImGui::GetIO().DeltaTime);
             step_once = false;
         }
     }
