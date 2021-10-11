@@ -5,8 +5,14 @@
 #include <dynamo/modules/basic_perception.hpp>
 
 namespace dynamo{
-    struct Simulation{
-        explicit Simulation(flecs::world& world);
+    class Simulation{
+        flecs::world world {};
+
+    public:
+        Simulation();
+
+        void step();
+        void step_n(unsigned int n = 0);
     };
 }//namespace dynamo
 
