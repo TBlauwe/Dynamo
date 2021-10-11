@@ -1,61 +1,10 @@
 #include <dynamo/modules/core.hpp>
 
 namespace dynamo{
-    singleton::Logger::Logger(){
-        logger->set_level(spdlog::level::trace);
-        logger->set_pattern("[%10n] %^(%8l)%$ %v");
-        logger->info("Dynamo launching ...");
-    }
-
-    std::shared_ptr<spdlog::logger> logger(flecs::entity e){
-        return e.world().get<singleton::Logger>()->logger;
-    }
-
-    std::shared_ptr<spdlog::logger> logger(flecs::id id){
-        return id.world().get<singleton::Logger>()->logger;
-    }
-
-    std::shared_ptr<spdlog::logger> logger(flecs::world& world){
-        return world.get<singleton::Logger>()->logger;
-    }
-
-    void info_module_header(const std::shared_ptr<spdlog::logger>& logger, const char *name) {
-        logger->info("|{0:-^{2}}|", "", fmt::format("Module : {}", name), 75);
-        logger->info("|{1: ^{2}}|", "", fmt::format("Module : {}", name), 75);
-        logger->info("|{0:-^{2}}|", "", fmt::format("Module : {}", name), 75);
-
-    }
-
-    // Do not add systems that are not in the pipeline
-    flecs::type create_feature(flecs::world& world, const char *name, const char * description) {
-        auto feature = world.type(fmt::format("Feature_{}", name).c_str());
-        return feature;
-    }
-
     module::Core::Core(flecs::world &world) {
         world.module<Core>();
-        world.add<singleton::Logger>();
 
-        info_module_header(logger(world), "Core");
-        Feature = world.entity("Feature");
         agents_query = world.query<dynamo::type::Agent>();
-
-        // ========== Log ==========
-        world.system<EcsComponent>("OnAdd_Component_Log")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, EcsComponent& component) {
-                    logger(e)->info("Registering {:>9} : {}", component.size ? "component" : "tag", e.name());
-                });
-
-
-        // ========== Trigger ==========
-
-        world.system<const type::Event>("OnAdd_Event_AddCurrentFrameTag")
-                .kind(flecs::OnAdd)
-                .each([](flecs::entity e, const type::Event event) {
-                    e.set<component::Tick>({e.world().get_tick()});
-                    e.add<tag::CurrentFrame>();
-                });
 
         // ========== Pipeline ==========
 
@@ -92,6 +41,7 @@ namespace dynamo{
                 });
 
         // ========== Prefab ==========
+        //TODO when going to flecs v3 change add_owned by override
 
         Action = world.prefab("action_prefab")
                 .add<type::Action>()
@@ -106,11 +56,6 @@ namespace dynamo{
         Artefact = world.prefab("artefact_prefab")
                 .add<type::Artefact>()
                 .add_owned<type::Artefact>()
-                ;
-
-        Event = world.prefab("event_prefab")
-                .add<type::Event>()
-                .add_owned<type::Event>()
                 ;
 
         Organisation = world.prefab("organisation_prefab")

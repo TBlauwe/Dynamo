@@ -1,0 +1,3 @@
+OUTPUT_DIRECTORY    = @CMAKE_CURRENT_SOURCE_DIR@/bin/docs/
+INPUT               = @CMAKE_CURRENT_SOURCE_DIR@/dynamo/include/ @CMAKE_CURRENT_SOURCE_DIR@/dynamo-gui/include/ @CMAKE_CURRENT_SOURCE_DIR@/imgui-addons/ @CMAKE_CURRENT_SOURCE_DIR@/docs/
+RECURSIVE           = YES

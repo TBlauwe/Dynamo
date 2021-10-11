@@ -1,8 +1,43 @@
 #include <dynamo/dynamo.hpp>
 
-dynamo::Simulation::Simulation(flecs::world& world) {
-    world.module<Simulation>();
-    world.import<module::Core>();
-    world.import<module::GlobalPerception>();
-    info_module_header(logger(world), "Simulation");
+dynamo::Simulation::Simulation() {
+    _world.import<module::Core>();
+    _world.import<module::GlobalPerception>();
+}
+
+flecs::entity dynamo::Simulation::agent(const char * name) {
+    auto core = _world.get<module::Core>();
+    return _world.entity()
+        .is_a(core->Agent)
+        ;
+}
+
+flecs::entity dynamo::Simulation::artefact(const char *name) {
+    auto core = _world.get<module::Core>();
+    return _world.entity()
+            .is_a(core->Artefact)
+            ;
+}
+
+flecs::entity dynamo::Simulation::percept(flecs::entity source, float ttl, const char *name) {
+    auto core = _world.get<module::Core>();
+    return  _world.entity()
+                .is_a(core->Percept)
+                .set<dynamo::component::Decay>({ttl})
+                .add<dynamo::relation::source>(source)
+                        ;
+}
+
+void dynamo::Simulation::step(float elapsed_time) {
+    _world.progress(elapsed_time);
+}
+
+void dynamo::Simulation::step_n(unsigned int n, float elapsed_time) {
+    for (int i = 0; i < n; i++) {
+        step(elapsed_time);
+    }
+}
+
+flecs::world &dynamo::Simulation::world() {
+    return _world;
 }
