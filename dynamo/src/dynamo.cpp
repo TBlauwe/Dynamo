@@ -5,13 +5,13 @@ dynamo::Simulation::Simulation() {
     _world.import<module::GlobalPerception>();
 }
 
-void dynamo::Simulation::step(){
-    _world.progress();
+void dynamo::Simulation::step(float elapsed_time) {
+    _world.progress(elapsed_time);
 }
 
-void dynamo::Simulation::step_n(unsigned int n) {
-    for (int i{0}; i < n; i++) {
-        step();
+void dynamo::Simulation::step_n(unsigned int n, float elapsed_time) {
+    for (int i = 0; i < n; i++) {
+        step(elapsed_time);
     }
 }
 
