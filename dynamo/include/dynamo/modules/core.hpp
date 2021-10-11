@@ -7,17 +7,6 @@
 
 namespace dynamo{
 
-    namespace singleton{
-        struct Logger{
-            std::shared_ptr<spdlog::logger> logger {spdlog::stdout_color_mt("Dynamo")};
-            Logger();
-        };
-    }
-    std::shared_ptr<spdlog::logger> logger(flecs::entity e);
-    std::shared_ptr<spdlog::logger> logger(flecs::id id);
-    std::shared_ptr<spdlog::logger> logger(flecs::world& world);
-    void info_module_header(const std::shared_ptr<spdlog::logger>& logger, const char * name);
-
     enum class Level{
         Minor,
         Medium,

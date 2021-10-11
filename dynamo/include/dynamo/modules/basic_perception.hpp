@@ -24,7 +24,6 @@ namespace dynamo{
             explicit GlobalPerception(flecs::world& world){
                 world.module<GlobalPerception>();
                 auto& core = dynamo::module_ref<module::Core>(world.import<module::Core>());
-                info_module_header(logger(world), "Perception");
 
                 world.system<component::PeriodicEmitter, component::Targets>("PeriodicEmitter")
                         .term<component::Cooldown>().object<component::PeriodicEmitter>().oper(flecs::Not)
