@@ -25,6 +25,7 @@ set(BUILD_SHARED_LIBS OFF)
 set(FETCHCONTENT_QUIET TRUE)
 option(BUILD_DYNAMO_GUI "Build imgui lib for dynamo" ON)
 option(BUILD_APPS       "Build applications" ON)
+option(BUILD_BENCHMARKS "Build benchmarks" ON)
 
 # =======================
 #      DEPENDENCIES
