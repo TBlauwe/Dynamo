@@ -1,4 +1,4 @@
-#include <dynamo/Simulation.hpp>
+#include <dynamo/simulation.hpp>
 #include <iostream>
 
 struct Position {

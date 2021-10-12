@@ -1,7 +1,7 @@
 #ifndef DYNAMO_DYNAMO_INSPECTOR_HPP
 #define DYNAMO_DYNAMO_INSPECTOR_HPP
 
-#include <dynamo/Simulation.hpp>
+#include <dynamo/simulation.hpp>
 #include <dynamo/gui/core.hpp>
 #include <dynamo/gui/widgets/plot.hpp>
 

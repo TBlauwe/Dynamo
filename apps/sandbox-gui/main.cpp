@@ -1,5 +1,5 @@
 #include <application/application.h>
-#include <dynamo/Simulation.hpp>
+#include <dynamo/simulation.hpp>
 #include <dynamo/gui/flecs_inspector.hpp>
 #include <dynamo/gui/dynamo_inspector.hpp>
 

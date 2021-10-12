@@ -1,4 +1,4 @@
-#include <dynamo/Simulation.hpp>
+#include <dynamo/simulation.hpp>
 
 dynamo::Simulation::Simulation() {
     _world.import<module::Core>();

@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <dynamo/dynamo.hpp>
+#include <dynamo/simulation.hpp>
 
 TEST_SUITE_BEGIN("Simulation");
 

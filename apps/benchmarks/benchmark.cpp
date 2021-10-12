@@ -1,5 +1,5 @@
 #include <benchmark/benchmark.h>
-#include <dynamo/dynamo.hpp>
+#include <dynamo/simulation.hpp>
 
 const size_t repetitions_count = 10;
 
