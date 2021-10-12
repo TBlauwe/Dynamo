@@ -71,7 +71,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_action_widget(&gui.show_widget, e);
+                            dynamo_gui::widget::show_action_widget(e);
                         }
                     }
                     ImGui::PopID();
@@ -108,7 +108,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_agent_widget(&gui.show_widget, e);
+                            dynamo_gui::widget::show_agent_widget(e);
                         }
                     }
                     ImGui::PopID();
@@ -145,7 +145,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_artefact_widget(&gui.show_widget, e);
+                            dynamo_gui::widget::show_artefact_widget(e);
                         }
                     }
                     ImGui::PopID();
@@ -183,7 +183,7 @@ namespace dynamo_gui{
                                 ImGui::TableSetColumnIndex(3);
                                 ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                                 if (gui.show_widget) {
-                                    dynamo_gui::widget::show_organisation_widget(&gui.show_widget, e);
+                                    dynamo_gui::widget::show_organisation_widget(e);
                                 }
                             }
                             ImGui::PopID();
@@ -232,7 +232,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_percept_widget(&gui.show_widget, e);
+                            dynamo_gui::widget::show_percept_widget(e);
                         }
                         ImGui::PopID();
                     }

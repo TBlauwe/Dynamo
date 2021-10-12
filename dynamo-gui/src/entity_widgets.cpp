@@ -1,3 +1,4 @@
+#include <dynamo/gui/core.hpp>
 #include <dynamo/gui/widgets/entity_widgets.hpp>
 #include <dynamo/gui/widgets/component_widgets.hpp>
 #include <imgui.h>
@@ -74,10 +75,11 @@ namespace dynamo_gui::widget {
         }
     }
 
-    void show_agent_widget(bool* show, flecs::entity& entity){
+    void show_action_widget(flecs::entity& entity){
+        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, show)){
+        if(!ImGui::Begin(name, &gui->show_widget)){
             ImGui::End();
             return;
         }
@@ -85,10 +87,11 @@ namespace dynamo_gui::widget {
         ImGui::End();
     }
 
-    void show_artefact_widget(bool* show, flecs::entity& entity){
+    void show_agent_widget(flecs::entity& entity){
+        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, show)){
+        if(!ImGui::Begin(name, &gui->show_widget)){
             ImGui::End();
             return;
         }
@@ -96,9 +99,11 @@ namespace dynamo_gui::widget {
         ImGui::End();
     }
 
-    void show_percept_widget(bool* show, flecs::entity& entity){
+    void show_artefact_widget(flecs::entity& entity){
+        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
+        const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin("Percept", show)){
+        if(!ImGui::Begin(name, &gui->show_widget)){
             ImGui::End();
             return;
         }
@@ -106,10 +111,10 @@ namespace dynamo_gui::widget {
         ImGui::End();
     }
 
-    void show_organisation_widget(bool* show, flecs::entity& entity){
-        const char * name = entity.name();
+    void show_percept_widget(flecs::entity& entity){
+        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, show)){
+        if(!ImGui::Begin("Percept", &gui->show_widget)){
             ImGui::End();
             return;
         }
@@ -117,10 +122,11 @@ namespace dynamo_gui::widget {
         ImGui::End();
     }
 
-    void show_action_widget(bool* show, flecs::entity& entity){
+    void show_organisation_widget(flecs::entity& entity){
+        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-        if(!ImGui::Begin(name, show)){
+        if(!ImGui::Begin(name, &gui->show_widget)){
             ImGui::End();
             return;
         }

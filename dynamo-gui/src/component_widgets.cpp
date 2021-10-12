@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <imgui-addons/imgui-addons.hpp>
 #include <dynamo/gui/core.hpp>
+#include <dynamo/modules/basic_perception.hpp>
 
 namespace dynamo_gui::widget {
 
@@ -13,8 +14,25 @@ namespace dynamo_gui::widget {
 
     template<>
     void show<dynamo::component::Cooldown>(flecs::entity& e){
-        auto* cooldown = e.get_mut<dynamo::component::Cooldown>();
+        auto* cooldown = e.get_mut<dynamo::component::Cooldown>(flecs::Wildcard);
         ImGui::Addons::InputFloatColor(cooldown->remaining_time);
+    }
+
+    template<>
+    void show<dynamo::component::PeriodicEmitter>(flecs::entity& e){
+        auto* emitter = e.get_mut<dynamo::component::PeriodicEmitter>();
+        ImGui::Addons::InputFloatColor(emitter->cooldown);
+    }
+
+    template<>
+    void show<dynamo::component::Targets>(flecs::entity& e){
+        auto* targets = e.get_mut<dynamo::component::Targets>();
+        ImGui::Text("Targets : ");
+        ImGui::Indent();
+        for(auto& entity : targets->entities){
+            ImGui::BulletText("%s", entity.name().c_str());
+        }
+        ImGui::Unindent();
     }
 
     template<>
@@ -56,13 +74,26 @@ namespace dynamo_gui::widget {
             case ID_TYPE::COMPONENT:
                 if(id == world.id<dynamo::component::Decay>()) {
                     show<dynamo::component::Decay>(entity);
+                }else if(id == world.id<dynamo::component::PeriodicEmitter>()) {
+                    show<dynamo::component::PeriodicEmitter>(entity);
+                }else if(id == world.id<dynamo::component::Targets>()) {
+                    show<dynamo::component::Targets>(entity);
                 }else if(id == world.id<dynamo_gui::component::GUI>()) {
                     show<dynamo_gui::component::GUI>(entity);
                 }else{
                     inspect(object);
                 }
                 break;
-            case ID_TYPE::RELATION:
+            case ID_TYPE::RELATION:{
+                flecs::entity relation = id.relation();
+                if(relation.id() == world.id<dynamo::component::Cooldown>()) {
+                    show<dynamo::component::Cooldown>(entity);
+                }else{
+                    inspect(relation);
+                    inspect(object);
+                }
+                break;
+            }
             case ID_TYPE::CHILD_OF:
             case ID_TYPE::IS_A:
                 inspect(object);

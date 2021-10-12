@@ -64,14 +64,9 @@ namespace dynamo{
         struct belongs{};
     }
     namespace component{
-        template<typename T>
-        struct InitialValue{
-            T memory;
-        };
-
         /**
-         * When ttl reaches 0, the entity holding this component is destroyed.
-         */
+       * When ttl reaches 0, the entity holding this component is destroyed.
+       */
         struct Decay{
             float ttl;
         };

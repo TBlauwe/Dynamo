@@ -1,5 +1,5 @@
-#ifndef DYNAMO_DYNAMO_HPP
-#define DYNAMO_DYNAMO_HPP
+#ifndef DYNAMO_SIMULATION_HPP
+#define DYNAMO_SIMULATION_HPP
 
 #include <dynamo/modules/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
@@ -60,4 +60,4 @@ namespace dynamo{
     };
 }//namespace dynamo
 
-#endif //DYNAMO_DYNAMO_HPP
+#endif //DYNAMO_SIMULATION_HPP

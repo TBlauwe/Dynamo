@@ -6,14 +6,6 @@ namespace dynamo{
 
         agents_query = world.query<dynamo::type::Agent>();
 
-        // ========== Trigger ==========
-
-        world.system<const component::Decay>("OnSet_Decay_RememberInitialValue")
-                .kind(flecs::OnSet)
-                .each([](flecs::entity e, const component::Decay& decay) {
-                    e.set<component::InitialValue<component::Decay>>({{decay.ttl}});
-                });
-
         // ========== Pipeline ==========
 
         auto decay_system = world.system<component::Decay>("Decay")
@@ -30,8 +22,8 @@ namespace dynamo{
         world.type("Feature_Decay")
             .add(decay_system);
 
-        world.system<component::Cooldown>()
-                .arg(1).object(flecs::Wildcard) // <- Cooldown is actually a pair of type with anything
+        world.system<component::Cooldown>("Cooldown")
+                .arg(1).object(flecs::Wildcard) // <- Cooldown is actually a pair type with anything
                 .kind(flecs::PreFrame)
                 .iter([](flecs::iter& iter, component::Cooldown* cooldown) {
                     for(auto i : iter){

@@ -1,5 +1,5 @@
 #include <application/application.h>
-#include <dynamo/dynamo.hpp>
+#include <dynamo/Simulation.hpp>
 #include <dynamo/gui/flecs_inspector.hpp>
 #include <dynamo/gui/dynamo_inspector.hpp>
 
@@ -35,7 +35,7 @@ public:
 
         sim.world().entity("Radio")
             .is_a(core->Artefact)
-            .set<dynamo::component::PeriodicEmitter>({0.5f})
+            .set<dynamo::component::PeriodicEmitter, dynamo::component::Message>({0.5f})
             .set<dynamo::component::Targets>({agents});
     }
 
