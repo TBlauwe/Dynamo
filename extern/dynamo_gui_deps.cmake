@@ -16,5 +16,3 @@ if (IconFontCppHeaders_ADDED)
     add_library(icon_font INTERFACE)
     target_include_directories(icon_font INTERFACE ${IconFontCppHeaders_SOURCE_DIR})
 endif()
-MESSAGE(STATUS " ------------------------------------")
-

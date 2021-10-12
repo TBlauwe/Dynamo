@@ -27,6 +27,8 @@ option(BUILD_DYNAMO_GUI     "Build imgui lib for dynamo" ON)
 option(BUILD_APPS           "Build applications" ON)
 option(BUILD_BENCHMARKS     "Build benchmarks" ON)
 option(BUILD_DOCS           "Build documentation" ON)
+option(BUILD_TESTS          "Build tests" ON)
+option(ENABLE_TEST_COVERAGE "Enable test coverage" ON)
 
 # =======================
 #      DEPENDENCIES
@@ -68,15 +70,11 @@ endif()
 # ==================
 #      TESTING
 # ==================
-#if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-#    MESSAGE(STATUS " =======================================")
-#    MESSAGE(STATUS "                 TESTING")
-#    MESSAGE(STATUS " =======================================")
-#    include(CTest)
-#    list(APPEND CMAKE_MODULE_PATH ${doctest_SOURCE_DIR}/scripts/cmake)
-#    include(doctest)
-#    doctest_discover_tests(Dynamo)
-#endif()
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    if(BUILD_TESTS)
+        add_subdirectory(apps/tests)
+    endif()
+endif()
 
 # =========================
 #       DOCUMENTATION
@@ -99,7 +97,7 @@ if(BUILD_DOCS)
         message("Doxygen build started")
 
         # note the option ALL which allows to build the docs together with the application
-        add_custom_target(doc_doxygen ALL
+        add_custom_target(doc_doxygen
                 COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 COMMENT "Generating API documentation with Doxygen"

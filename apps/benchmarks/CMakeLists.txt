@@ -22,5 +22,3 @@ add_executable(Benchmarks benchmark.cpp)
 target_compile_features(Benchmarks PRIVATE cxx_std_20)
 target_link_libraries(Benchmarks PRIVATE dynamo benchmark::benchmark)
 set_target_properties(Benchmarks PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${Dynamo_SOURCE_DIR}/bin/Benchmarks")
-
-MESSAGE(STATUS " ------------------------------------")

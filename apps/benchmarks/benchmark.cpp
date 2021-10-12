@@ -1,7 +1,7 @@
 #include <benchmark/benchmark.h>
 #include <dynamo/dynamo.hpp>
 
-const size_t repetitions_count = 20;
+const size_t repetitions_count = 10;
 
 static void BM_create_simulation_empty(benchmark::State& state) {
     for ([[maybe_unused]] auto _ : state) {
@@ -36,6 +36,7 @@ static void BM_create_agent(benchmark::State& state) {
     }
 }
 BENCHMARK(BM_create_agent)
+        ->Unit(benchmark::kMillisecond)
         ->Repetitions(repetitions_count)->DisplayAggregatesOnly()
 ;
 

@@ -3,14 +3,6 @@
 include(CMakePrintHelpers)
 include(${Dynamo_SOURCE_DIR}/cmake/CPM.cmake)
 
-MESSAGE(STATUS "Fetching doctest")
-CPMAddPackage(
-        NAME doctest
-        GITHUB_REPOSITORY onqtam/doctest
-        GIT_TAG 2.4.6
-)
-MESSAGE(STATUS " ------------------------------------")
-
 MESSAGE(STATUS "Fetching spdlog")
 CPMAddPackage(
         NAME spdlog
