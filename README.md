@@ -21,8 +21,6 @@ sim.step_n(100); // advance simulation by 100 steps
 sim.step_n(100, 1.0f); // advance simulation by 100 steps of 1s between each steps
 ```
 
-[TOC]
-
 ## Installation
 
 > :warning: needs to be tested !
