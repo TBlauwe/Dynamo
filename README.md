@@ -21,6 +21,8 @@ sim.step_n(100); // advance simulation by 100 steps
 sim.step_n(100, 1.0f); // advance simulation by 100 steps of 1s between each steps
 ```
 
+[TOC]
+
 ## Installation
 
 > :warning: needs to be tested !
@@ -67,7 +69,7 @@ Download and install [Vulkan](https://vulkan.lunarg.com/sdk/home)
 
 :warning: __Don't forget to install 32bit libraries if you want to build for 32bit targets !__
 
-#### Apps
+#### Docs
 
 > Only if `BUILD_DOCS ON` !
 
