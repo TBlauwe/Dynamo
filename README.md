@@ -14,11 +14,12 @@ auto sim = dynamo::Simulation(); // Initialize an empty simulation
 // ... define cognitive models
 // ... define domain data
 // ... define agent model
+sim.create_percept<>();
 
 sim.step(); // advance simulation by one step
-sim.step(1.0f); // advance simulation by one step after (1s have passed inside the simulation)
+sim.step(1.0f); // advance simulation by one step as if 1 second has passed
 sim.step_n(100); // advance simulation by 100 steps
-sim.step_n(100, 1.0f); // advance simulation by 100 steps of 1s between each steps
+sim.step_n(100, 1.0f); // advance simulation by 100 steps, as if 1 seconds passed between each steps
 ```
 
 ## Installation
@@ -33,7 +34,7 @@ We recommend to use [CPM](https://github.com/cpm-cmake/CPM.cmake)
 ```cmake
 CPMAddPackage(
         NAME dynamo 
-        GITHUB_REPOSITORY TBlauwe/Dynamo/
+        GITHUB_REPOSITORY TBlauwe/Dynamo
         OPTIONS
             "BUILD_DYNAMO_GUI OFF"
             "BUILD_APPS OFF"
@@ -45,13 +46,13 @@ CPMAddPackage(
 
 #### CMake options
 
-| Options          | Default | Description                                             |
-| ---------------- | ------- | ------------------------------------------------------- |
-| BUILD_DYNAMO_GUI | ON      | Build an optional library to debug visualy a simulation |
-| BUILD_ APPS      | ON      | Build several applications to showcasing the library    |
-| BUILD_BENCHMARKS | ON      | Build benchmarks                                        |
-| BUILD_DOCS       | ON      | Build documentation                                     |
-| BUILD_TESTS      | ON      | Build tests                                             |
+| Options          | Default | Description                                              |
+| ---------------- | ------- | -------------------------------------------------------- |
+| BUILD_DYNAMO_GUI | ON      | Build an optional library to debug visually a simulation |
+| BUILD_ APPS      | ON      | Build several applications to showcasing the library     |
+| BUILD_BENCHMARKS | ON      | Build benchmarks                                         |
+| BUILD_DOCS       | ON      | Build documentation                                      |
+| BUILD_TESTS      | ON      | Build tests                                              |
 
 ### Prerequisites
 
