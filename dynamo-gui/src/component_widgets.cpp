@@ -98,9 +98,6 @@ namespace dynamo_gui::widget {
             case ID_TYPE::IS_A:
                 inspect(object);
                 break;
-            case ID_TYPE::TAG:
-                ImGui::Text("Tag have no associated data");
-                break;
             case ID_TYPE::OWNED:
                 ImGui::Text("See child instance");
                 break;
