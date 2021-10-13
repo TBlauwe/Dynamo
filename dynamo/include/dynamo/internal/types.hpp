@@ -65,24 +65,6 @@ namespace dynamo {
         TypeHandler<T> create(const char * name) { return TypeHandler<T>(world.entity(name).add<T>()); }
     };
 
-    /**
-     * Specialization for building percepts as we need to specify its type at creation and its source.
-     */
-    template<>
-    class TypeBuilder<type::Percept> {
-        flecs::world& world;
-    public:
-        explicit TypeBuilder(flecs::world& world) : world{world}{};
-
-        template<typename T>
-        TypeHandler<type::Percept> source(flecs::entity source) {
-            return TypeHandler<type::Percept>(world.entity()
-                .add<type::Percept>()
-                .add<relation::source>(source)
-                .add<T>());
-        }
-    };
-
     template<>
     class TypeHandler<type::Percept>{
         flecs::entity _entity;
@@ -105,5 +87,24 @@ namespace dynamo {
             return *this;
         }
     };
+
+    /**
+     * Specialization for building percepts as we need to specify its type at creation and its source.
+     */
+    template<>
+    class TypeBuilder<type::Percept> {
+        flecs::world& world;
+    public:
+        explicit TypeBuilder(flecs::world& world) : world{world}{};
+
+        template<typename T>
+        TypeHandler<type::Percept> source(flecs::entity source) {
+            return TypeHandler<type::Percept>(world.entity()
+                .add<type::Percept>()
+                .add<relation::source>(source)
+                .add<T>());
+        }
+    };
+
 }// namespace dynamo
 #endif //DYNAMO_TYPES_HPP
