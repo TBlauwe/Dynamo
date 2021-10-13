@@ -17,7 +17,7 @@ MESSAGE(STATUS "Fetching flecs")
 CPMAddPackage(
         NAME flecs
         GITHUB_REPOSITORY SanderMertens/flecs
-        GIT_TAG v2.4.7
+        GIT_TAG v2.4.6
         OPTIONS
             "FLECS_STATIC_LIBS ON"
             "FLECS_SHARED_LIBS OFF"
