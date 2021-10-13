@@ -67,12 +67,18 @@ else()
     MESSAGE(STATUS " Skipping applications ")
 endif()
 
+if(BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+else()
+    MESSAGE(STATUS " Skipping benchmarks")
+endif()
+
 # ==================
 #      TESTING
 # ==================
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     if(BUILD_TESTS)
-        add_subdirectory(apps/tests)
+        add_subdirectory(tests)
     endif()
 endif()
 
