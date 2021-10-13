@@ -16,6 +16,9 @@ namespace dynamo{
        * When ttl reaches 0, the entity holding this component is destroyed.
        */
         struct Decay{
+            /**
+             * Amount of time left to live.
+             */
             float ttl;
         };
 
@@ -24,6 +27,9 @@ namespace dynamo{
          * When remaining_time reaches 0, the relation for this cooldown is removed.
          */
         struct Cooldown{
+            /**
+             * Amount of time remaining before cooldown is finished.
+             */
             float remaining_time;
         };
 
@@ -31,6 +37,9 @@ namespace dynamo{
          * Store read-only entities handle. Call mut(...), if you want to modify it.
          */
         struct Targets{
+            /**
+             * A vector of entities view. Call mut(...), if you need to modify it.
+             */
             std::vector<flecs::entity_view> entities;
         };
     }

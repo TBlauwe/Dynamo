@@ -15,17 +15,35 @@ namespace dynamo{
     };
 
     namespace component{
+        /**
+         * Component that periodically emits percepts
+         */
         struct PeriodicEmitter{
+            /**
+             * Period
+             */
             float cooldown;
         };
 
+        /**
+         * Component to represent a message
+         */
         struct Message{
+            /**
+             * Content of the message
+             */
             std::string  message {"Bonjour"};
         };
     }
 
     namespace module{
+        /**
+         * Module adding perception functionalities.
+         */
         struct GlobalPerception{
+            /**
+             * Module adding perception functionalities.
+             */
             explicit GlobalPerception(flecs::world& world){
                 world.module<GlobalPerception>();
                 world.import<module::Core>();

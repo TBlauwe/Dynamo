@@ -9,6 +9,10 @@ namespace dynamo::module{
          * Load core systems
          */
         struct Core{
+            /**
+             * Core is a flecs::module that requires a world to instantiate.
+             * @param world
+             */
             explicit Core(flecs::world& world);
         };
     }
