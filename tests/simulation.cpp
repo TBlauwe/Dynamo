@@ -58,6 +58,7 @@ TEST_CASE("Basics") {
         CHECK(percept.has<Default>());
         CHECK(percept.has<component::Decay>());
         CHECK(percept.get<component::Decay>()->ttl);
+        CHECK(percept.has<relation::perceive>(radio));
         CHECK(arthur.has<relation::perceive>(percept));
 
         sim.step(ttl); // To deplete decay cooldown

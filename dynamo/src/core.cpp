@@ -4,6 +4,9 @@ namespace dynamo{
     module::Core::Core(flecs::world &world) {
         world.module<Core>();
 
+        auto e = world.component<relation::perceive>();
+        e.add(flecs::Transitive);
+
         // ========== Pipeline ==========
 
         auto decay_system = world.system<component::Decay>("Decay")

@@ -53,9 +53,7 @@ namespace dynamo {
          * Wrap an entity according to its type. Must have the corresponding tag !
          * @tparam T Type (Agent, Organisation, etc.)
          */
-        explicit TypeHandler(flecs::entity entity) : _entity{entity}{
-            assert(entity.has<T>());
-        };
+        explicit TypeHandler(flecs::entity entity) : _entity{entity}{};
 
         /**
          * @return The underlying entity. For more information see : https://flecs.docsforge.com/master/manual/#entity.
@@ -96,9 +94,7 @@ namespace dynamo {
          * Instantiate a handler for manipulating percept.
          * @param entity must be a percept !
          */
-        explicit TypeHandler(flecs::entity entity) : _entity{entity}{
-            assert(entity.has<type::Percept>());
-        };
+        explicit TypeHandler(flecs::entity entity) : _entity{entity}{};
 
         /**
          * @return The underlying entity. For more information see : https://flecs.docsforge.com/master/manual/#entity.
@@ -160,6 +156,7 @@ namespace dynamo {
             return TypeHandler<type::Percept>(world.entity()
                 .add<type::Percept>()
                 .add<relation::source>(source)
+                .add<relation::perceive>(source)
                 .add<T>());
         }
     };
