@@ -48,14 +48,21 @@ TEST_CASE("Basics") {
         CHECK(radio.has<type::Artefact>());
     }
 
+    struct Default{};
+
     SUBCASE("Percepts"){
         auto arthur = sim.agent("arthur");
         auto radio = sim.artefact("Radio");
         float ttl = 2.0f;
 
-        auto percept = sim.percept(radio, ttl);
+        auto percept = sim.percept<Default>(radio, ttl)
+                .perceived_by(arthur)
+                .get();
+
         CHECK(percept.has<type::Percept>());
+        CHECK(percept.has<Default>());
         CHECK(percept.has<component::Decay>());
+        CHECK(arthur.has<relation::perceive>(percept));
 
         sim.step(ttl); // To deplete decay cooldown
         sim.step(); // To delete entity

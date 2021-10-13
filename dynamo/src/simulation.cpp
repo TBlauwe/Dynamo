@@ -19,15 +19,6 @@ flecs::entity dynamo::Simulation::artefact(const char *name) {
             ;
 }
 
-flecs::entity dynamo::Simulation::percept(flecs::entity source, float ttl, const char *name) {
-    auto core = _world.get<module::Core>();
-    return  _world.entity()
-                .is_a(core->Percept)
-                .set<dynamo::component::Decay>({ttl})
-                .add<dynamo::relation::source>(source)
-                        ;
-}
-
 void dynamo::Simulation::step(float elapsed_time) {
     _world.progress(elapsed_time);
 }

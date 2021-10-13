@@ -3,6 +3,7 @@
 
 #include <dynamo/modules/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
+#include <dynamo/types.hpp>
 
 namespace dynamo{
 
@@ -38,7 +39,17 @@ namespace dynamo{
          * @param name      Identifier (can be empty).
          * @return
          */
-        flecs::entity percept(flecs::entity source, float ttl = 2.0f, const char * name = "");
+         template<typename TPerceptType>
+        PerceptBuilder percept(flecs::entity source, float ttl = 2.0f, const char * name = ""){
+            auto core = _world.get<module::Core>();
+            return  PerceptBuilder(_world.entity()
+                                        .is_a(core->Percept)
+                                        .set<dynamo::component::Decay>({ttl})
+                                        .add<dynamo::relation::source>(source)
+                                        .add<TPerceptType>()
+                                                );
+        };
+
 
         /**
          * Advance simulation by one-step and specify elapsed time.

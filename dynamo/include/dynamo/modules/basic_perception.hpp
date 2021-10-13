@@ -41,7 +41,7 @@ namespace dynamo{
                                         .set(iter.term_id(1).object())
                                         .add<dynamo::relation::source>(e);
                                 for(flecs::entity_view& entity_view : targets[i].entities){
-                                    entity_view.mut(e).add<relation::perceive<senses::Hearing>>(percept);
+                                    entity_view.mut(e).add<relation::perceive>(percept);
                                 }
                                 e.set<component::Cooldown, component::PeriodicEmitter>({periodic_emitter[i].cooldown});
                             }

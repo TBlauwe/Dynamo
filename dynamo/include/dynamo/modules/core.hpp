@@ -46,10 +46,8 @@ namespace dynamo{
 
     namespace relation{
         /**
-         * Relation from an entity A to a percept B : "A perceive<TType> B"
-         * @tparam TType By which means A perceive B, typically a sense like hearing, etc.
+         * Relation from an entity A to a percept B : "A perceive B"
          */
-        template<typename TType>
         struct perceive{};
 
         /**
