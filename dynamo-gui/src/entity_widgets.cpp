@@ -3,6 +3,7 @@
 #include <dynamo/gui/widgets/component_widgets.hpp>
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
+#include <spdlog/fmt/bundled/format.h>
 
 
 namespace dynamo_gui::widget {

@@ -1,9 +1,9 @@
 #ifndef DYNAMO_SIMULATION_HPP
 #define DYNAMO_SIMULATION_HPP
 
-#include <dynamo/modules/core.hpp>
+#include <dynamo/internal/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
-#include <dynamo/types.hpp>
+#include <spdlog/fmt/bundled/format.h>
 
 namespace dynamo{
 
@@ -12,7 +12,28 @@ namespace dynamo{
      */
     class Simulation{
     private:
+        /**
+         * ECS Database. For more information, see https://flecs.docsforge.com/master/quickstart/#world.
+         */
         flecs::world    _world {};
+
+    public:
+        /**
+         * Query for all agents :
+         * Usage :
+         *  @code
+         *      agents_query.each([](flecs::entity e, type::Agent& agent){
+         *          //...
+         *      };
+         *
+         *      agents_query.iter([](flecs::iter& iter){
+         *          for(auto i : iter){
+         *              //...
+         *          }
+         *      };
+         *  @endcode
+         */
+        flecs::query<type::Agent> agents_query;
 
     public:
         /**
@@ -24,30 +45,23 @@ namespace dynamo{
          * Create a ready to use "Agent" entity with the specified name.
          * @param name Handle for this entity.
          */
-        flecs::entity agent(const char * name = "");
+        TypeHandler<type::Agent> agent(const char * name = "");
 
         /**
          * Create a ready to use "Artefact" entity with the specified name.
          * @param name Handle for this entity.
          */
-        flecs::entity artefact(const char * name = "");
+        TypeHandler<type::Artefact> artefact(const char * name = "");
 
         /**
          * Create a ready to use "Percept" entity with the specified name and the specified source.
-         * @param source    From which entity this percept comes from ?
-         * @param ttl       How much time should this percept stay alive ? Default: 2.0f
-         * @param name      Identifier (can be empty).
+         * @param source        From which entity this percept comes from ?
+         * @tparam TSense       Which sense is responsible for perceiving this percept ?
          * @return
          */
-         template<typename TPerceptType>
-        PerceptBuilder percept(flecs::entity source, float ttl = 2.0f, const char * name = ""){
-            auto core = _world.get<module::Core>();
-            return  PerceptBuilder(_world.entity()
-                                        .is_a(core->Percept)
-                                        .set<dynamo::component::Decay>({ttl})
-                                        .add<dynamo::relation::source>(source)
-                                        .add<TPerceptType>()
-                                                );
+         template<typename TSense>
+        TypeHandler<type::Percept> percept(flecs::entity source){
+            return  TypeBuilder<type::Percept>(_world).source<TSense>(source);
         };
 
 
@@ -69,6 +83,23 @@ namespace dynamo{
          */
         flecs::world& world();
     };
+
+    /**
+     * Helper function to add a tag TTag, each time an entity with TTerm is added.
+     * @tparam TTag Tag to add to TTerm
+     * @tparam TTerm Trigger when this term is added.
+     * @param world  Ref to world
+     * @param tag_name Human readable name for the tag (for debugging)
+     * @param term_name Human readable name for the term (for debugging)
+     */
+    template<typename TTag, typename TTerm>
+    void add_tag_to(flecs::world& world, const char * tag_name, const char * term_name){
+        world.system<const TTerm>(fmt::format("OnAdd_{}_Add{}", term_name, tag_name).c_str())
+                .kind(flecs::OnAdd)
+                .each([](flecs::entity e, const TTerm& term){
+                    e.set<TTag>({});
+                });
+    }
 }//namespace dynamo
 
 #endif //DYNAMO_SIMULATION_HPP

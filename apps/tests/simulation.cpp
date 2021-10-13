@@ -9,12 +9,6 @@ TEST_CASE("Basics") {
 
     SUBCASE("Loaded modules"){
         CHECK(sim.world().has<module::Core>());
-        auto core = sim.world().get<module::Core>();
-        CHECK(core->Action.is_valid());
-        CHECK(core->Agent.is_valid());
-        CHECK(core->Artefact.is_valid());
-        CHECK(core->Organisation.is_valid());
-        CHECK(core->Percept.is_valid());
     }
 
     SUBCASE("Running"){
@@ -39,29 +33,31 @@ TEST_CASE("Basics") {
     }
 
     SUBCASE("Agents"){
-        auto arthur = sim.agent("Arthur");
+        auto arthur = sim.agent("Arthur").entity();
         CHECK(arthur.has<type::Agent>());
     }
 
     SUBCASE("Artefacts"){
-        auto radio = sim.artefact("Radio");
+        auto radio = sim.artefact("Radio").entity();
         CHECK(radio.has<type::Artefact>());
     }
 
     struct Default{};
 
     SUBCASE("Percepts"){
-        auto arthur = sim.agent("arthur");
-        auto radio = sim.artefact("Radio");
+        auto arthur = sim.agent("arthur").entity();
+        auto radio = sim.artefact("Radio").entity();
         float ttl = 2.0f;
 
-        auto percept = sim.percept<Default>(radio, ttl)
+        auto percept = sim.percept<Default>(radio)
+                .decay(ttl)
                 .perceived_by(arthur)
-                .get();
+                .entity();
 
         CHECK(percept.has<type::Percept>());
         CHECK(percept.has<Default>());
         CHECK(percept.has<component::Decay>());
+        CHECK(percept.get<component::Decay>()->ttl);
         CHECK(arthur.has<relation::perceive>(percept));
 
         sim.step(ttl); // To deplete decay cooldown
@@ -70,16 +66,15 @@ TEST_CASE("Basics") {
     }
 
     SUBCASE("Queries"){
-        auto core = sim.world().get<module::Core>();
         sim.agent("Arthur");
         sim.agent("Arthur");
         sim.agent("Bob");
 
         int count = 0;
-        core->agents_query.each([&count](flecs::entity entity, type::Agent& agent){
+        sim.agents_query.each([&count](flecs::entity entity, type::Agent& agent){
             count++;
         });
-        CHECK(count == 3);
+        CHECK(count == 2);
     }
 
 }

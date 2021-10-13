@@ -20,21 +20,17 @@ public:
     Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox")
     {
-        auto core = sim.world().get<dynamo::module::Core>();
-
         int n = 10;
         for(int i = 0; i<n; i++){
-            sim.world().entity(fmt::format("Agent {}", i).c_str())
-                .is_a(core->Agent);
+            sim.agent(fmt::format("Agent {}", i).c_str());
         }
 
         std::vector<flecs::entity_view> agents {};
-        core->agents_query.each([&agents](flecs::entity agent, dynamo::type::Agent& _){
+        sim.agents_query.each([&agents](flecs::entity agent, dynamo::type::Agent& _){
             agents.emplace_back(agent);
         });
 
-        sim.world().entity("Radio")
-            .is_a(core->Artefact)
+        sim.artefact("Radio").entity()
             .set<dynamo::component::PeriodicEmitter, dynamo::component::Message>({0.5f})
             .set<dynamo::component::Targets>({agents});
     }

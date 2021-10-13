@@ -1,7 +1,8 @@
 #ifndef DYNAMO_BASIC_PERCEPTION_HPP
 #define DYNAMO_BASIC_PERCEPTION_HPP
 
-#include <dynamo/modules/core.hpp>
+#include <dynamo/internal/core.hpp>
+#include <string>
 
 namespace dynamo{
     namespace senses{
@@ -27,21 +28,20 @@ namespace dynamo{
         struct GlobalPerception{
             explicit GlobalPerception(flecs::world& world){
                 world.module<GlobalPerception>();
-                auto& core = dynamo::module_ref<module::Core>(world.import<module::Core>());
+                world.import<module::Core>();
 
                 world.system<component::PeriodicEmitter, component::Targets>("PeriodicEmitter")
                         .term<component::Cooldown>().object<component::PeriodicEmitter>().oper(flecs::Not)
                         .arg(1).object(flecs::Wildcard) // <- PeriodicEmitter is actually a pair type with anything
-                        .iter([&core](flecs::iter& iter, component::PeriodicEmitter* periodic_emitter, component::Targets* targets) {
+                        .iter([](flecs::iter& iter, component::PeriodicEmitter* periodic_emitter, component::Targets* targets) {
                             for(auto i : iter){
                                 auto e = iter.entity(i);
-                                flecs::entity percept = e.world().entity()
-                                        .is_a(core.Percept)
-                                        .set<dynamo::component::Decay>({2.0f})
-                                        .set(iter.term_id(1).object())
-                                        .add<dynamo::relation::source>(e);
+                                auto world = e.world();
+                                auto percept = TypeBuilder<type::Percept>(world)
+                                        .source<senses::Hearing>(e)
+                                        .decay();
                                 for(flecs::entity_view& entity_view : targets[i].entities){
-                                    entity_view.mut(e).add<relation::perceive>(percept);
+                                    percept.perceived_by(entity_view);
                                 }
                                 e.set<component::Cooldown, component::PeriodicEmitter>({periodic_emitter[i].cooldown});
                             }

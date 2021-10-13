@@ -1,7 +1,7 @@
 #ifndef DYNAMO_COMPONENT_WIDGETS_HPP
 #define DYNAMO_COMPONENT_WIDGETS_HPP
 
-#include <dynamo/modules/core.hpp>
+#include <flecs.h>
 #include <imgui.h>
 
 namespace dynamo_gui::widget {

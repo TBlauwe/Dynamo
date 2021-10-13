@@ -3,20 +3,16 @@
 dynamo::Simulation::Simulation() {
     _world.import<module::Core>();
     _world.import<module::GlobalPerception>();
+
+    agents_query = _world.query<dynamo::type::Agent>();
 }
 
-flecs::entity dynamo::Simulation::agent(const char * name) {
-    auto core = _world.get<module::Core>();
-    return _world.entity()
-        .is_a(core->Agent)
-        ;
+dynamo::TypeHandler<dynamo::type::Agent> dynamo::Simulation::agent(const char * name) {
+    return TypeBuilder<dynamo::type::Agent>(_world).create(name);
 }
 
-flecs::entity dynamo::Simulation::artefact(const char *name) {
-    auto core = _world.get<module::Core>();
-    return _world.entity()
-            .is_a(core->Artefact)
-            ;
+dynamo::TypeHandler<dynamo::type::Artefact> dynamo::Simulation::artefact(const char *name) {
+    return TypeBuilder<dynamo::type::Artefact>(_world).create(name);
 }
 
 void dynamo::Simulation::step(float elapsed_time) {

@@ -9,6 +9,8 @@ struct Velocity {
     float x, y;
 };
 
+struct Default {};
+
 using namespace dynamo;
 int main(int argc, char** argv) {
     Simulation sim;
@@ -28,16 +30,15 @@ int main(int argc, char** argv) {
                 std::cout << "Entity : " << e.name() << " | Position : {" << p.x << "," << p.y << "}\n";
             });
 
-    auto entity = sim.world().entity("Arthur")
+    auto agent = sim.agent("Arthur").entity()
             .set([](Position& p, Velocity& v) {
                 p = {0, 0};
                 v = {1, 2};
             });
 
-    auto percept = sim.percept(entity);
-    std::cout << "Percept name ? " << percept.name() << "\n";
-    std::cout << "Percept is percept ? " << percept.has<type::Percept>() << "\n";
-    std::cout << "Percept has source ? " << percept.has<relation::source>() << "\n";
+    auto artefact = sim.artefact("Radio").entity();
+
+    auto percept = sim.percept<Default>(artefact);
 
     sim.world().set_target_fps(60);
     sim.step_n(100, 1.0f);

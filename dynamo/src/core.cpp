@@ -1,10 +1,8 @@
-#include <dynamo/modules/core.hpp>
+#include <dynamo/internal/core.hpp>
 
 namespace dynamo{
     module::Core::Core(flecs::world &world) {
         world.module<Core>();
-
-        agents_query = world.query<dynamo::type::Agent>();
 
         // ========== Pipeline ==========
 
@@ -39,34 +37,5 @@ namespace dynamo{
                 .each([](flecs::entity e, tag::CurrentFrame) {
                     e.remove<tag::CurrentFrame>();
                 });
-
-        // ========== Prefab ==========
-        //TODO when going to flecs v3 change add_owned by override
-
-        Action = world.prefab("action_prefab")
-                .add<type::Action>()
-                .add_owned<type::Action>()
-                ;
-
-        Agent = world.prefab("agent_prefab")
-                .add<type::Agent>()
-                .add_owned<type::Agent>()
-                ;
-
-        Artefact = world.prefab("artefact_prefab")
-                .add<type::Artefact>()
-                .add_owned<type::Artefact>()
-                ;
-
-        Organisation = world.prefab("organisation_prefab")
-                .add<type::Organisation>()
-                .add_owned<type::Organisation>()
-                ;
-
-        Percept = world.prefab("percept_prefab")
-                .add<type::Percept>()
-                .add_owned<type::Percept>()
-                ;
-
     }
 }

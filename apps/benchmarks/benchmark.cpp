@@ -55,13 +55,15 @@ BENCHMARK(BM_create_n_agent)
         ->Range(1<<0, 1<<14)
 ;
 
+struct Default{};
 static void BM_create_percept(benchmark::State& state) {
     for ([[maybe_unused]] auto _ : state) {
         state.PauseTiming();
         auto sim = dynamo::Simulation();
-        auto artefact = sim.artefact();
+        auto artefact = sim.artefact().entity();
+        auto arthur = sim.agent("Arthur").entity();
         state.ResumeTiming();
-        sim.percept(artefact);
+        sim.percept<Default>(artefact).decay().perceived_by(arthur);
     }
 }
 BENCHMARK(BM_create_percept)
