@@ -11,6 +11,6 @@ add_executable(Tests main.cpp simulation.cpp)
 target_compile_features(Tests PRIVATE cxx_std_20)
 target_link_libraries(Tests PRIVATE dynamo doctest::doctest)
 set_target_properties(Tests PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${Dynamo_SOURCE_DIR}/bin/Tests")
-add_test(NAME Dynamo::test COMMAND Tests)
+add_test(NAME Dynamo::doctest_all COMMAND Tests)
 
 # include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake) # Doesn't seem to work :/

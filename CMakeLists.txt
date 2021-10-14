@@ -34,11 +34,11 @@ set(FETCHCONTENT_QUIET TRUE)
 
 # Build options
 # -------------
-option(DYN_BUILD_DYNAMO_GUI     "Build a library using imgui for debugging a simulation." ON)
-option(DYN_BUILD_APPS           "Build several applications to showcase the library." ON)
-option(DYN_BUILD_BENCHMARKS     "Build benchmarks using google benchmarks." ON)
-option(DYN_BUILD_DOCS           "Build documentation using doxygen (must be installed)." ON)
-option(DYN_BUILD_TESTS          "Build tests using doctest." ON)
+option(DYN_BUILD_DYNAMO_GUI     "Build a library using imgui for debugging a simulation." OFF)
+option(DYN_BUILD_APPS           "Build several applications to showcase the library." OFF)
+option(DYN_BUILD_BENCHMARKS     "Build benchmarks using google benchmarks." OFF)
+option(DYN_BUILD_DOCS           "Build documentation using doxygen (must be installed)." OFF)
+option(DYN_BUILD_TESTS          "Build tests using doctest." OFF)
 option(DYN_ENABLE_TEST_COVERAGE "Enable test coverage. --UNUSED FEATURE--" OFF)
 MESSAGE(STATUS "Build options :")
 MESSAGE(STATUS "===============")
@@ -77,7 +77,6 @@ if(DYN_BUILD_DYNAMO_GUI)
 endif()
 
 if(DYN_BUILD_APPS)
-    MESSAGE(STATUS "applications")
     add_subdirectory(apps)
 endif()
 

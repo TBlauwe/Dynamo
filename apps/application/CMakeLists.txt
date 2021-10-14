@@ -1,3 +1,5 @@
+MESSAGE(STATUS "applications")
+MESSAGE(STATUS "------------")
 find_package(Vulkan REQUIRED FATAL_ERROR)
 
 CPMAddPackage(
@@ -13,6 +15,7 @@ if(glfw_ADDED)
 else()
     MESSAGE(FATAL_ERROR "Could not fetch glfw3")
 endif ()
+MESSAGE(STATUS "------------")
 
 
 # Now we can build imgui and its addons
