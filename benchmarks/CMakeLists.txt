@@ -22,3 +22,10 @@ add_executable(Benchmarks benchmark.cpp)
 target_compile_features(Benchmarks PRIVATE cxx_std_20)
 target_link_libraries(Benchmarks PRIVATE dynamo benchmark::benchmark)
 set_target_properties(Benchmarks PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${Dynamo_SOURCE_DIR}/bin/Benchmarks")
+
+# copy compare.py tools and its requirements for ease of use
+add_custom_command(TARGET Benchmarks POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:Benchmarks>/tools)
+add_custom_command(TARGET Benchmarks POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${benchmark_SOURCE_DIR}/tools $<TARGET_FILE_DIR:Benchmarks>/tools)
