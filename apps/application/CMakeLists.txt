@@ -1,12 +1,5 @@
-MESSAGE(STATUS ">>>>> Building application")
-
-include(${Dynamo_SOURCE_DIR}/cmake/CPM.cmake)
-
-message(STATUS "Checking if vulkan sdk is installed")
 find_package(Vulkan REQUIRED FATAL_ERROR)
-MESSAGE(STATUS " ------------------------------------")
 
-message(STATUS "Fetching GLFW3")
 CPMAddPackage(
         NAME glfw
         GITHUB_REPOSITORY glfw/glfw
@@ -16,28 +9,29 @@ CPMAddPackage(
         "GLFW_BUILD_EXAMPLES OFF"
         "GLFW_BUILD_DOCS OFF"
 )
-MESSAGE(STATUS " ------------------------------------")
+if(glfw_ADDED)
+else()
+    MESSAGE(FATAL_ERROR "Could not fetch glfw3")
+endif ()
 
-message(STATUS "Building imgui and addons")
-if (imgui_ADDED)
-    FILE(GLOB imgui_SOURCES ${imgui_SOURCE_DIR}/*.cpp)
-    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp)
-    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
-    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
-    list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
-    list(APPEND imgui_SOURCES ${imnodes_SOURCE_DIR}/imnodes.cpp)
-    list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot.cpp)
-    list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot_demo.cpp)
-    list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot_items.cpp)
-    add_library(imgui STATIC ${imgui_SOURCES})
-    target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
-    target_include_directories(imgui PUBLIC
-            ${imgui_SOURCE_DIR}
-            ${imnodes_SOURCE_DIR}
-            ${implot_SOURCE_DIR}
-            )
-endif()
-MESSAGE(STATUS " ------------------------------------")
+
+# Now we can build imgui and its addons
+FILE(GLOB imgui_SOURCES ${imgui_SOURCE_DIR}/*.cpp)
+list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp)
+list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp)
+list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+list(APPEND imgui_SOURCES ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp)
+list(APPEND imgui_SOURCES ${imnodes_SOURCE_DIR}/imnodes.cpp)
+list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot.cpp)
+list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot_demo.cpp)
+list(APPEND imgui_SOURCES ${implot_SOURCE_DIR}/implot_items.cpp)
+add_library(imgui STATIC ${imgui_SOURCES})
+target_link_libraries(imgui PUBLIC glfw Vulkan::Vulkan)
+target_include_directories(imgui PUBLIC
+        ${imgui_SOURCE_DIR}
+        ${imnodes_SOURCE_DIR}
+        ${implot_SOURCE_DIR}
+        )
 
 add_library(app
         src/application.cpp

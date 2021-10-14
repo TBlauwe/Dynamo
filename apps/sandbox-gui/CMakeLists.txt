@@ -1,4 +1,4 @@
-MESSAGE(STATUS ">>>>> Building Sandbox GUI")
+MESSAGE(STATUS "Building sandbox GUI")
 
 include(${Dynamo_SOURCE_DIR}/cmake/CPM.cmake)
 

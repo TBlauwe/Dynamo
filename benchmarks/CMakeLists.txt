@@ -1,8 +1,3 @@
-MESSAGE(STATUS " =======================================")
-MESSAGE(STATUS "                 BENCHMARKS")
-MESSAGE(STATUS " =======================================")
-
-MESSAGE(STATUS "Fetching google/benchmark")
 CPMAddPackage(
         NAME benchmark
         GITHUB_REPOSITORY google/benchmark
@@ -12,11 +7,9 @@ CPMAddPackage(
 if(benchmark_ADDED)
     # enable c++11 to avoid compilation errors
     set_target_properties(benchmark PROPERTIES CXX_STANDARD 11)
-endif()
-MESSAGE(STATUS " ------------------------------------")
-
-
-MESSAGE(STATUS ">>>>> Building benchmarks")
+else()
+    MESSAGE(FATAL_ERROR "Could not fetch google/benchmark")
+endif ()
 
 add_executable(Benchmarks benchmark.cpp)
 target_compile_features(Benchmarks PRIVATE cxx_std_20)
