@@ -53,7 +53,7 @@ CPMAddPackage(
         GIT_TAG v3.2.0
         OPTIONS
         "TF_BUILD_TESTS OFF"
-        "TF_BUILD_EXAMPLE OFF"
+        "TF_BUILD_EXAMPLES OFF"
 )
 if (taskflow_ADDED)
     MESSAGE(STATUS "Fetching taskflow - done")
