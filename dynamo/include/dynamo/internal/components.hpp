@@ -2,6 +2,7 @@
 #define DYNAMO_COMPONENTS_HPP
 
 #include <vector>
+#include <taskflow/taskflow.hpp>
 
 namespace dynamo{
     namespace tag{
@@ -41,6 +42,14 @@ namespace dynamo{
              * A vector of entities view. Call mut(...), if you need to modify it.
              */
             std::vector<flecs::entity_view> entities;
+        };
+
+        struct AgentModel{
+            tf::Taskflow taskflow {};
+        };
+
+        struct Reasoner{
+            tf::Future<void> taskflow {};
         };
     }
 }

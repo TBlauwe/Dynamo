@@ -5,6 +5,15 @@ dynamo::Simulation::Simulation() {
     _world.import<module::GlobalPerception>();
 
     agents_query = _world.query<dynamo::type::Agent>();
+
+    // ========== Trigger ==========
+
+    _world.observer<component::AgentModel>()
+            .event(flecs::OnSet)
+            .each([this](flecs::entity e, component::AgentModel& model){
+                e.set<component::Reasoner>({executor.run(model.taskflow)});
+                e.remove<component::AgentModel>();
+            });
 }
 
 dynamo::TypeHandler<dynamo::type::Agent> dynamo::Simulation::agent(const char * name) {

@@ -7,7 +7,6 @@ int main(int argc, char** argv) {
     // Create an empty simulation
     Simulation sim;
 
-    //TODO Transivity seems to not be supported by observer. Test with query !
     sim.world().observer<>()
             .term<type::Agent>()
             .term<relation::perceive>(flecs::Wildcard)
@@ -31,6 +30,19 @@ int main(int argc, char** argv) {
             .perceived_by(bob.entity())
             .perceived_by(arthur.entity())
             ;
+
+    arthur.entity().add<component::AgentModel>();
+    tf::Taskflow& taskflow = arthur.entity().get_mut<component::AgentModel>()->taskflow;
+    auto [A, B, C, D] = taskflow.emplace(  // create four tasks
+            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskA\n"; },
+            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskB\n"; },
+            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskC\n"; },
+            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskD\n"; }
+    );
+    A.precede(B, C);  // A runs before B and C
+    D.succeed(B, C);  // D runs after  B and C
+
+    arthur.entity().modified<component::AgentModel>();
 
     return 0;
 }

@@ -16,6 +16,7 @@ namespace dynamo{
          * ECS Database. For more information, see https://flecs.docsforge.com/master/quickstart/#world.
          */
         flecs::world    _world {};
+        tf::Executor    executor {};
 
     public:
         /**
