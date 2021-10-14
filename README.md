@@ -11,10 +11,12 @@ C++ library to simulate agents evolving withing a world. Agents run according to
 // ... somewhere in your code
 auto sim = dynamo::Simulation(); // Initialize an empty simulation
 
-// ... define cognitive models
 // ... define domain data
+// ... define cognitive models
 // ... define agent model
-sim.create_percept<>();
+
+auto artefact = sim.artefact("An artefact")
+sim.percept<your::senses>(artefact.entity());
 
 sim.step(); // advance simulation by one step
 sim.step(1.0f); // advance simulation by one step as if 1 second has passed
