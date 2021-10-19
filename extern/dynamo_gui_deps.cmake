@@ -38,3 +38,16 @@ endif ()
 
 add_library(icon_font INTERFACE)
 target_include_directories(icon_font INTERFACE ${IconFontCppHeaders_SOURCE_DIR})
+
+MESSAGE(STATUS "Fetching ogdf ...")
+CPMAddPackage(
+        NAME ogdf
+        GITHUB_REPOSITORY ogdf/ogdf
+        GIT_TAG catalpa-202002
+)
+if (ogdf_ADDED)
+    MESSAGE(STATUS "Fetching ogdf - done")
+    MESSAGE(STATUS "--------------------")
+else()
+    MESSAGE(FATAL_ERROR "Could not fetch odgf")
+endif ()

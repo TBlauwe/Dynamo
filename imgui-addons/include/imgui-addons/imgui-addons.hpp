@@ -12,6 +12,34 @@
 #include <IconsFontAwesome5.h>
 #include <boost/circular_buffer.hpp>
 
+namespace ImGui {
+    // Some predefined ImGui colors with variants (RGBA):
+    // n = normal variant
+    // h = hovered variant
+    // h = selected variant
+    enum Color {
+        BLUE_n = IM_COL32(10, 87, 143, 255),
+        BLUE_h = IM_COL32(31, 140, 219, 255),
+        BLUE_s = IM_COL32(61, 175, 255, 255),
+
+        ORANGE_n = IM_COL32(143, 74, 0, 255),
+        ORANGE_h = IM_COL32(219, 113, 0, 255),
+        ORANGE_s = IM_COL32(255, 144, 25, 255),
+
+        GREEN_n = IM_COL32(14, 117, 0, 255),
+        GREEN_h = IM_COL32(21, 181, 0, 255),
+        GREEN_s = IM_COL32(27, 245, 0, 255),
+
+        RED_n = IM_COL32(117, 25, 0, 255),
+        RED_h = IM_COL32(181, 39, 0, 255),
+        RED_s = IM_COL32(245, 53, 0, 255),
+
+        GRAY_n = IM_COL32(70, 70, 70, 255),
+        GRAY_h = IM_COL32(119, 119, 119, 255),
+        GRAY_s = IM_COL32(177, 177, 177, 255)
+    };
+}
+
 namespace ImGui::Addons{
 
     void InputFloatColor(float& value);

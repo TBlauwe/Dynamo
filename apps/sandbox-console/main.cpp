@@ -1,14 +1,21 @@
 #include <dynamo/simulation.hpp>
 #include <iostream>
 
+#include <ogdf/fileformats/GraphIO.h>
+#include <ogdf/layered/MedianHeuristic.h>
+#include <ogdf/layered/OptimalHierarchyLayout.h>
+#include <ogdf/layered/OptimalRanking.h>
+#include <ogdf/layered/SugiyamaLayout.h>
+
 using namespace dynamo;
+
 int main(int argc, char** argv) {
 
     // Create an empty simulation
     Simulation sim;
 
     sim.world().observer<>()
-            .term<type::Agent>()
+            .term<::dynamo::type::Agent>()
             .term<relation::perceive>(flecs::Wildcard)
             .event(flecs::OnAdd)
             .iter([](flecs::iter& iter){
@@ -31,18 +38,79 @@ int main(int argc, char** argv) {
             .perceived_by(arthur.entity())
             ;
 
-    arthur.entity().add<component::AgentModel>();
-    tf::Taskflow& taskflow = arthur.entity().get_mut<component::AgentModel>()->taskflow;
-    auto [A, B, C, D] = taskflow.emplace(  // create four tasks
-            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskA\n"; },
-            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskB\n"; },
-            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskC\n"; },
-            [&arthur] () { std::cout << arthur.entity().name() << " is doing TaskD\n"; }
-    );
+    tf::Taskflow f1;
+    f1.name("Some");
+
+    // create taskflow f1 of two tasks
+    tf::Task f1A = f1.emplace([](){}).name("f1A");
+    tf::Task f1B = f1.emplace([](){}).name("f1B");
+
+    tf::Taskflow taskflow;
+    taskflow.name("Test");
+    tf::Task A = taskflow.emplace([](){}).name("A");
+    tf::Task C = taskflow.emplace([](){}).name("C");
+    tf::Task D = taskflow.emplace([](){}).name("D");
+
+    tf::Task B = taskflow.emplace([] (tf::Subflow& subflow) {
+        tf::Task B1 = subflow.emplace([](){}).name("B1");
+        tf::Task B2 = subflow.emplace([](){}).name("B2");
+        tf::Task B3 = subflow.emplace([](){}).name("B3");
+        B3.succeed(B1, B2);  // B3 runs after B1 and B2
+    }).name("B");
+
+    taskflow.emplace([](){}).name("lonely");
+
+    tf::Task module = taskflow.composed_of(f1).name("module");
+    A.succeed(module);
     A.precede(B, C);  // A runs before B and C
     D.succeed(B, C);  // D runs after  B and C
+    sim.executor.run(taskflow);
 
-    arthur.entity().modified<component::AgentModel>();
+    taskflow.for_each_task([](tf::Task task){
+        switch(task.type()){
+            case tf::TaskType::MODULE:
+                std::cout << "[" << to_string(task.type()) << "] " << task.name() << "\n";
+                break;
+            case tf::TaskType::PLACEHOLDER:
+            case tf::TaskType::CUDAFLOW:
+            case tf::TaskType::SYCLFLOW:
+            case tf::TaskType::STATIC:
+            case tf::TaskType::DYNAMIC:
+            case tf::TaskType::CONDITION:
+            case tf::TaskType::ASYNC:
+            case tf::TaskType::UNDEFINED:
+            default:
+                std::cout << "[" << to_string(task.type()) << "] " << task.name() << "\n";
+                break;
+        }
+    });
+
+    ogdf::Graph G;
+    ogdf::GraphAttributes GA(G,
+                       ogdf::GraphAttributes::nodeGraphics |
+                       ogdf::GraphAttributes::edgeGraphics |
+                       ogdf::GraphAttributes::nodeLabel |
+                       ogdf::GraphAttributes::edgeStyle |
+                       ogdf::GraphAttributes::nodeStyle |
+                       ogdf::GraphAttributes::nodeTemplate);
+
+
+    // Layout
+    for (ogdf::node v : G.nodes)
+        GA.width(v) = GA.height(v) = 5.0;
+
+    ogdf::SugiyamaLayout SL;
+    SL.setRanking(new ogdf::OptimalRanking);
+    SL.setCrossMin(new ogdf::MedianHeuristic);
+
+    auto *ohl = new ogdf::OptimalHierarchyLayout;
+    ohl->layerDistance(30.0);
+    ohl->nodeDistance(25.0);
+    ohl->weightBalancing(0.8);
+    SL.setLayout(ohl);
+
+    SL.call(GA);
+    sim.executor.wait_for_all();
 
     return 0;
 }
