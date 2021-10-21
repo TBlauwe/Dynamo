@@ -1,21 +1,12 @@
 #include <dynamo/simulation.hpp>
 #include <iostream>
 
-#include <ogdf/fileformats/GraphIO.h>
 #include <ogdf/layered/MedianHeuristic.h>
 #include <ogdf/layered/OptimalHierarchyLayout.h>
 #include <ogdf/layered/OptimalRanking.h>
 #include <ogdf/layered/SugiyamaLayout.h>
 
 using namespace dynamo;
-
-class Process{
-    tf::Executor& executor;
-
-public:
-    Process(tf::Executor& executor) : executor{executor} {}
-
-};
 
 int main(int argc, char** argv) {
 
