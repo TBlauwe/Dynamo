@@ -47,13 +47,13 @@ namespace dynamo{
          * Create a ready to use "Agent" entity with the specified name.
          * @param name Handle for this entity.
          */
-        TypeHandler<type::Agent> agent(const char * name = "");
+        Agent agent(const char * name = "");
 
         /**
          * Create a ready to use "Artefact" entity with the specified name.
          * @param name Handle for this entity.
          */
-        TypeHandler<type::Artefact> artefact(const char * name = "");
+        Artefact artefact(const char * name = "");
 
         /**
          * Create a ready to use "Percept" entity with the specified name and the specified source.
@@ -61,11 +61,10 @@ namespace dynamo{
          * @tparam TSense       Which sense is responsible for perceiving this percept ?
          * @return
          */
-         template<typename TSense>
-        TypeHandler<type::Percept> percept(flecs::entity source){
-            return  TypeBuilder<type::Percept>(_world).source<TSense>(source);
+        template<typename TSense>
+        Percept percept(flecs::entity source){
+            return  PerceptBuilder(_world).source<TSense>(source);
         };
-
 
         /**
          * Advance simulation by one-step and specify elapsed time.

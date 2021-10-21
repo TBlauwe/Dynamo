@@ -42,72 +42,58 @@ namespace dynamo {
     }
 
     /**
-     * Common function used by type handler.
-     * @tparam T
+     * Entity wrapper (for convenience).
      */
-    template<typename T>
-    class TypeHandler {
-        flecs::entity _entity;
+    class EntityWrapper {
+    protected:
+        flecs::entity m_entity;
     public:
         /**
          * Wrap an entity according to its type. Must have the corresponding tag !
-         * @tparam T Type (Agent, Organisation, etc.)
          */
-        explicit TypeHandler(flecs::entity entity) : _entity{entity}{};
+        explicit EntityWrapper(flecs::entity entity) : m_entity{entity}{};
 
         /**
          * @return The underlying entity. For more information see : https://flecs.docsforge.com/master/manual/#entity.
          */
-        flecs::entity entity() { return _entity; }
+        flecs::entity entity() { return m_entity; }
     };
 
-    /**
-     * Builder to create an entity with specified type.
-     * @tparam T Type of the entity.
-     */
-    template<typename T>
-    class TypeBuilder {
-        flecs::world& world;
+    class Action : public EntityWrapper{
     public:
-        /**
-         * Create a builder for the specified type.
-         * @param world
-         */
-        explicit TypeBuilder(flecs::world& world) : world{world}{};
-
-        /**
-         * return an entity with the specified name and the correspoding component.
-         * @param name Name of the entity
-         * @return A handler to manipulate the entity
-         */
-        TypeHandler<T> create(const char * name) { return TypeHandler<T>(world.entity(name).add<T>()); }
+        explicit Action(flecs::entity entity) : EntityWrapper(entity){};
+    };
+    class Agent : public EntityWrapper{
+    public:
+        explicit Agent(flecs::entity entity) : EntityWrapper(entity){};
+    };
+    class Artefact : public EntityWrapper{
+    public:
+        explicit Artefact(flecs::entity entity) : EntityWrapper(entity){};
+    };
+    class Organisation : public EntityWrapper{
+    public:
+        explicit Organisation(flecs::entity entity) : EntityWrapper(entity){};
     };
 
     /**
-     * Handler to manipulate a percept.
+     * Manipulate a percept
      */
-    template<>
-    class TypeHandler<type::Percept>{
-        flecs::entity _entity;
+    class Percept : public EntityWrapper{
     public:
         /**
          * Instantiate a handler for manipulating percept.
          * @param entity must be a percept !
          */
-        explicit TypeHandler(flecs::entity entity) : _entity{entity}{};
-
-        /**
-         * @return The underlying entity. For more information see : https://flecs.docsforge.com/master/manual/#entity.
-         */
-        flecs::entity entity() { return _entity; }
+        explicit Percept(flecs::entity entity) : EntityWrapper(entity){};
 
         /**
          * Add a relation "relation::perceive" from the given entity e to this percept
          * @param e entity perceiving this percept
          * @return
          */
-        TypeHandler<type::Percept>& perceived_by(flecs::entity e){
-            e.mut(e).add<relation::perceive>(_entity);
+        Percept& perceived_by(flecs::entity e){
+            e.mut(e).add<relation::perceive>(m_entity);
             return *this;
         }
 
@@ -116,8 +102,8 @@ namespace dynamo {
          * @param e entity perceiving this percept
          * @return
          */
-        TypeHandler<type::Percept>& perceived_by(flecs::entity_view e){
-            e.mut(_entity).add<relation::perceive>(_entity);
+        Percept& perceived_by(flecs::entity_view e){
+            e.mut(m_entity).add<relation::perceive>(m_entity);
             return *this;
         }
 
@@ -126,40 +112,96 @@ namespace dynamo {
          * @param ttl how much time should this entity live ?
          * @return
          */
-        TypeHandler<type::Percept>& decay(float ttl = 2.0f){
-            _entity.set<component::Decay>({ttl});
+        Percept& decay(float ttl = 2.0f){
+            m_entity.set<component::Decay>({ttl});
             return *this;
+        }
+    };
+
+    /**
+     * Builder to create an entity with specified type.
+     * @tparam TObj Object returned by the builder
+     * @tparam TTag Tad added to the entity
+     */
+    template<typename TObj, typename TTag>
+    class Builder {
+    protected:
+        flecs::world& world;
+        flecs::entity entity;
+
+    public:
+        explicit Builder(flecs::world& world) : world{world}, entity{world.entity()}{
+            entity.add<TTag>();
+        };
+
+        explicit Builder(flecs::world& world, const char * name) : world{world}, entity{world.entity(name)}{
+            entity.add<TTag>();
+        };
+    };
+
+    class ActionBuilder : public Builder<Action, type::Action> {
+    public:
+        explicit ActionBuilder(flecs::world& world, const char * name) : Builder<Action, type::Action>(world, name){};
+
+        Action build() {
+            return Action(entity);
+        }
+    };
+
+    class AgentBuilder : public Builder<Agent, type::Agent> {
+    public:
+        explicit AgentBuilder(flecs::world& world, const char * name) : Builder<Agent, type::Agent>(world, name){};
+
+        Agent build() {
+            return Agent(entity);
+        }
+    };
+
+    class ArtefactBuilder : public Builder<Artefact, type::Artefact> {
+    public:
+        explicit ArtefactBuilder(flecs::world& world, const char * name) : Builder<Artefact, type::Artefact>(world, name){};
+
+        Artefact build() {
+            return Artefact(entity);
+        }
+    };
+
+    class OrganisationBuilder : public Builder<Organisation, type::Organisation> {
+    public:
+        explicit OrganisationBuilder(flecs::world& world, const char * name) : Builder<Organisation, type::Organisation>(world, name){};
+
+        Organisation build() {
+            return Organisation(entity);
         }
     };
 
     /**
      * Specialization for building percepts as we need to specify its type at creation and its source.
      */
-    template<>
-    class TypeBuilder<type::Percept> {
-        flecs::world& world;
+    class PerceptBuilder : public Builder<Percept, type::Percept> {
     public:
         /**
          * Builder to instantiate a new percept within the specified world
          * @param world
          */
-        explicit TypeBuilder(flecs::world& world) : world{world}{};
+        explicit PerceptBuilder(flecs::world& world) : Builder<Percept, type::Percept>(world){};
 
         /**
          * A percept must be coming from a source, to add a relation "percept source object"
-         * @tparam T
+         * @tparam Sense type of sense
          * @param source entity responsible for the creation of this percept
          * @return
          */
-        template<typename T>
-        TypeHandler<type::Percept> source(flecs::entity source) {
-            return TypeHandler<type::Percept>(world.entity()
-                .add<type::Percept>()
-                .add<relation::source>(source)
-                .add<relation::perceive>(source)
-                .add<T>());
+        template<typename Sense>
+        Percept source(flecs::entity source) {
+            return Percept(entity
+                    .add<relation::source>(source)
+                    .add<relation::perceive>(source)
+                    .add<Sense>()
+            );
         }
     };
+
 
 }// namespace dynamo
 #endif //DYNAMO_TYPES_HPP

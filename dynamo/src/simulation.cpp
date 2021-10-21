@@ -16,12 +16,12 @@ dynamo::Simulation::Simulation() {
             });
 }
 
-dynamo::TypeHandler<dynamo::type::Agent> dynamo::Simulation::agent(const char * name) {
-    return TypeBuilder<dynamo::type::Agent>(_world).create(name);
+dynamo::Agent dynamo::Simulation::agent(const char * name) {
+    return AgentBuilder(_world, name).build();
 }
 
-dynamo::TypeHandler<dynamo::type::Artefact> dynamo::Simulation::artefact(const char *name) {
-    return TypeBuilder<dynamo::type::Artefact>(_world).create(name);
+dynamo::Artefact dynamo::Simulation::artefact(const char *name) {
+    return ArtefactBuilder(_world, name).build();
 }
 
 void dynamo::Simulation::step(float elapsed_time) {

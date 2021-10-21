@@ -9,6 +9,14 @@
 
 using namespace dynamo;
 
+class Process{
+    tf::Executor& executor;
+
+public:
+    Process(tf::Executor& executor) : executor{executor} {}
+
+};
+
 int main(int argc, char** argv) {
 
     // Create an empty simulation
