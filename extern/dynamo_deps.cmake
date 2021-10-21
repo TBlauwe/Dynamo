@@ -39,13 +39,6 @@ else()
     MESSAGE(FATAL_ERROR "Could not fetch flecs")
 endif ()
 
-MESSAGE(STATUS "Fetching boost ... (via boost-cmake)")
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
-CPMAddPackage("gh:Orphis/boost-cmake#7f97a08b64bd5d2e53e932ddf80c40544cf45edf@1.71.0")
-MESSAGE(STATUS "------------------------------------------------------------")
-
 MESSAGE(STATUS "Fetching taskflow ...")
 CPMAddPackage(
         NAME taskflow

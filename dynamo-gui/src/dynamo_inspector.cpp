@@ -21,6 +21,12 @@ namespace dynamo_gui{
         dynamo::add_tag_to<component::GUI, dynamo::type::Organisation>(world, "GUI", "Organisation");
         dynamo::add_tag_to<component::GUI, dynamo::type::Percept>(world, "GUI", "Percept");
 
+        //world.observer<dynamo::type::Agent>("OnAdd_Agent_AddBrainViewer")
+        //        .event(flecs::OnAdd)
+        //        .each([](flecs::entity e, const dynamo::type::Agent& _){
+        //            e.set<widget::BrainViewer>(widget::BrainViewer{e.name().c_str()});
+        //        });
+
         world.system<const dynamo::type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)
                 .iter([this](flecs::iter& iter){

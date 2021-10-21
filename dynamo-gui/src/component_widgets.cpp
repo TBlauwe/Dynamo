@@ -9,19 +9,19 @@ namespace dynamo_gui::widget {
     template<>
     void show<dynamo::component::Decay>(flecs::entity& e){
         auto* decay = e.get_mut<dynamo::component::Decay>();
-        ImGui::Addons::InputFloatColor(decay->ttl);
+        ImGui::Widgets::InputFloatColor(decay->ttl);
     }
 
     template<>
     void show<dynamo::component::Cooldown>(flecs::entity& e){
         auto* cooldown = e.get_mut<dynamo::component::Cooldown>(flecs::Wildcard);
-        ImGui::Addons::InputFloatColor(cooldown->remaining_time);
+        ImGui::Widgets::InputFloatColor(cooldown->remaining_time);
     }
 
     template<>
     void show<dynamo::component::PeriodicEmitter>(flecs::entity& e){
         auto* emitter = e.get_mut<dynamo::component::PeriodicEmitter>();
-        ImGui::Addons::InputFloatColor(emitter->cooldown);
+        ImGui::Widgets::InputFloatColor(emitter->cooldown);
     }
 
     template<>

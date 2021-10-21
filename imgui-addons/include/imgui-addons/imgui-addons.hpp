@@ -1,7 +1,3 @@
-//
-// Created by Tristan on 21/09/2021.
-//
-
 #ifndef DYNAMO_IMGUI_ADDONS_HPP
 #define DYNAMO_IMGUI_ADDONS_HPP
 
@@ -40,7 +36,7 @@ namespace ImGui {
     };
 }
 
-namespace ImGui::Addons{
+namespace ImGui::Widgets{
 
     void InputFloatColor(float& value);
 
@@ -91,7 +87,7 @@ namespace ImGui::Addons{
 
         void plot() {
             buffer.linearize();
-            ImPlot::PlotLineG(title, ImGui::Addons::descriptive_point_getter<T>, &buffer, buffer.size());
+            ImPlot::PlotLineG(title, ImGui::Widgets::descriptive_point_getter<T>, &buffer, buffer.size());
         }
 
         int capacity(){

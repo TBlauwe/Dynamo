@@ -9,13 +9,13 @@ class FlecsInspector {
 private:
     flecs::world& world;
 
-    ImGui::Addons::ScrollingPlot<float> scrolling_plot_fps {"FPS", 1000};
-    ImGui::Addons::ScrollingPlot<float> scrolling_plot_delta_time {"Delta time (renderer)", 1000};
-    ImGui::Addons::ScrollingPlot<float> scrolling_plot_world_delta_time {"Delta time (world)", 1000};
+    ImGui::Widgets::ScrollingPlot<float> scrolling_plot_fps {"FPS", 1000};
+    ImGui::Widgets::ScrollingPlot<float> scrolling_plot_delta_time {"Delta time (renderer)", 1000};
+    ImGui::Widgets::ScrollingPlot<float> scrolling_plot_world_delta_time {"Delta time (world)", 1000};
 
     size_t table_count {0};
     size_t entities_count {0};
-    ImGui::Addons::ScrollingPlot<int> scrolling_plot_entities {"Entities", 1000};
+    ImGui::Widgets::ScrollingPlot<int> scrolling_plot_entities {"Entities", 1000};
 
     ImGuiTextFilter type_list_filter;
     ImGuiTextFilter components_list_filter;

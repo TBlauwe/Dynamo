@@ -5,7 +5,6 @@
 #include <IconsFontAwesome5.h>
 #include <spdlog/fmt/bundled/format.h>
 
-
 namespace dynamo_gui::widget {
     void inspect(flecs::entity& entity){
         if(ImGui::CollapsingHeader(fmt::format("Inspector : {}##{}", entity.name(), entity.id()).c_str())){

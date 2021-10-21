@@ -94,7 +94,6 @@ int main(int argc, char** argv) {
                        ogdf::GraphAttributes::nodeStyle |
                        ogdf::GraphAttributes::nodeTemplate);
 
-
     // Layout
     for (ogdf::node v : G.nodes)
         GA.width(v) = GA.height(v) = 5.0;

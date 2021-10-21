@@ -1,6 +1,6 @@
 #include <imgui-addons/imgui-addons.hpp>
 
-namespace ImGui::Addons{
+namespace ImGui::Widgets{
     void HelpMarker(const char* desc)
     {
         ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);

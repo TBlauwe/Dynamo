@@ -18,9 +18,29 @@ if (NOT imnodes_ADDED)
     MESSAGE(FATAL_ERROR "Could not fetch imnodes")
 endif ()
 
-CPMAddPackage("gh:epezent/implot#master")
+CPMAddPackage("gh:epezent/implot#v0.12")
 if (NOT implot_ADDED)
     MESSAGE(FATAL_ERROR "Could not fetch implot")
+endif ()
+
+MESSAGE(STATUS "Fetching boost ... (via boost-cmake)")
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+CPMAddPackage("gh:Orphis/boost-cmake#7f97a08b64bd5d2e53e932ddf80c40544cf45edf@1.71.0")
+MESSAGE(STATUS "------------------------------------------------------------")
+
+MESSAGE(STATUS "Fetching ogdf ...")
+CPMAddPackage(
+        NAME ogdf
+        GITHUB_REPOSITORY ogdf/ogdf
+        GIT_TAG catalpa-202002
+)
+if (ogdf_ADDED)
+    MESSAGE(STATUS "Fetching ogdf - done")
+    MESSAGE(STATUS "--------------------")
+else()
+    MESSAGE(FATAL_ERROR "Could not fetch odgf")
 endif ()
 
 # Define only an interface. We do not want to build imgui and its addons yet.
@@ -38,16 +58,3 @@ endif ()
 
 add_library(icon_font INTERFACE)
 target_include_directories(icon_font INTERFACE ${IconFontCppHeaders_SOURCE_DIR})
-
-MESSAGE(STATUS "Fetching ogdf ...")
-CPMAddPackage(
-        NAME ogdf
-        GITHUB_REPOSITORY ogdf/ogdf
-        GIT_TAG catalpa-202002
-)
-if (ogdf_ADDED)
-    MESSAGE(STATUS "Fetching ogdf - done")
-    MESSAGE(STATUS "--------------------")
-else()
-    MESSAGE(FATAL_ERROR "Could not fetch odgf")
-endif ()

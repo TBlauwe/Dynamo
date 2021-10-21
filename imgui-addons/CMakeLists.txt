@@ -1,8 +1,8 @@
 file(GLOB_RECURSE HEADER_LIST CONFIGURE_DEPENDS "${Dynamo_SOURCE_DIR}/imgui-addons/include/imgui-addons/*.hpp")
 
-add_library(imgui-addons src/imgui-addons.cpp ${HEADER_LIST})
+add_library(imgui-addons src/imgui-addons.cpp src/graph.cpp ${HEADER_LIST})
 target_include_directories(imgui-addons PUBLIC include)
-target_link_libraries(imgui-addons PUBLIC imgui_interface icon_font Boost::boost)
+target_link_libraries(imgui-addons PUBLIC imgui_interface icon_font Boost::boost OGDF)
 target_compile_features(imgui-addons PUBLIC cxx_std_17)
 
 source_group(

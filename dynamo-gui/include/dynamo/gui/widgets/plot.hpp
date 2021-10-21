@@ -7,13 +7,13 @@
 //TODO Find better solution for annotating plot
 namespace dynamo_gui::widget {
     template<typename TData, typename TEventType>
-    class EventScrollingPlot : public ImGui::Addons::ScrollingPlot<TData> {
+    class EventScrollingPlot : public ImGui::Widgets::ScrollingPlot<TData> {
     private:
         //flecs::query<const dynamo::type::Event, const TEventType> query ;
 
     public:
         EventScrollingPlot(flecs::world &world, const char *title, int capacity) :
-            ImGui::Addons::ScrollingPlot<TData>(title, capacity)
+            ImGui::Widgets::ScrollingPlot<TData>(title, capacity)
             //query{world.query<const dynamo::type::Event, const TEventType>()}
             {}
 

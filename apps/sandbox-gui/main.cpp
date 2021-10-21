@@ -64,7 +64,7 @@ private:
         if(ImGui::SliderFloat("TimeScale", &timescale, min_timescale, max_timescale)){
             sim.world().set_time_scale(timescale);
         }
-        ImGui::Addons::HelpMarker("Ctrl + Click to input a specific value");
+        ImGui::Widgets::HelpMarker("Ctrl + Click to input a specific value");
         ImGui::Separator();
     }
 
