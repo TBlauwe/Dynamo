@@ -5,6 +5,8 @@
 
 C++ library to simulate agents evolving withing a world. Agents run according to an agent model that you specified.
 
+> :warning: Project not ready yet !
+
 ```cpp
 #include <dynamo/simulation.hpp>
 
