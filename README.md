@@ -17,8 +17,10 @@ auto sim = dynamo::Simulation(); // Initialize an empty simulation
 // ... define cognitive models
 // ... define agent model
 
-auto artefact = sim.artefact("An artefact")
-sim.percept<your::senses>(artefact.entity());
+auto artefact   = sim.artefact("An artefact");  // Create an artefact.
+auto arthur     = sim.agent("Arthur");          // Create an agent.
+sim.percept<your::senses>(artefact)             // Create a percept coming from artefact, perceived by arthur.
+    .perceived_by(arthur); 
 
 sim.step(); // advance simulation by one step
 sim.step(1.0f); // advance simulation by one step as if 1 second has passed
