@@ -42,11 +42,11 @@ CPMAddPackage(
         NAME dynamo 
         GITHUB_REPOSITORY TBlauwe/Dynamo
         OPTIONS
-            "BUILD_DYNAMO_GUI OFF"
-            "BUILD_APPS OFF"
-            "BUILD_BENCHMARKS OFF"
-            "BUILD_DOCS OFF"
-            "BUILD_TESTS OFF"
+            "DYN_BUILD_DYNAMO_GUI OFF"
+            "DYN_BUILD_APPS OFF"
+            "DYN_BUILD_BENCHMARKS OFF"
+            "DYN_BUILD_DOCS OFF"
+            "DYN_BUILD_TESTS OFF"
 )
 ```
 
@@ -54,11 +54,11 @@ CPMAddPackage(
 
 | Options          | Default | Description                                              |
 | ---------------- | ------- | -------------------------------------------------------- |
-| BUILD_DYNAMO_GUI | ON      | Build an optional library to debug visually a simulation |
-| BUILD_ APPS      | ON      | Build several applications to showcasing the library     |
-| BUILD_BENCHMARKS | ON      | Build benchmarks                                         |
-| BUILD_DOCS       | ON      | Build documentation                                      |
-| BUILD_TESTS      | ON      | Build tests                                              |
+| DYN_BUILD_DYNAMO_GUI | ON      | Build an optional library to debug visually a simulation |
+| DYN_BUILD_APPS      | ON      | Build several applications to showcasing the library     |
+| DYN_BUILD_BENCHMARKS | ON      | Build benchmarks                                         |
+| DYN_BUILD_DOCS       | ON      | Build documentation                                      |
+| DYN_BUILD_TESTS      | ON      | Build tests                                              |
 
 ### Prerequisites
 
