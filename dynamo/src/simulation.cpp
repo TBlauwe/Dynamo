@@ -5,14 +5,6 @@ dynamo::Simulation::Simulation() {
     _world.import<module::GlobalPerception>();
 
     agents_query = _world.query<dynamo::type::Agent>();
-
-    // ========== Trigger ==========
-
-    _world.observer<component::AgentModel>()
-            .event(flecs::OnSet)
-            .each([this](flecs::entity e, component::AgentModel& model){
-                auto comp = e.set<component::Reasonning>({ executor.run_n(model.taskflow, 10) });
-            });
 }
 
 dynamo::Agent dynamo::Simulation::agent(const char * name) {

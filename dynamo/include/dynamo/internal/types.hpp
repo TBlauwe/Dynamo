@@ -183,9 +183,7 @@ namespace dynamo {
         explicit ArtefactBuilder(flecs::world& world, const char * name) : Builder<Artefact, type::Artefact>(world, name){};
 
         Artefact build() {
-            return Artefact(entity
-                .add<component::AgentModel>()
-            );
+            return Artefact(entity);
         }
     };
 
