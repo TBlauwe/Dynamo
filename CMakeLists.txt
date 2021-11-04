@@ -11,6 +11,16 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
+if(MSVC)
+    add_compile_options("/permissive- /W4" "$<$<CONFIG:RELEASE>:/O2>")
+else()
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        # nothing special for clang at the moment
+    else()
+        # nothing special for gcc at the moment
+    endif()
+endif()
+
 # Helper libraries
 # -------------
 include(CMakePrintHelpers)
@@ -35,7 +45,7 @@ set(FETCHCONTENT_QUIET TRUE)
 # Build options
 # -------------
 option(DYN_BUILD_DYNAMO_GUI     "Build a library using imgui for debugging a simulation." OFF)
-option(DYN_BUILD_APPS           "Build several applications to showcase the library." OFF)
+option(DYN_BUILD_APPS           "Build several applications to showcase the library." ON)
 option(DYN_BUILD_BENCHMARKS     "Build benchmarks using google benchmarks." OFF)
 option(DYN_BUILD_DOCS           "Build documentation using doxygen (must be installed)." OFF)
 option(DYN_BUILD_TESTS          "Build tests using doctest." OFF)

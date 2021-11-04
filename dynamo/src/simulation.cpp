@@ -11,8 +11,7 @@ dynamo::Simulation::Simulation() {
     _world.observer<component::AgentModel>()
             .event(flecs::OnSet)
             .each([this](flecs::entity e, component::AgentModel& model){
-                e.set<component::Reasoner>({executor.run(model.taskflow)});
-                e.remove<component::AgentModel>();
+                auto comp = e.set<component::Reasonning>({ executor.run_n(model.taskflow, 10) });
             });
 }
 

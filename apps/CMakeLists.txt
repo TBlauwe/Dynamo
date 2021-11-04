@@ -1,3 +1,5 @@
-add_subdirectory(application)
 add_subdirectory(sandbox-console)
-add_subdirectory(sandbox-gui)
+if(DYN_BUILD_DYNAMO_GUI)
+	add_subdirectory(application)
+	add_subdirectory(sandbox-gui)
+endif()

@@ -43,14 +43,6 @@ namespace dynamo{
              */
             std::vector<flecs::entity_view> entities;
         };
-
-        struct AgentModel{
-            tf::Taskflow taskflow {};
-        };
-
-        struct Reasoner{
-            tf::Future<void> taskflow {};
-        };
     }
 }
 

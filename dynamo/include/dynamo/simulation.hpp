@@ -3,13 +3,11 @@
 
 #include <dynamo/internal/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
+#include <dynamo/internal/process.hpp>
 #include <spdlog/fmt/bundled/format.h>
 
 namespace dynamo{
 
-    /**
-     * Simulation of a number of agents evolving inside a world.
-     */
     class Simulation{
     private:
         /**
@@ -42,6 +40,16 @@ namespace dynamo{
          * Create an empty simulation.
          */
         Simulation();
+
+        //TODO add constraint
+        template<typename T>
+        void register_reasonner() {
+			_world.observer<Process<T>>()
+					.event(flecs::OnAdd)
+					.each([this](flecs::entity e, Process<T>& _){
+						executor.run(T(Agent(e)));
+					});
+        };
 
         /**
          * Create a ready to use "Agent" entity with the specified name.

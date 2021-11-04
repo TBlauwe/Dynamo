@@ -6,6 +6,7 @@
 #include <dynamo/internal/components.hpp>
 
 namespace dynamo {
+
     /**
      * Refers to a kind of entities that are mutually exclusive (an agent cannot be an organisation, etc.).
      */
@@ -45,8 +46,6 @@ namespace dynamo {
      * Entity wrapper (for convenience).
      */
     class EntityWrapper {
-    protected:
-        flecs::entity m_entity;
     public:
         /**
          * Wrap an entity according to its type. Must have the corresponding tag !
@@ -56,17 +55,37 @@ namespace dynamo {
         /**
          * @return The underlying entity. For more information see : https://flecs.docsforge.com/master/manual/#entity.
          */
-        flecs::entity entity() { return m_entity; }
+        inline flecs::entity entity() { return m_entity; }
+        inline operator flecs::entity() { return m_entity; }
+
+    private:
+        flecs::entity m_entity;
     };
 
     class Action : public EntityWrapper{
     public:
         explicit Action(flecs::entity entity) : EntityWrapper(entity){};
     };
+
+    // Forward declaration
+    class Reasonner;
+
+    template<typename T>
+    struct Process{};
+
     class Agent : public EntityWrapper{
     public:
-        explicit Agent(flecs::entity entity) : EntityWrapper(entity){};
+        explicit Agent(flecs::entity entity) : EntityWrapper(entity) {};
+
+        template<typename T>
+        void reason() { 
+			static_assert(std::is_base_of<Reasonner, T>::value, "Wrong type passed, must be a Reasonner.");
+            entity().add<Process<T>>();
+        };
+
+        const char* name() { return entity().name(); }
     };
+
     class Artefact : public EntityWrapper{
     public:
         explicit Artefact(flecs::entity entity) : EntityWrapper(entity){};
@@ -93,7 +112,7 @@ namespace dynamo {
          * @return
          */
         Percept& perceived_by(flecs::entity e){
-            e.mut(e).add<relation::perceive>(m_entity);
+            e.mut(e).add<relation::perceive>(entity());
             return *this;
         }
 
@@ -103,7 +122,7 @@ namespace dynamo {
          * @return
          */
         Percept& perceived_by(flecs::entity_view e){
-            e.mut(m_entity).add<relation::perceive>(m_entity);
+            e.mut(entity()).add<relation::perceive>(entity());
             return *this;
         }
 
@@ -113,7 +132,7 @@ namespace dynamo {
          * @return
          */
         Percept& decay(float ttl = 2.0f){
-            m_entity.set<component::Decay>({ttl});
+            entity().set<component::Decay>({ttl});
             return *this;
         }
     };
@@ -150,7 +169,9 @@ namespace dynamo {
 
     class AgentBuilder : public Builder<Agent, type::Agent> {
     public:
-        explicit AgentBuilder(flecs::world& world, const char * name) : Builder<Agent, type::Agent>(world, name){};
+        explicit AgentBuilder(flecs::world& world, const char * name) : 
+            Builder<Agent, type::Agent>(world, name)
+        {};
 
         Agent build() {
             return Agent(entity);
@@ -162,7 +183,9 @@ namespace dynamo {
         explicit ArtefactBuilder(flecs::world& world, const char * name) : Builder<Artefact, type::Artefact>(world, name){};
 
         Artefact build() {
-            return Artefact(entity);
+            return Artefact(entity
+                .add<component::AgentModel>()
+            );
         }
     };
 
@@ -201,7 +224,5 @@ namespace dynamo {
             );
         }
     };
-
-
 }// namespace dynamo
 #endif //DYNAMO_TYPES_HPP

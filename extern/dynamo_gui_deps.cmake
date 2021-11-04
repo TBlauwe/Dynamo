@@ -30,19 +30,6 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 CPMAddPackage("gh:Orphis/boost-cmake#7f97a08b64bd5d2e53e932ddf80c40544cf45edf@1.71.0")
 MESSAGE(STATUS "------------------------------------------------------------")
 
-MESSAGE(STATUS "Fetching ogdf ...")
-CPMAddPackage(
-        NAME ogdf
-        GITHUB_REPOSITORY ogdf/ogdf
-        GIT_TAG catalpa-202002
-)
-if (ogdf_ADDED)
-    MESSAGE(STATUS "Fetching ogdf - done")
-    MESSAGE(STATUS "--------------------")
-else()
-    MESSAGE(FATAL_ERROR "Could not fetch odgf")
-endif ()
-
 # Define only an interface. We do not want to build imgui and its addons yet.
 add_library(imgui_interface INTERFACE)
 target_include_directories(imgui_interface INTERFACE
