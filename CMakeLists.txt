@@ -24,6 +24,7 @@ endif()
 # Helper libraries
 # -------------
 include(CMakePrintHelpers)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/CPM.cmake)
 
 # Project information
 # -------------------
@@ -64,6 +65,7 @@ MESSAGE(STATUS "")
 # ------------
 MESSAGE(STATUS "Dependencies")
 MESSAGE(STATUS "============")
+
 include(extern/dynamo_deps.cmake) # dynamo dependencies
 if(DYN_BUILD_DYNAMO_GUI)
     MESSAGE(STATUS "")
@@ -120,17 +122,17 @@ if(DYN_BUILD_DOCS)
     find_package(Doxygen)
     if (DOXYGEN_FOUND)
         # set input and output files
-        add_custom_target(build-time-make-directory ALL
+        add_custom_target(build-time-make-directory
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/bin/docs)
 
         set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
-        set(DOXYGEN_OUT ${CMAKE_CURRENT_SOURCE_DIR}/bin/docs/Doxyfile.out)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_SOURCE_DIR}/bin/docs/Doxyfile)
 
         # request to configure the file
         configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
         # note the option ALL which allows to build the docs together with the application
-        add_custom_target(doc_doxygen
+        add_custom_target(doc_doxygen ALL
                 COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 COMMENT "Generating API documentation with Doxygen"
@@ -139,7 +141,7 @@ if(DYN_BUILD_DOCS)
         MESSAGE(STATUS "Done !")
         MESSAGE(STATUS "Location : ${CMAKE_CURRENT_SOURCE_DIR}/bin/docs/")
     else (DOXYGEN_FOUND)
-        MESSAGE(SEND_ERROR "Doxygen need to be installed to generate the doxygen documentation : https://www.doxygen.nl/download.html")
+        MESSAGE(SEND_ERROR "Doxygen need to be installed to generate the doxygen documentation : https://www.doxygen.nl/download.html ")
     endif()
 endif()
 

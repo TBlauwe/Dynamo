@@ -1,11 +1,6 @@
 MESSAGE(STATUS "Fetching dependencies (Dynamo):")
 MESSAGE(STATUS "-------------------------------")
 
-# Helper libraries
-# ----------------
-# Fetch all dependencies using CPM
-include(${Dynamo_SOURCE_DIR}/cmake/CPM.cmake)
-
 # Dependencies
 # ------------
 MESSAGE(STATUS "Fetching spdlog ...")
