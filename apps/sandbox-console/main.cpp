@@ -8,10 +8,23 @@
 #include <ogdf/fileformats/GraphIO.h>
 
 struct Stress {
-	float stress{ 0.0f };
+	float stress{ 100.0f };
 };
 
 using namespace dynamo;
+
+template<typename TOut>
+class RandomStrategy : public Strategy<TOut>
+{
+public:
+
+	TOut compute(Agent agent, std::vector<Behaviour<TOut>> active_behaviours) override
+	{
+		std::vector<Behaviour<TOut>> out{};
+		std::sample(active_behaviours.begin(), active_behaviours.end(), std::back_inserter(out), 1, std::mt19937{ std::random_device{}() });
+		return out[0](agent);
+	}
+};
 
 class TestReasonner : public Reasonner
 {
@@ -22,17 +35,21 @@ private:
 	void build() override
 	{
 		auto t1 = emplace([](Agent agent) {
-			agent.entity().set<Stress>({ 2.0 });
 			auto* stress = agent.entity().get_mut<Stress>();
 			std::cout << "Hey ! I'm " << agent.entity() << " and my stress is " << stress->stress << "\n";
 			});
 
 		auto t2 = emplace([](Agent agent) {
-			agent.entity().set<Stress>({ 3.0 });
 			auto* stress = agent.entity().get_mut<Stress>();
+			stress->stress = 1.0f;
 			std::cout << "Hey again ! I'm " << agent.entity() << " and my stress is " << stress->stress << "\n";
 			});
 		t2.succeed(t1);
+
+		emplace([](Agent agent) {
+			const auto* stress = agent.entity().get<Stress>();
+			std::cout << "Hey ! I'm " << agent.entity() << " and my stress is " << stress->stress << "\n";
+			});
 	}
 };
 
@@ -58,8 +75,18 @@ int main(int argc, char** argv) {
 			}
 	);
 
+	// Create some cognitive models
+	sim.world().system<Stress>()
+		.kind(flecs::PreUpdate)
+		.each([](flecs::entity entity, Stress& stress) {
+		if (stress.stress > 0.f) {
+			stress.stress -= entity.delta_time();
+		}
+			});
+
 	// 2. Create some entities to populate simulation;
 	auto arthur = sim.agent("Arthur");
+	arthur.entity().add<Stress>();
 	auto bob = sim.agent("Bob");
 	auto radio = sim.artefact("Radio");
 
@@ -125,7 +152,7 @@ int main(int argc, char** argv) {
 	SL.call(GA);
 	ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
-	sim.step_n(50, 1.0f);
+	sim.step_n(500, 1.0f);
 	sim.executor.wait_for_all();
 
 	return 0;

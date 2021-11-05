@@ -6,17 +6,18 @@
 #include <dynamo/internal/process.hpp>
 #include <spdlog/fmt/bundled/format.h>
 
+/**
+@file dynamo/Simulation.hpp
+@brief Main entry point to use the library.
+*/
 namespace dynamo{
 
-    class Simulation{
-    private:
-        /**
-         * ECS Database. For more information, see https://flecs.docsforge.com/master/quickstart/#world.
-         */
-        flecs::world    _world {};
-    public:
-        tf::Executor    executor {};
+    /**
+    @class Simulation 
 
+    @brief Class used to create and manipulate a simulation of agents evolving within a virtual world.
+    */
+    class Simulation{
     public:
         /**
          * Query for all agents :
@@ -44,9 +45,9 @@ namespace dynamo{
         //TODO add constraint
         template<typename T>
         void register_reasonner() {
-			_world.observer<Process<T>>()
+			_world.observer<component::Process<T>>()
 					.event(flecs::OnAdd)
-					.each([this](flecs::entity e, Process<T>& _){
+					.each([this](flecs::entity e, component::Process<T>& _){
 						executor.run(T(Agent(e)));
 					});
         };
@@ -91,6 +92,22 @@ namespace dynamo{
          * @return world - an ecs "database".
          */
         flecs::world& world();
+
+    public:
+        /**
+        @brief Thanks to taskflow, we used this library to incorporate task programming for our cognitive reasonning.
+
+        For more information, see https://taskflow.github.io/
+        */
+        tf::Executor    executor {};
+
+    private:
+        /**
+        @brief ECS Database.
+        
+        For more information, see https://flecs.docsforge.com/master/quickstart/#world.
+        */
+        flecs::world    _world {};
     };
 
     /**

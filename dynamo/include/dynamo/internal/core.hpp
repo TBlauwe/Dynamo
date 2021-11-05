@@ -4,15 +4,18 @@
 #include <dynamo/internal/types.hpp>
 #include <vector>
 
+/**
+@file dynamo/internal/core.hpp
+@brief Define a mandatory module to setup core functionnalities
+*/
 namespace dynamo::module{
         /**
-         * Load core systems
-         */
+        @brief Core module to setup core functionnalities
+        */
         struct Core{
             /**
-             * Core is a flecs::module that requires a world to instantiate.
-             * @param world
-             */
+            @brief Core is a flecs::module that requires a world to instantiate.
+            */
             explicit Core(flecs::world& world);
         };
     }
