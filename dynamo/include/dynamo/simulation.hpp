@@ -19,34 +19,6 @@ namespace dynamo{
     */
     class Simulation{
     public:
-
-        /**
-        @brief Iterate over all agents for_each.
-
-        Usage :
-        @code{.cpp}
-        sim.for_each([](flecs::entity e, type::Agent& agent){
-            //...
-        });
-        @endcode
-        */
-        void for_each(std::function<void(flecs::entity, type::Agent&)>);
-
-        /**
-        @brief Iterate over all agents using a for_each.
-
-        Usage :
-        @code{.cpp}
-        sim.agents_iter([](flecs::iter& iter){
-            for(auto i : iter){
-                //...
-            }
-        });
-        @endcode
-        */
-        void agents_iter(std::function<void(flecs::iter&)>);
-
-    public:
         /**
         @brief Construct an empty simulation.
         */
@@ -65,6 +37,49 @@ namespace dynamo{
 						executor.run(T(Agent(e)));
 					});
         };
+
+        /**
+        @brief Iterate over all agents for_each.
+
+        @tparam T Accept function with following signature : @c std::function<void(flecs::entity, type::Agent&)>
+
+        TODO : Add constraint
+
+        Usage :
+        @code{.cpp}
+        sim.for_each([](flecs::entity e, type::Agent& agent){
+            //...
+        });
+        @endcode
+        */
+        template<typename T>
+        void for_each(T&& func)
+        {
+            agents_query.each(std::forward<std::function<void(flecs::entity, type::Agent&)>>(func));
+        }
+
+        /**
+        @brief Iterate over all agents using a for_each.
+
+        @tparam T Accept function with following signature : @c std::function<void(flecs::iter&)>
+
+        TODO : Add constraint
+
+        Usage :
+        @code{.cpp}
+        sim.agents_iter([](flecs::iter& iter){
+            for(auto i : iter){
+                //...
+            }
+        });
+        @endcode
+        */
+        template<typename T>
+        void agents_iter(T&& func)
+        {
+            agents_query.iter(std::forward<std::function<void(flecs::iter&)>>(func));
+        }
+
 
         /**
         @brief Construct an agent entity with specified name.

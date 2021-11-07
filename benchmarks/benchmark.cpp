@@ -60,8 +60,8 @@ static void BM_create_percept(benchmark::State& state) {
     for ([[maybe_unused]] auto _ : state) {
         state.PauseTiming();
         auto sim = dynamo::Simulation();
-        auto artefact = sim.artefact().entity();
-        auto arthur = sim.agent("Arthur").entity();
+        auto artefact = sim.artefact();
+        auto arthur = sim.agent("Arthur");
         state.ResumeTiming();
         sim.percept<Default>(artefact).decay().perceived_by(arthur);
     }

@@ -93,6 +93,13 @@ namespace dynamo {
         */
         inline operator flecs::entity() { return m_entity; }
 
+        /**
+        @brief Implicit conversion operator to @c flecs::id_t.
+        
+        For more information see : https://flecs.docsforge.com/master/manual/#entity.
+        */
+        inline operator flecs::id_t() { return m_entity; }
+
     private:
         flecs::entity m_entity;
     };

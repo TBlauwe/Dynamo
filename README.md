@@ -80,3 +80,11 @@ Download and install [Vulkan](https://vulkan.lunarg.com/sdk/home)
 
 Install [doxygen](https://www.doxygen.nl/download.html)
 
+If you are seeing this error :
+
+```
+error : Problems running epstopdf. Check your TeX installation!
+```
+
+Install a TeX distribution on your systems, see : https://www.latex-project.org/get/ .
+
