@@ -11,6 +11,20 @@ dynamo::Agent dynamo::Simulation::agent(const char * name) {
     return AgentBuilder(_world, name).build();
 }
 
+dynamo::Agent dynamo::Simulation::agent(AgentArchetype& archetype, const char * name) {
+    auto agent = AgentBuilder(_world, name).build();
+    agent.entity().is_a(archetype);
+    return agent;
+}
+
+dynamo::AgentArchetype dynamo::Simulation::agent_archetype(const char * name) {
+    return AgentArchetype(_world, name);
+}
+
+dynamo::AgentArchetype dynamo::Simulation::agent_archetype(AgentArchetype& archetype, const char * name) {
+    return AgentArchetype(_world, archetype, name);
+}
+
 dynamo::Artefact dynamo::Simulation::artefact(const char *name) {
     return ArtefactBuilder(_world, name).build();
 }

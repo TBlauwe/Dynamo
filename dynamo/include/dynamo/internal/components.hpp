@@ -3,84 +3,99 @@
 
 #include <vector>
 
+#include <taskflow/taskflow.hpp>
+
 /**
 @file dynamo/internal/components.hpp
-@brief Defines some basic components.
+@brief Defines some basic components/tags
+
+By convention :
+    - components and tags names are written using PascalCase.
+    - relation names are written using snake_case.
 */
-namespace dynamo {
 
-	/**
-	@brief Namespace regrouping tags with no data.
-	*/
-	namespace tag {
-		/**
-		 @brief Tag removed at the end of the current frame. /!\ Beware to handle this tag before flecs::PostFrame /!\ .
-		 */
-		struct CurrentFrame {};
-	}
+/**
+@brief Contains structs and classes used as a type for flecs.
 
-	namespace component {
-		/**
-		@brief When ttl (seconds) reaches 0, the entity holding this component is destroyed.
-		*/
-		struct Decay {
-			/**
-			 Amount of time left to live in seconds.
-			 */
-			float ttl;
-		};
+By convention :
+    - components and tags names are written using PascalCase.
+    - relation names are written using snake_case.
+*/
+namespace dynamo::type {
 
-		/**
-		 @brief When remaining_time (seconds) reaches 0, the relation for this cooldown is removed.
-		 Must be used as a relation with something else.
+    /**
+     @brief Tag removed at the end of the current frame.
+     /!\ Handle this tag before @c flecs::PostFrame /!\ .
+     */
+    struct CurrentFrame {};
 
-		 @code{.cpp}
-		 entity.set<component::Cooldown, component::Attack>({1.0f}); // Relation is destroyed in 1 seconds
-		 @endcode
+    /**
+    @brief When @c ttl (in seconds) reaches 0, the entity holding this component
+    is destroyed.
+    */
+    struct Decay {
+        /**
+         Amount of time left to live in seconds.
+         */
+        float ttl;
+    };
 
-		 After cooldown is finished, the relation is removed allowing you to trigger something
+    /**
+     @brief When @c remaining_time (in seconds) reaches 0, the relation for this cooldown
+    is removed. Must be used as a relation with something else.
 
-		 @code{.cpp}
+     @code{.cpp}
+     entity.set<component::Cooldown, component::Attack>({1.0f}); // Relation is destroyed in 1 seconds.
+     @endcode
 
-		 world.system<component::Attack>("System_Attack")
-				.term<component::Cooldown>().object<component::Attack>().oper(flecs::Not)	// If @c component::Attack is not in
-																							// relation with @c component::Cooldown
-				.arg(1).object(flecs::Wildcard)
-				.iter([](flecs::iter& iter, component::Attack* attack) {
-					for(auto i : iter){
-						auto e = iter.entity(i);
-						// do something ....
-						// and add a cooldown to this entity
-						e.set<component::Cooldown, component::Attack>({attack[i].cooldown});
-					}
-				});
-		@endcode
-		 */
-		struct Cooldown {
-			/**
-			Amount of time remaining before cooldown is finished (seconds).
-			*/
-			float remaining_time;
-		};
+     After cooldown is finished, the relation is removed allowing you to trigger something.
 
-		/**
-		@brief Store read-only entities handle. Call mut(...), if you want to modify it.
-		*/
-		struct Targets {
-			/**
-			@brief A vector of entities view. Call mut(...), if you need to modify it.
-			*/
-			std::vector<flecs::entity_view> entities;
-		};
+     @code{.cpp}
 
-		/**
-		@brief Component to indicate that the holding entity must reason about something using @T
+     world.system<component::Attack>("System_Attack")
+                                    .term<component::Cooldown>().object<component::Attack>().oper(flecs::Not)
+                                    .arg(1).object(flecs::Wildcard)
+                                    .iter([](flecs::iter& iter, component::Attack* attack) {
+                                        for(auto i : iter){
+                                            auto e = iter.entity(i);
+                                            // do something ....
+                                            // and reset the cooldown
+                                            e.set<component::Cooldown, component::Attack>({attack[i].cooldown});
+                                         }
+                                    });
+    @endcode
+    */
+    struct Cooldown {
+        /**
+        Amount of time remaining before cooldown is finished (in seconds).
+        */
+        float remaining_time;
+    };
 
-		@tparam T is the type of a reasonner that should be spawned.
-		*/
-		template<typename T>
-		struct Process{};
-	}
-}
+    /**
+    @brief Store read-only entities handle. Call @c mut(...), if you want to modify it.
+    */
+    struct Targets {
+        /**
+        @brief A vector of read_only entities. Call @c mut(...), if you need to modify it.
+        */
+        std::vector<flecs::entity_view> entities;
+    };
 
-#endif //DYNAMO_COMPONENTS_HPP
+    /**
+    @brief Component indicating that the associated process should be
+    triggered.
+    */
+    struct Process {
+        tf::Taskflow taskflow{};
+    };
+
+    /**
+    @brief Component containing the status of the associated process.
+    */
+    struct IsProcessing {
+        tf::Future<tf::Taskflow> status;
+    };
+}  // namespace dynamo::type
+
+#endif  // DYNAMO_COMPONENTS_HPP

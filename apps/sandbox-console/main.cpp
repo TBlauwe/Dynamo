@@ -11,6 +11,8 @@ struct Stress {
 	float stress{ 100.0f };
 };
 
+struct Tag {};
+
 using namespace dynamo;
 
 template<typename TOut>
@@ -26,7 +28,7 @@ public:
 	}
 };
 
-class TestReasonner : public Reasonner
+class TestReasonner : public Reasonner 
 {
 public:
 	TestReasonner(Agent agent) : Reasonner(agent) {}
@@ -34,6 +36,12 @@ public:
 private:
 	void build() override
 	{
+
+		auto t0 = emplace([](Agent agent) {
+			agent.entity().each<type::perceive>([](flecs::entity e) {
+				std::cout << "I'm perceiving " << e.type().str() << "\n";
+				});
+			});
 		auto t1 = emplace([](Agent agent) {
 			auto* stress = agent.entity().get_mut<Stress>();
 			std::cout << "Hey ! I'm " << agent.entity() << " and my stress is " << stress->stress << "\n";
@@ -44,54 +52,54 @@ private:
 			stress->stress = 1.0f;
 			std::cout << "Hey again ! I'm " << agent.entity() << " and my stress is " << stress->stress << "\n";
 			});
+		t1.succeed(t0);
 		t2.succeed(t1);
-
-		emplace([](Agent agent) {
-			const auto* stress = agent.entity().get<Stress>();
-			std::cout << "Hey ! I'm " << agent.entity() << " and my stress is " << stress->stress << "\n";
-			});
 	}
 };
 
 
 int main(int argc, char** argv) {
 
-	// Create an empty simulation
+	// -- Create an empty simulation
 	Simulation sim;
 
-	// 1. Define an observer to print who is seeing what
-	sim.world().observer<>()
-		.term<::dynamo::type::Agent>()
-		.term<relation::perceive>(flecs::Wildcard)
-		.event(flecs::OnAdd)
-		.iter([](flecs::iter& iter) {
-		std::cout << "Triggered \n";
-		auto object = iter.term_id(2).object();
-		for (auto i : iter) {
-			std::cout << "Entity      : " << iter.entity(i).name() << "\n";
-			std::cout << "Object      : " << object.name() << "\n";
-			std::cout << "Object Type : " << object.type().str() << "\n";
-		}
-			}
-	);
+	// -- Create some cognitive models
 
-	// Create some cognitive models
+	// Stress passively decrease
 	sim.world().system<Stress>()
 		.kind(flecs::PreUpdate)
 		.each([](flecs::entity entity, Stress& stress) {
-		if (stress.stress > 0.f) {
-			stress.stress -= entity.delta_time();
-		}
-			});
+			if (stress.stress > 0.f) {
+				stress.stress -= entity.delta_time();
+			}
+		});
 
-	// 2. Create some entities to populate simulation;
-	auto arthur = sim.agent("Arthur");
-	arthur.entity().add<Stress>();
-	auto bob = sim.agent("Bob");
+	// -- Create some entities to populate the simulation;
+
+	// First, let's create a prefab for our agents, or an archetype :
+	auto archetype = sim.agent_archetype("Archetype_Basic")
+		.add<Stress>();
+
+	auto another_archetype = sim.agent_archetype(archetype, "Archetype_Advanced")
+		.add_shared<Tag>();
+
+	// Then, we can create agent using our archetype :
+	auto arthur = sim.agent(archetype, "Arthur");
+	auto bob = sim.agent(another_archetype, "Bob");
+
+
+	std::vector<flecs::entity_view> agents{};
+	sim.for_each([&agents](flecs::entity agent, type::Agent& _) {
+		agents.emplace_back(agent);
+		});
+
 	auto radio = sim.artefact("Radio");
+	radio.entity()
+		.set<dynamo::type::PeriodicEmitter, dynamo::type::Message>({ 2.5f })
+		.set<dynamo::type::Targets>({ agents });
 
 	// 3. Create a percept seen by all entities
-	sim.percept<senses::Hearing>(radio)
+	sim.percept<type::Hearing>(radio)
 		.perceived_by(radio)
 		.perceived_by(bob)
 		.perceived_by(arthur)

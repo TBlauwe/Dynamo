@@ -5,30 +5,31 @@
 @file dynamo/internal/relations.hpp
 @brief Defines some basic relations.
 
+By convention :
+    - components and tags names are written using PascalCase.
+    - relation names are written using snake_case.
+
 For more information, see https://flecs.docsforge.com/master/relations-manual/.
 */
-namespace dynamo::relation{
-    /**
-    @brief A perceive B.
+namespace dynamo::type {
 
-    Relation from an entity A to a percept B.
+    /**
+    @brief Relation from an entity A to a percept B, meaning that "A perceives B".
     */
-    struct perceive{};
+    struct perceive {};
 
     /**
-    @brief A source B.
+    @brief Relation from an entity A to an entity B, meaning that "A is coming from B".
 
-    Relation from an entity A to an entity B, meaning that "A is coming from B".
     Used notably to store the source of a percept.
     */
-    struct source{};
+    struct source {};
 
     /**
-    @brief A belongs_to B.
-
-    Relation from an entity A to an organisation B, meaning that "A belongs_to B".
+    @brief Relation from an entity A to an organisation B, meaning that "A belongs_to B".
     */
-    struct belongs_to{};
-}
+    struct belongs_to {};
 
-#endif //DYNAMO_RELATIONS_HPP
+}  // namespace dynamo::type
+
+#endif  // DYNAMO_RELATIONS_HPP

@@ -31,8 +31,8 @@ public:
         });
 
         sim.artefact("Radio").entity()
-            .set<dynamo::component::PeriodicEmitter, dynamo::component::Message>({0.5f})
-            .set<dynamo::component::Targets>({agents});
+            .set<dynamo::type::PeriodicEmitter, dynamo::type::Message>({0.5f})
+            .set<dynamo::type::Targets>({agents});
     }
 
 private:

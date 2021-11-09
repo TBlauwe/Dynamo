@@ -32,9 +32,48 @@ TEST_CASE("Basics") {
         CHECK(a.id() == b.id());
     }
 
+    struct PrivateValue {
+	    float value{ 100.0f };
+    };
+
+    struct SharedValue {
+	    float value{ 50.0f };
+    };
+
+    struct TagOne {};
+    struct TagTwo {};
+
     SUBCASE("Agents"){
-        auto arthur = sim.agent("Arthur").entity();
-        CHECK(arthur.has<type::Agent>());
+        auto archetype = sim.agent_archetype("Archetype_Basic")
+            .set<PrivateValue>({ 100.0f })
+            .set_shared<SharedValue>({ 50.f })
+            .add<TagOne>();
+
+	    auto another_archetype = sim.agent_archetype(archetype, "Archetype_Advanced")
+		    .add<TagTwo>();
+
+        auto arthur = sim.agent("Arthur");
+        CHECK(arthur.entity().has<type::Agent>());
+
+	    auto bob = sim.agent(archetype, "Bob");
+	    auto charlie = sim.agent(another_archetype, "Charlie");
+        CHECK(bob.entity().has<TagOne>());
+        CHECK(charlie.entity().has<TagOne>());
+        CHECK(charlie.entity().has<TagTwo>());
+        CHECK(bob.entity().get<PrivateValue>()->value == 100.0f);
+        CHECK(bob.entity().get<SharedValue>()->value == 50.0f);
+
+        bob.entity().set<PrivateValue>({ 1.f });
+        CHECK(bob.entity().get<PrivateValue>()->value == 1.0f);
+        CHECK(charlie.entity().get<PrivateValue>()->value == 100.0f);
+
+        archetype.entity().set<SharedValue>({ 10.f });
+        CHECK(bob.entity().get<SharedValue>()->value == 10.0f);
+        CHECK(charlie.entity().get<SharedValue>()->value == 10.0f);
+
+        bob.entity().set<SharedValue>({ 1.f }); // When doing this, you add a private copy, so others will not be affected.
+        CHECK(bob.entity().get<SharedValue>()->value == 1.0f);
+        CHECK(charlie.entity().get<SharedValue>()->value == 10.0f);
     }
 
     SUBCASE("Artefacts"){
@@ -56,10 +95,10 @@ TEST_CASE("Basics") {
 
         CHECK(percept.has<type::Percept>());
         CHECK(percept.has<Default>());
-        CHECK(percept.has<component::Decay>());
-        CHECK(percept.get<component::Decay>()->ttl);
-        CHECK(percept.has<relation::perceive>(radio));
-        CHECK(arthur.entity().has<relation::perceive>(percept));
+        CHECK(percept.has<type::Decay>());
+        CHECK(percept.get<type::Decay>()->ttl);
+        CHECK(percept.has<type::perceive>(radio));
+        CHECK(arthur.entity().has<type::perceive>(percept));
 
         sim.step(ttl); // To deplete decay cooldown
         sim.step(); // To delete entity

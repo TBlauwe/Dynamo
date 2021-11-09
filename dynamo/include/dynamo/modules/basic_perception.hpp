@@ -5,16 +5,14 @@
 #include <string>
 
 namespace dynamo{
-    namespace senses{
+
+    namespace type{
         struct Hearing{};
         struct Smell{};
         struct Taste{};
         struct Touch{};
         struct Vision{};
-        struct Global{};
-    };
 
-    namespace component{
         /**
          * Component that periodically emits percepts
          */
@@ -48,20 +46,18 @@ namespace dynamo{
                 world.module<GlobalPerception>();
                 world.import<module::Core>();
 
-                world.system<component::PeriodicEmitter, component::Targets>("PeriodicEmitter")
-                        .term<component::Cooldown>().object<component::PeriodicEmitter>().oper(flecs::Not)
-                        .arg(1).object(flecs::Wildcard) // <- PeriodicEmitter is actually a pair type with anything
-                        .iter([](flecs::iter& iter, component::PeriodicEmitter* periodic_emitter, component::Targets* targets) {
+                world.system<type::PeriodicEmitter, type::Targets>("PeriodicEmitter")
+                        .term<type::Cooldown>().obj<type::PeriodicEmitter>().oper(flecs::Not)
+                        .arg(1).obj(flecs::Wildcard) // <- PeriodicEmitter is actually a pair type with anything
+                        .iter([](flecs::iter& iter, type::PeriodicEmitter* periodic_emitter, type::Targets* targets) {
                             for(auto i : iter){
                                 auto e = iter.entity(i);
                                 auto world = e.world();
-                                auto percept = PerceptBuilder(world)
-                                                    .source<senses::Hearing>(e)
-                                                    .decay();
+                                auto percept = PerceptBuilder(world).source<type::Hearing>(e);
                                 for(flecs::entity_view& entity_view : targets[i].entities){
                                     percept.perceived_by(entity_view);
                                 }
-                                e.set<component::Cooldown, component::PeriodicEmitter>({periodic_emitter[i].cooldown});
+                                e.set<type::Cooldown, type::PeriodicEmitter>({periodic_emitter[i].cooldown});
                             }
                         });
             }
