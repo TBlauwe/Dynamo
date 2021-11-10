@@ -54,11 +54,11 @@ CPMAddPackage(
 
 | Options          | Default | Description                                              |
 | ---------------- | ------- | -------------------------------------------------------- |
-| DYN_BUILD_DYNAMO_GUI | ON      | Build an optional library to debug visually a simulation |
-| DYN_BUILD_APPS      | ON      | Build several applications to showcasing the library     |
-| DYN_BUILD_BENCHMARKS | ON      | Build benchmarks                                         |
-| DYN_BUILD_DOCS       | ON      | Build documentation                                      |
-| DYN_BUILD_TESTS      | ON      | Build tests                                              |
+| DYN_BUILD_DYNAMO_GUI | OFF      | Build an optional library to debug visually a simulation |
+| DYN_BUILD_APPS      | OFF      | Build several applications to showcasing the library     |
+| DYN_BUILD_BENCHMARKS | OFF      | Build benchmarks                                         |
+| DYN_BUILD_DOCS       | OFF      | Build documentation                                      |
+| DYN_BUILD_TESTS      | OFF      | Build tests                                              |
 
 ### Prerequisites
 

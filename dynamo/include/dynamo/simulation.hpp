@@ -125,6 +125,20 @@ namespace dynamo {
     public:
         AgentArchetype(flecs::world& world, const char* name) : Archetype<AgentArchetype>{ world, name } {}
         AgentArchetype(flecs::world& world, AgentArchetype& archetype, const char* name) : Archetype<AgentArchetype>{ world, archetype, name } {}
+
+        template<typename T>
+        AgentArchetype& add_reasonner()
+        {
+            static_assert(std::is_base_of<Reasonner, T>::value, "Wrong type passed : T is not inheriting from Reasonner.");
+
+            auto reasonnner_entity = m_entity.world().entity();
+            reasonnner_entity
+                .child_of(m_entity)
+                .add<type::AddProcess<T>>()
+                ;
+
+            return *this;
+        }
     };
 
     /**
@@ -142,20 +156,53 @@ namespace dynamo {
 
         //TODO add constraint
         /**
-        @brief Register a reasonner so that it can be executed when added to an agent.
-        @tparam Must be a callable of type std::function<void(Agent)>
+        @brief Register a reasonner so that it can be instantiaed for each relevant agent and executed when required.
+        @tparam Must be a callable of type std::function<void(Agent)>. /!\ Not enforced ! /!\
         */
         template<typename T>
         void register_reasonner()
         {
-            _world.observer<type::Agent>()
+            /**
+            When an @c type::AddProcess<T> is added and if the parent is not a prefab (to circumvent copying),
+            then create a child entity containing @c type::Process with T
+
+            Since a taskflow is not copyable and unique for each agent, we must create one for each. We could add it
+            as a component to an agent, but we need to set relation between them. We could still do it but the component,
+            would be recreated. It seems preferable to set a child entity containing the taskflow so we can have as many
+            processes and relation between them for more control.
+            */
+            _world.observer<type::AddProcess<T>>()
                 .event(flecs::OnAdd)
-                .each([](flecs::entity e, type::Agent& _)
+                .each([](flecs::entity e, type::AddProcess<T>& _)
                     {
-                        Agent agent = Agent(e);
-                        auto entity = e.world().entity();
-                        //tf::Taskflow tf = T(agent) ;
-                        entity.set<type::Process>({ T(agent) });
+                        auto parent = e.get_object(flecs::ChildOf);
+                        if (parent.has(flecs::Prefab))
+                            return;
+                        // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
+                        e.set<type::Process>({T(Agent(parent))});
+                        e.remove<type::AddProcess<T>>();
+                    }
+            );
+
+            _world.system<type::Process>()
+                .term<type::IsProcessing>().oper(flecs::Not)
+                .kind(flecs::OnUpdate)
+                .each([this](flecs::entity e, type::Process& process)
+                    {
+                        std::cout << "Launching reasonning for " << e.get_object(flecs::ChildOf).name() << std::endl;
+                        executor.run(process.taskflow).wait();
+                        e.set<type::IsProcessing>({ executor.run(std::move(process.taskflow)) });
+                    }
+            );
+
+            _world.system<const type::Process, const type::IsProcessing>()
+                .kind(flecs::PreUpdate)
+                .each([this](flecs::entity e, const type::Process& p, const type::IsProcessing& process)
+                    {
+                        std::cout << "----------------------------------------\n";
+                        std::cout << "Nb of tasks : " << p.taskflow.num_tasks() << std::endl;
+                        std::cout << "Status for " << e.get_object(flecs::ChildOf).name() << " : " << static_cast<int>(process.status.wait_for(std::chrono::seconds(0))) << std::endl;
+                        //e.set<type::IsProcessing>({ executor.run(process.taskflow) });
                     }
             );
         };

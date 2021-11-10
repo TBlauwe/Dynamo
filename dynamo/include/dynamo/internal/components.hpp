@@ -33,7 +33,8 @@ namespace dynamo::type {
     @brief When @c ttl (in seconds) reaches 0, the entity holding this component
     is destroyed.
     */
-    struct Decay {
+    struct Decay
+    {
         /**
          Amount of time left to live in seconds.
          */
@@ -65,7 +66,8 @@ namespace dynamo::type {
                                     });
     @endcode
     */
-    struct Cooldown {
+    struct Cooldown
+    {
         /**
         Amount of time remaining before cooldown is finished (in seconds).
         */
@@ -75,7 +77,8 @@ namespace dynamo::type {
     /**
     @brief Store read-only entities handle. Call @c mut(...), if you want to modify it.
     */
-    struct Targets {
+    struct Targets 
+    {
         /**
         @brief A vector of read_only entities. Call @c mut(...), if you need to modify it.
         */
@@ -83,18 +86,26 @@ namespace dynamo::type {
     };
 
     /**
+    @brief Little hack to delay the creation of @c type::Process as it isn't copyable.
+    */
+    template<typename T>
+    struct AddProcess {};
+
+    /**
     @brief Component indicating that the associated process should be
     triggered.
     */
-    struct Process {
+    struct Process
+    {
         tf::Taskflow taskflow{};
     };
 
     /**
     @brief Component containing the status of the associated process.
     */
-    struct IsProcessing {
-        tf::Future<tf::Taskflow> status;
+    struct IsProcessing
+    {
+        tf::Future<void> status;
     };
 }  // namespace dynamo::type
 
