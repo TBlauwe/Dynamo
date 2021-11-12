@@ -51,14 +51,14 @@ namespace dynamo {
     your::out::type result = behaviour(some_agent) //
     @endcode
     */
-    template<typename TOut>
+    template<typename TOutput, typename ... TInputs>
     class Behaviour
     {
     public:
         /**
         @brief Construct a named behaviour with given activation function and function.
         */
-        Behaviour(const char* name, std::function<bool(Agent)>&& activation_callable, std::function<TOut(Agent)>&& callable) :
+        Behaviour(const char* name, std::function<bool(Agent)> activation_callable, std::function<TOutput(Agent, TInputs ...)> callable) :
             _name{ name },
             _activation_callable{ activation_callable },
             _callable{ callable }
@@ -67,8 +67,8 @@ namespace dynamo {
         /**
         @brief Output behaviour's name.
         */
-        template<typename T>
-        friend std::ostream& operator<<(std::ostream& os, const Behaviour<T>& behaviour);
+        template<typename T, typename ... U>
+        friend std::ostream& operator<<(std::ostream& os, const Behaviour<T, U ...>& behaviour);
 
         /**
         @brief Returns behaviour's name
@@ -87,21 +87,21 @@ namespace dynamo {
         /**
         @brief Compute behaviour for the specified agent.
         */
-        TOut operator()(Agent agent) const {
-            return _callable(agent);
+        TOutput operator()(Agent agent, TInputs ... inputs) const {
+            return _callable(agent, inputs ...);
         };
 
     private:
         const char* _name;
-        std::function<TOut(Agent)> _callable;
-        std::function<bool(Agent)> _activation_callable;
+        std::function<TOutput(Agent)> _callable;
+        std::function<bool(Agent, TInputs ...)> _activation_callable;
     };
 
     /**
     @brief Output behaviour's name.
     */
-    template<typename T>
-    std::ostream& operator<<(std::ostream& os, const Behaviour<T>& behaviour)
+    template<typename T, typename ... U>
+    std::ostream& operator<<(std::ostream& os, const Behaviour<T, U ...>& behaviour)
     {
         os << behaviour.name();
         return os;
@@ -123,10 +123,13 @@ namespace dynamo {
     strategy.add(your_behaviour);
     @endcode
     */
-    template<typename TOut>
+    template<typename TOutput, typename TBehaviourOuput = TOutput, typename ... TInputs>
     class Strategy
     {
+        using Behaviour_t = Behaviour<TBehaviourOuput, TInputs ...>;
+
     public:
+
         /**
         @brief Construct a strategy with no behaviours.
         */
@@ -140,7 +143,7 @@ namespace dynamo {
         template<typename T>
         void add(T&& behaviour)
         {
-            static_assert(std::is_same_v<T, std::decay_t<Behaviour<TOut>>>, "Wrong type passed, must be a Behaviour<TOut>.");
+            static_assert(std::is_same_v<T, std::decay_t<Behaviour_t>>, "Wrong type passed, must be a Behaviour<TOut>.");
             behaviours.emplace_back(std::forward<T>(behaviour));
         }
 
@@ -149,26 +152,29 @@ namespace dynamo {
 
         It will automatically deduced which behaviours should be taken into account before using them.
         */
-        TOut operator()(Agent agent)
+        TOutput operator()(Agent agent, TInputs ... inputs) const
         {
             assert(behaviours.size() > 0 && "Strategy with no behaviour. Use add().");
 
-            auto active_behaviours = behaviours | ranges::views::filter([&agent](const Behaviour<TOut>& beh) {
-                return beh.is_active(agent);
-                }) | ranges::to<std::vector>();
+            auto active_behaviours = 
+                behaviours | 
+                ranges::views::filter([&agent](const Behaviour_t& beh) {
+                    return beh.is_active(agent);
+                }) | 
+                ranges::to<std::vector>();
 
-                TOut result = compute(agent, active_behaviours);
-                std::cout << agent.name() << " has finished reasonning. The result is : " << result << "\n";
-                return result;
+            TBehaviourOuput result = compute(agent, active_behaviours, inputs ...);
+            std::cout << agent.name() << " has finished reasonning. The result is : " << result << "\n";
+            return result;
         };
 
         /**
         @brief Pure virtual function telling how this strategy should operate.
         */
-        virtual TOut compute(Agent, std::vector<Behaviour<TOut>>) = 0;
+        virtual TOutput compute(Agent, std::vector<Behaviour_t>, TInputs ...) const = 0;
 
     protected:
-        std::vector<Behaviour<TOut>> behaviours{};
+        std::vector<Behaviour_t> behaviours{};
     };
 
     /**

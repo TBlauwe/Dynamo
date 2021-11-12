@@ -1,6 +1,10 @@
 #ifndef DYNAMO_SIMULATION_HPP
 #define DYNAMO_SIMULATION_HPP
 
+#include <any>
+#include <typeindex>
+#include <unordered_map>
+
 #include <spdlog/fmt/bundled/format.h>
 
 #include <dynamo/internal/core.hpp>
@@ -154,6 +158,11 @@ namespace dynamo {
         */
         Simulation();
 
+        /**
+        @brief Destroy the simulation. Ensure all threads are finished.
+        */
+        void shutdown();
+
         //TODO add constraint
         /**
         @brief Register a reasonner so that it can be instantiaed for each relevant agent and executed when required.
@@ -173,36 +182,33 @@ namespace dynamo {
             */
             _world.observer<type::AddProcess<T>>()
                 .event(flecs::OnAdd)
-                .each([](flecs::entity e, type::AddProcess<T>& _)
+                .each([this](flecs::entity e, type::AddProcess<T>& _)
                     {
                         auto parent = e.get_object(flecs::ChildOf);
                         if (parent.has(flecs::Prefab))
                             return;
                         // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
-                        e.set<type::Process>({T(Agent(parent))});
+                        e.set<type::ProcessHandle>({&taskflows.emplace_back(T(Agent(parent)))});
                         e.remove<type::AddProcess<T>>();
                     }
             );
 
-            _world.system<type::Process>()
+            _world.system<type::ProcessHandle>()
                 .term<type::IsProcessing>().oper(flecs::Not)
                 .kind(flecs::OnUpdate)
-                .each([this](flecs::entity e, type::Process& process)
+                .each([this](flecs::entity e, type::ProcessHandle& process)
                     {
-                        std::cout << "Launching reasonning for " << e.get_object(flecs::ChildOf).name() << std::endl;
-                        executor.run(process.taskflow).wait();
-                        e.set<type::IsProcessing>({ executor.run(std::move(process.taskflow)) });
+                        e.set<type::IsProcessing>({ executor.run(*process.taskflow, []() {}) });
                     }
             );
 
-            _world.system<const type::Process, const type::IsProcessing>()
+            _world.system<type::IsProcessing>()
                 .kind(flecs::PreUpdate)
-                .each([this](flecs::entity e, const type::Process& p, const type::IsProcessing& process)
+                .each([this](flecs::entity e, type::IsProcessing& process)
                     {
-                        std::cout << "----------------------------------------\n";
-                        std::cout << "Nb of tasks : " << p.taskflow.num_tasks() << std::endl;
-                        std::cout << "Status for " << e.get_object(flecs::ChildOf).name() << " : " << static_cast<int>(process.status.wait_for(std::chrono::seconds(0))) << std::endl;
-                        //e.set<type::IsProcessing>({ executor.run(process.taskflow) });
+                        //std::cout << "Status for " << e.get_object(flecs::ChildOf).name() << " : " << process.is_finished() << std::endl;
+                        if(process.is_finished())
+                            e.remove<type::IsProcessing>();
                     }
             );
         };
@@ -304,6 +310,25 @@ namespace dynamo {
         */
         flecs::world& world();
 
+
+        template<class T>
+        T& get()
+        {
+            return std::any_cast<T&>(strategies.at(typeid(T)));
+        }
+
+        /**
+        @brief Add a new strategy of type @c T. Only one strategy of a specific type can be added. 
+        Multiple calls of the same type will result of undefined behaviour.
+
+        @tparam Strategy type. Must be @c DefaultConstructible.
+        */
+        template<class T>
+        T& add()
+        {
+            return std::any_cast<T&>(strategies[typeid(T)] = T());
+        }
+
     public:
         /**
         @brief Thanks to taskflow, we used this library to incorporate task programming for our cognitive reasonning.
@@ -326,6 +351,17 @@ namespace dynamo {
         For more information, see https://flecs.docsforge.com/master/quickstart/#query .
         */
         flecs::query<type::Agent> agents_query;
+
+        /**
+        @brief Keep all taskflow alive so we do not have to build them again.
+        */
+        std::list<tf::Taskflow> taskflows {};
+
+    public:
+        /**
+        @brief Associative container to store strategies by their types. So only one strategy of a same type can be defined.
+        */
+        std::unordered_map<std::type_index, std::any> strategies;
     };
 
     /**

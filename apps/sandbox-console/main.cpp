@@ -19,57 +19,17 @@ struct Tag {};
 
 using namespace dynamo;
 
-template<typename TOut>
-class RandomStrategy : public Strategy<TOut>
+template<typename TOutput, typename ... TInputs>
+class RandomStrategy : public Strategy<TOutput, TOutput, TInputs ...>
 {
+    using Behaviour_t = Behaviour<TOutput, TInputs...>;
 public:
 
-    TOut compute(Agent agent, std::vector<Behaviour<TOut>> active_behaviours) override
+    TOutput compute(Agent agent, std::vector<Behaviour_t> active_behaviours, TInputs ... inputs) const override
     {
-        std::vector<Behaviour<TOut>> out{};
+        std::vector<Behaviour_t> out{};
         std::sample(active_behaviours.begin(), active_behaviours.end(), std::back_inserter(out), 1, std::mt19937{ std::random_device{}() });
-        return out[0](agent);
-    }
-};
-
-struct TtTag {};
-
-class TestReasonner : public Reasonner
-{
-public:
-    TestReasonner(Agent agent) : Reasonner(agent) {}
-
-private:
-    void build() override
-    {
-
-        auto t0 = emplace([](Agent agent)
-            {
-                std::cout << agent.entity().name() << "is perceiving [";
-                agent.entity().each<type::perceive>([](flecs::entity e)
-                    {
-                        std::cout << "-";
-                    }
-                );
-                std::cout << "]" << std::endl;
-                //agent.entity().add<TtTag>();
-            }
-        );
-
-        auto t1 = emplace([](Agent agent)
-            {
-                std::cout << agent.entity() << " stress is " << agent.entity().get_mut<Stress>()->stress << std::endl;
-            }
-        );
-
-        auto t2 = emplace([](Agent agent)
-            {
-                agent.entity().get_mut<Stress>()->stress = 1.0f;
-                std::cout << agent.entity() << " my stress is now " << agent.entity().get_mut<Stress>()->stress << std::endl;
-                //agent.entity().remove<type::IsProcessing>();
-            });
-        t1.succeed(t0);
-        t2.succeed(t1);
+        return out[0](agent, inputs ...);
     }
 };
 
@@ -84,30 +44,49 @@ private:
 
         auto t0 = emplace([](Agent agent)
             {
+                std::cout << "Stress : " << agent.entity().get<Stress>()->stress << "\n";;
             }
         );
 
         auto t1 = emplace([](Agent agent)
             {
-                //std::this_thread::sleep_for(std::chrono::seconds(2));
-                std::cout << agent.entity() << " stress is " << agent.entity().get<Stress>()->stress << std::endl;
             }
         );
 
         auto t2 = emplace([](Agent agent)
             {
-                //agent.entity().get_mut<Stress>()->stress = 1.0f;
-                std::cout << agent.entity() << " my stress is now " << agent.entity().get<Stress>()->stress << std::endl;
-                //agent.entity().remove<type::IsProcessing>();
-            });
+            }
+        );
+
+        t1.succeed(t0);
     }
 };
 
+template<typename T>
+void test()
+{
+    std::cout << typeid(T).name() << std::endl;
+}
 
 int main(int argc, char** argv) {
 
+
+    // -----------------------------
+    // SETUP
+    // -----------------------------
+
     // -- Create an empty simulation
     Simulation sim;
+
+    // -- System to print the beginning of a tick
+    std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
+    sim.world().system<>()
+        .kind(flecs::PreFrame)
+        .iter([](flecs::iter& iter)
+            {
+                std::cout << "\n -- Simulation : Tick " << iter.world().get_tick() << " - " << iter.delta_time() << "s" << std::endl;
+            }
+    );
 
     // -- Create some cognitive models
 
@@ -140,6 +119,14 @@ int main(int argc, char** argv) {
 
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
+    sim.agent(archetype, "Arthur1");
+    sim.agent(archetype, "Arthur2");
+    sim.agent(archetype, "Arthur3");
+    sim.agent(archetype, "Arthur4");
+    sim.agent(archetype, "Arthur5");
+    sim.agent(archetype, "Arthur6");
+    sim.agent(archetype, "Arthur7");
+    sim.agent(archetype, "Arthur8");
     auto bob = sim.agent(another_archetype, "Bob");
 
     std::vector<flecs::entity_view> agents{};
@@ -155,12 +142,13 @@ int main(int argc, char** argv) {
     // 3. Create a percept seen by all entities
     sim.percept<type::Hearing>(radio)
         .perceived_by(radio)
-        .perceived_by(bob)
+        //.perceived_by(bob)
         .perceived_by(arthur)
         ;
 
     // X. Experiment
-    RandomStrategy<std::string> random_strat;
+    //auto* random_strat = sim.add<RandomStrategy<std::string>>(); 
+    auto& random_strat = sim.add<RandomStrategy<std::string>>(); 
     random_strat.add(Behaviour<std::string>{
         "MyFirstBehaviour",
             [](Agent agent) -> bool {return true; },
@@ -171,7 +159,10 @@ int main(int argc, char** argv) {
             [](Agent agent) -> bool {return true; },
             [](Agent agent) -> std::string {return "Nay (but Yeah!)"; }
     });
-    //auto out = random_strat(arthur);
+
+    tf::Taskflow taskflow;
+    taskflow.emplace([&sim, arthur]() {sim.get<RandomStrategy<std::string>>()(arthur); });
+    sim.executor.run(taskflow);
 
     // 5. Show graph
     ogdf::Graph G;
@@ -182,7 +173,7 @@ int main(int argc, char** argv) {
         ogdf::GraphAttributes::edgeStyle |
         ogdf::GraphAttributes::nodeStyle |
         ogdf::GraphAttributes::nodeTemplate);
-/
+
     ogdf::node node_a = G.newNode();
     ogdf::node node_b = G.newNode();
     ogdf::node node_c = G.newNode();
@@ -210,8 +201,18 @@ int main(int argc, char** argv) {
     SL.call(GA);
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
-    sim.step_n(500, 1.5f);
-    sim.executor.wait_for_all();
+    sim.step_n(100);
+    //tf::Taskflow main;
+    //main.emplace([&tick]() {
+    //    tick.run(); 
+    //    });
+    //for (int i = 0; i < 100; i++) {
+    //    sim.world().frame_begin();
+    //    sim.executor.run(main).wait();
+    //    std::cout << sim.world().delta_time();
+    //    sim.world().frame_end();
+    //}
+    sim.shutdown();
 
     return 0;
 }

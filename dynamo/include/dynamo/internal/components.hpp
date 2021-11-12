@@ -95,9 +95,9 @@ namespace dynamo::type {
     @brief Component indicating that the associated process should be
     triggered.
     */
-    struct Process
+    struct ProcessHandle
     {
-        tf::Taskflow taskflow{};
+        tf::Taskflow* taskflow;
     };
 
     /**
@@ -106,6 +106,10 @@ namespace dynamo::type {
     struct IsProcessing
     {
         tf::Future<void> status;
+
+        const bool is_finished() {
+            return !static_cast<bool>(status.wait_for(std::chrono::seconds(0)));
+        }
     };
 }  // namespace dynamo::type
 

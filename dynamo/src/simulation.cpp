@@ -5,6 +5,13 @@ dynamo::Simulation::Simulation() {
     _world.import<module::GlobalPerception>();
 
     agents_query = _world.query<dynamo::type::Agent>();
+    std::cout << " -- Simulation : Starting.\n";
+}
+
+void dynamo::Simulation::shutdown() {
+    std::cout << " -- Simulation : Waiting for all threads to finished.\n";
+    executor.wait_for_all();
+    std::cout << " -- Simulation : Finished.\n";
 }
 
 dynamo::Agent dynamo::Simulation::agent(const char * name) {
