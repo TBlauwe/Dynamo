@@ -1,149 +1,18 @@
 #ifndef DYNAMO_SIMULATION_HPP
 #define DYNAMO_SIMULATION_HPP
 
-#include <any>
-#include <typeindex>
-#include <unordered_map>
-
 #include <spdlog/fmt/bundled/format.h>
 
+#include <dynamo/internal/archetype.hpp>
 #include <dynamo/internal/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
-#include <dynamo/internal/process.hpp>
+#include <dynamo/utils/type_map.hpp>
 
 /**
 @file dynamo/Simulation.hpp
 @brief Main entry point to use the library.
 */
 namespace dynamo {
-
-    /**
-    @class Archetype
-    @brief Abstract class to define prefab for easily instantiate entity with a set of components.
-
-    @tparam Type of the inheriting class so that the correct class can be returned without breaking fluent api.
-    */
-    template<typename TBuilder>
-    class Archetype : public EntityWrapper
-    {
-    public:
-        /**
-        @brief Construct an empty prefab.
-        */
-        Archetype(flecs::world& world, const char* name) : EntityWrapper{ world.prefab(name) } {}
-
-        /**
-        @brief Construct a prefab inheriting an other prefab.
-        */
-        Archetype(flecs::world& world, flecs::entity prefab, const char* name) : EntityWrapper{ world.prefab(name).is_a(prefab)} {}
-
-        /**
-        @brief Add a component (with default value).
-        @tparam TType Component's type.
-        */
-        template<typename TType>
-        TBuilder& add()
-        {
-            m_entity.override<TType>();
-            return *static_cast<TBuilder*>(this);
-        }
-
-        /**
-        @brief Add a shared component between all instances of this prefab (with default value).
-        @tparam TType Component's type.
-        */
-        template<typename TType>
-        TBuilder& add_shared()
-        {
-            m_entity.add<TType>();
-            return *static_cast<TBuilder*>(this);
-        }
-
-        /**
-        @brief Add and set a shared component between all instances of this prefab.
-        @tparam TType Component's type.
-        */
-        template<typename TType>
-        TBuilder& set(TType&& value)
-        {
-            m_entity.set<TType>(value);
-            m_entity.override<TType>();
-            return *static_cast<TBuilder*>(this);
-        }
-
-        /**
-        @brief Add and set a component.
-        @tparam TType Component's type.
-        */
-        template<typename TType>
-        TBuilder& set_shared(TType&& value)
-        {
-            m_entity.set<TType>(value);
-            return *static_cast<TBuilder*>(this);
-        }
-    };
-
-    /**
-    @class AgentArchetype
-    @brief Class used to define agents' prefabs for easily instantiate an agent according to an archetype.
-
-    @code{.cpp}
-    Simulation sim;
-
-    // Define some data ..
-
-    auto archetype = sim.agent_archetype()
-        .add<...>()
-        .add_shared<...>()
-        .set<...>(value...)
-        .set_shared<...>(value...);
-
-    sim.agent(archetype, "my_new_agent");
-
-    @endcode
-
-    Also, you can derive an archetype to make an other archetype
-
-    @code{.cpp}
-    Simulation sim;
-
-    // Define some data ..
-
-    auto archetype = sim.agent_archetype()
-        .add<...>()
-        .add_shared<...>()
-        .set<...>(value...)
-        .set_shared<...>(value...);
-
-    sim.agent(archetype, "my_new_agent");
-
-    auto another_archetype = sim.agent_archetype(archetype)
-        .add<...>();
-
-    sim.agent(another_archetype, "my_other_new_agent");
-
-    @endcode
-    */
-    class AgentArchetype : public Archetype<AgentArchetype>
-    {
-    public:
-        AgentArchetype(flecs::world& world, const char* name) : Archetype<AgentArchetype>{ world, name } {}
-        AgentArchetype(flecs::world& world, AgentArchetype& archetype, const char* name) : Archetype<AgentArchetype>{ world, archetype, name } {}
-
-        template<typename T>
-        AgentArchetype& add_reasonner()
-        {
-            static_assert(std::is_base_of<Reasonner, T>::value, "Wrong type passed : T is not inheriting from Reasonner.");
-
-            auto reasonnner_entity = m_entity.world().entity();
-            reasonnner_entity
-                .child_of(m_entity)
-                .add<type::AddProcess<T>>()
-                ;
-
-            return *this;
-        }
-    };
 
     /**
     @class Simulation
@@ -188,7 +57,7 @@ namespace dynamo {
                         if (parent.has(flecs::Prefab))
                             return;
                         // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
-                        e.set<type::ProcessHandle>({&taskflows.emplace_back(T(Agent(parent)))});
+                        e.set<type::ProcessHandle>({&taskflows.emplace_back(T(&strategies, Agent(parent)))});
                         e.remove<type::AddProcess<T>>();
                     }
             );
@@ -314,19 +183,19 @@ namespace dynamo {
         template<class T>
         T& get()
         {
-            return std::any_cast<T&>(strategies.at(typeid(T)));
+            return strategies.get<T>();
         }
 
         /**
         @brief Add a new strategy of type @c T. Only one strategy of a specific type can be added. 
-        Multiple calls of the same type will result of undefined behaviour.
+        Multiple calls of the same type will result in undefined behaviour.
 
         @tparam Strategy type. Must be @c DefaultConstructible.
         */
         template<class T>
         T& add()
         {
-            return std::any_cast<T&>(strategies[typeid(T)] = T());
+            return strategies.add<T>();
         }
 
     public:
@@ -361,7 +230,7 @@ namespace dynamo {
         /**
         @brief Associative container to store strategies by their types. So only one strategy of a same type can be defined.
         */
-        std::unordered_map<std::type_index, std::any> strategies;
+        Strategies strategies;
     };
 
     /**

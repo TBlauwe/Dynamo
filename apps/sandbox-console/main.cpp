@@ -36,12 +36,11 @@ public:
 class SimpleReasonner : public Reasonner
 {
 public:
-    SimpleReasonner(Agent agent) : Reasonner(agent) {}
+    SimpleReasonner(Strategies* strategies, Agent agent) : Reasonner(strategies, agent) { std::cout << strategies << std::endl; }
 
 private:
     void build() override
     {
-
         auto t0 = emplace([](Agent agent)
             {
                 std::cout << "Stress : " << agent.entity().get<Stress>()->stress << "\n";;
@@ -58,7 +57,10 @@ private:
             }
         );
 
+        auto t3 = process<RandomStrategy<std::string>>();
+
         t1.succeed(t0);
+        t3.succeed(t1, t2);
     }
 };
 
@@ -101,6 +103,20 @@ int main(int argc, char** argv) {
                 }
             }
     );
+
+    // X. Experiment
+    auto& random_strat = sim.add<RandomStrategy<std::string>>(); 
+    random_strat.add(Behaviour<std::string>{
+        "MyFirstBehaviour",
+            [](Agent agent) -> bool {return true; },
+            [](Agent agent) -> std::string {return "Yeah"; }
+    });
+    random_strat.add(Behaviour<std::string>{
+        "MySecondBehaviour",
+            [](Agent agent) -> bool {return true; },
+            [](Agent agent) -> std::string {return "Nay (but Yeah!)"; }
+    });
+
 
     // -- Register some processes/reasonner
     // You must register them before populating the simulation.
@@ -145,20 +161,6 @@ int main(int argc, char** argv) {
         //.perceived_by(bob)
         .perceived_by(arthur)
         ;
-
-    // X. Experiment
-    //auto* random_strat = sim.add<RandomStrategy<std::string>>(); 
-    auto& random_strat = sim.add<RandomStrategy<std::string>>(); 
-    random_strat.add(Behaviour<std::string>{
-        "MyFirstBehaviour",
-            [](Agent agent) -> bool {return true; },
-            [](Agent agent) -> std::string {return "Yeah"; }
-    });
-    random_strat.add(Behaviour<std::string>{
-        "MySecondBehaviour",
-            [](Agent agent) -> bool {return true; },
-            [](Agent agent) -> std::string {return "Nay (but Yeah!)"; }
-    });
 
     tf::Taskflow taskflow;
     taskflow.emplace([&sim, arthur]() {sim.get<RandomStrategy<std::string>>()(arthur); });

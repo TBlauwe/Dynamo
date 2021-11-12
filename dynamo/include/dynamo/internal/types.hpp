@@ -133,10 +133,11 @@ namespace dynamo {
         /**
         @brief Tell this agent to reason about something with @c T a @c Reasonner.
 
-                @tparam T is the type of a reasonner that should be spawned.
+        @tparam T is the type of a reasonner that should be spawned.
         */
         template <typename T>
         void reason() {
+            static_assert(false, "Not implemented yet");
             // static_assert(std::is_base_of<Reasonner, T>::value, "Wrong type passed,
             // must be a Reasonner.");
             // entity().set<component::Process>();

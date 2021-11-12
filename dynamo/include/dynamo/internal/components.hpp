@@ -97,6 +97,9 @@ namespace dynamo::type {
     */
     struct ProcessHandle
     {
+        /**
+        @brief Pointer to an existing taskflow.
+        */
         tf::Taskflow* taskflow;
     };
 
@@ -107,6 +110,9 @@ namespace dynamo::type {
     {
         tf::Future<void> status;
 
+        /**
+        @brief Returns @c true or @false if the process is finished or not.
+        */
         const bool is_finished() {
             return !static_cast<bool>(status.wait_for(std::chrono::seconds(0)));
         }

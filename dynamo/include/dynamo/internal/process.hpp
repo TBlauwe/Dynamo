@@ -11,11 +11,59 @@
 #include <taskflow/taskflow.hpp>
 
 #include <dynamo/internal/types.hpp>
+#include <dynamo/utils/type_map.hpp>
 
 /**
 @file dynamo/internal/process.hpp
-@brief Defines classes related to cognitive reasonning
+@brief Defines classes related to cognitive reasonning.
 
+Broadly speaking, an agent model defines how an agent operates. It continuosly receives @Percept and
+may act accordingly.
+
+Here, we define an agent model as an assemblage of process, or function taking inputs and returning an output.
+A @c Behaviour impact theses processes. To take them into account, we define
+a @Strategy. It tells how to handle multiple behaviours for this particular process.
+
+TODO resume/improve documentation (link to articles ?)
+
+Usage : 
+
+@code{.cpp}
+// I - Define your strategies or use exisiting one
+template<typename TOutput, TBehaviourOutputs, typename ... TInputs>
+class MyStrategy : public Strategy<TOutput, TBehavioursOutputs, TInputs ...>
+{
+    using Behaviour_t = Behaviour<TBehaviourOutput, TInputs...>; // For convenience
+public:
+
+    TOutput compute(Agent agent, std::vector<Behaviour_t> active_behaviours, TInputs ... inputs) const override
+    {
+        // implement your strategy here
+        return // your result;
+    }
+};
+
+// II - Define an agent model that may use your strategy
+
+TODO
+
+// III - Register the strategies you'll be using
+Simulation sim;
+auto my_strat = sim.add<MyStrategy>(); // Don't call it multiples times !!!
+
+// III - Register your agent model. As they will use strategies, these must be registered before your agent model runs. 
+// So not necessarily before register your models, although it is safer.
+sim.register_reasonner<MyReasonner>();
+
+// IV - Add behaviours to your strategy
+auto my_strat = sim.get<MyStrategy>();
+random_strat.add(Behaviour<TBehaviourOutput, ... TInputs>{
+    "MyFirstBehaviour",
+        [](Agent agent) -> bool {return true; },
+        [](Agent agent, TInputs ...) -> TBehaviourOutput {return "Yeah"; }
+});
+
+@endcode
 */
 namespace dynamo {
 
@@ -177,6 +225,7 @@ namespace dynamo {
         std::vector<Behaviour_t> behaviours{};
     };
 
+    using Strategies = TypeMap;
     /**
     @class Reasonner
 
@@ -211,7 +260,7 @@ namespace dynamo {
         /**
         @brief Construct a reasonner for the specified agent.
         */
-        Reasonner(Agent agent) : agent{ agent } {}
+        Reasonner(Strategies * strategies, Agent agent) : strategies{ strategies }, agent { agent } {}
 
         /**
         @brief Implicit conversion operator to convert it into taskflow.
@@ -236,13 +285,24 @@ namespace dynamo {
             });
         };
 
+        /**
+        @brief Emplace a reasonner.
+        */
+        template<typename T, typename ... TInputs>
+        tf::Task process(TInputs&& ... inputs)
+        {
+            return taskflow.emplace([strat = this->strategies, a = this->agent, ... args = std::forward<TInputs>(inputs)]() {
+                strat->get<T>()(a, args...);
+            });
+        };
+
     private:
         /**
         @brief Pure virtual function used to build a graph of cognitives processes.
         */
         virtual void build() = 0;
 
-    protected:
+        Strategies * strategies;
         Agent agent;
         tf::Taskflow taskflow{};
     };
