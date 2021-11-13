@@ -53,27 +53,27 @@ TEST_CASE("Basics") {
 		    .add<TagTwo>();
 
         auto arthur = sim.agent("Arthur");
-        CHECK(arthur.entity().has<type::Agent>());
+        CHECK(arthur.has<type::Agent>());
 
 	    auto bob = sim.agent(archetype, "Bob");
 	    auto charlie = sim.agent(another_archetype, "Charlie");
-        CHECK(bob.entity().has<TagOne>());
-        CHECK(charlie.entity().has<TagOne>());
-        CHECK(charlie.entity().has<TagTwo>());
-        CHECK(bob.entity().get<PrivateValue>()->value == 100.0f);
-        CHECK(bob.entity().get<SharedValue>()->value == 50.0f);
+        CHECK(bob.has<TagOne>());
+        CHECK(charlie.has<TagOne>());
+        CHECK(charlie.has<TagTwo>());
+        CHECK(bob.get<PrivateValue>()->value == 100.0f);
+        CHECK(bob.get<SharedValue>()->value == 50.0f);
 
-        bob.entity().set<PrivateValue>({ 1.f });
-        CHECK(bob.entity().get<PrivateValue>()->value == 1.0f);
-        CHECK(charlie.entity().get<PrivateValue>()->value == 100.0f);
+        bob.set<PrivateValue>({ 1.f });
+        CHECK(bob.get<PrivateValue>()->value == 1.0f);
+        CHECK(charlie.get<PrivateValue>()->value == 100.0f);
 
-        archetype.entity().set<SharedValue>({ 10.f });
-        CHECK(bob.entity().get<SharedValue>()->value == 10.0f);
-        CHECK(charlie.entity().get<SharedValue>()->value == 10.0f);
+        archetype.set<SharedValue>({ 10.f });
+        CHECK(bob.get<SharedValue>()->value == 10.0f);
+        CHECK(charlie.get<SharedValue>()->value == 10.0f);
 
-        bob.entity().set<SharedValue>({ 1.f }); // When doing this, you add a private copy, so others will not be affected.
-        CHECK(bob.entity().get<SharedValue>()->value == 1.0f);
-        CHECK(charlie.entity().get<SharedValue>()->value == 10.0f);
+        bob.set<SharedValue>({ 1.f }); // When doing this, you add a private copy, so others will not be affected.
+        CHECK(bob.get<SharedValue>()->value == 1.0f);
+        CHECK(charlie.get<SharedValue>()->value == 10.0f);
     }
 
     SUBCASE("Artefacts"){

@@ -49,9 +49,7 @@ namespace dynamo {
     /**
     @class EntityWrapper
 
-    @brief Abstract class to wrap an entity for convenience.
-
-    Wraps an entity for convience.
+    @brief Wrap an entity for convenience.
     */
     class EntityWrapper {
     public:
@@ -97,11 +95,88 @@ namespace dynamo {
     };
 
     /**
+    @class EntityManipulator
+
+    @brief Derived from @c EntityWrapper to expose underliying call to modify/query the state of an entity.
+
+    @tparam T Type of the derived class so we can expose a fluent API.
+    */
+    template<typename T>
+    class EntityManipulator : public EntityWrapper
+    {
+    public:
+        explicit EntityManipulator(flecs::entity entity) : EntityWrapper{ entity } {};
+
+        /**
+        @brief Add a component (with default value).
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        T& add()
+        {
+            m_entity.add<TType>();
+            return *static_cast<T*>(this);
+        }
+
+        /**
+        @brief Set a component (with provided value).
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        T& set(TType&& value)
+        {
+            m_entity.set<TType>(std::forward<TType>(value));
+            return *static_cast<T*>(this);
+        }
+
+        /**
+        @brief Returns @c true or @ false, if has given component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        bool has()
+        {
+            return m_entity.has<TType>();
+        }
+
+        /**
+        @brief Returns a pointer to the const component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        TType const * get()
+        {
+            return m_entity.get<TType>();
+        }
+
+        /**
+        @brief Returns a pointer to the component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        TType* get_mut()
+        {
+            return m_entity.get_mut<TType>();
+        }
+
+        /**
+        @brief Removes a component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        T& remove()
+        {
+            m_entity.remove<TType>();
+            return *static_cast<T*>(this);
+        }
+    };
+
+    /**
     @class Action
 
     @brief Action are entities. WIP
     */
-    class Action : public EntityWrapper {
+    class Action : public EntityManipulator<Action> {
     public:
         /**
         @brief Identify the given entity as an @c Action. Must have the corresponding
@@ -109,7 +184,7 @@ namespace dynamo {
 
         To construct an @c Action , see @c ActionBuilder .
         */
-        explicit Action(flecs::entity entity) : EntityWrapper(entity) {};
+        explicit Action(flecs::entity entity) : EntityManipulator<Action>(entity) {};
     };
 
     // Forward declaration
@@ -120,7 +195,7 @@ namespace dynamo {
 
     @brief Agent are pro-active entities with cognitive abilities.
     */
-    class Agent : public EntityWrapper {
+    class Agent : public EntityManipulator<Agent> {
     public:
         /**
         @brief Identify the given entity as an @c Agent. Must have the corresponding
@@ -128,20 +203,7 @@ namespace dynamo {
 
         To construct an @c Agent , see @c AgentBuilder .
         */
-        explicit Agent(flecs::entity entity) : EntityWrapper(entity) {};
-
-        /**
-        @brief Tell this agent to reason about something with @c T a @c Reasonner.
-
-        @tparam T is the type of a reasonner that should be spawned.
-        */
-        template <typename T>
-        void reason() {
-            static_assert(false, "Not implemented yet");
-            // static_assert(std::is_base_of<Reasonner, T>::value, "Wrong type passed,
-            // must be a Reasonner.");
-            // entity().set<component::Process>();
-        };
+        explicit Agent(flecs::entity entity) : EntityManipulator<Agent>(entity) {};
     };
 
     /**
@@ -149,7 +211,7 @@ namespace dynamo {
 
     @brief Artefact are passive entities.
     */
-    class Artefact : public EntityWrapper {
+    class Artefact : public EntityManipulator<Artefact> {
     public:
         /**
         @brief Identify the given entity as an @c Artefact. Must have the
@@ -157,7 +219,7 @@ namespace dynamo {
 
         To construct an @c Artefact , see @c ArtefactBuilder .
         */
-        explicit Artefact(flecs::entity entity) : EntityWrapper(entity) {};
+        explicit Artefact(flecs::entity entity) : EntityManipulator<Artefact>(entity) {};
     };
 
     /**
@@ -165,7 +227,7 @@ namespace dynamo {
 
     @brief Organisation are intangible entities that other entities can belongs to.
     */
-    class Organisation : public EntityWrapper {
+    class Organisation : public EntityManipulator<Organisation> {
     public:
         /**
         @brief Identify the given entity as an @c Organisation. Must have the
@@ -174,7 +236,7 @@ namespace dynamo {
         To construct an @c Organisation , see @c OrganisationBuilder .
         */
         explicit Organisation(flecs::entity entity)
-            : EntityWrapper(entity) {};
+            : EntityManipulator<Organisation>(entity) {};
     };
 
     /**
@@ -188,7 +250,7 @@ namespace dynamo {
     A decay can also be specified to delete @Percept after some time. See @ref
     decay(float ttl).
     */
-    class Percept : public EntityWrapper {
+    class Percept : public EntityManipulator<Percept> {
     public:
         /**
         @brief Identify the given entity as an @c Percept. Must have the corresponding
@@ -196,7 +258,7 @@ namespace dynamo {
 
         To construct an @c Percept , see @c PerceptBuilder .
         */
-        explicit Percept(flecs::entity entity) : EntityWrapper(entity) {};
+        explicit Percept(flecs::entity entity) : EntityManipulator<Percept>(entity) {};
 
         /**
         @brief Add a relation "type::perceive" from the given entity e to this
