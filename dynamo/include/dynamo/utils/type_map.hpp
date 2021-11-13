@@ -23,7 +23,7 @@ class TypeMap
 
 public:
     /**
-    @brief Get element by type @c.
+    @brief Get element by type @c T.
     */
     template<class T>
     T& get()
@@ -33,14 +33,16 @@ public:
 
     /**
     @brief Add a new element @c T. Only one element of a specific type can be added.
-    Multiple calls of the same type will result in undefined behaviour.
 
     @tparam Must be @c DefaultConstructible.
     */
     template<class T>
     T& add()
     {
-        return std::any_cast<T&>(container[typeid(T)] = T());
+        if(container.contains(typeid(T)))
+            return std::any_cast<T&>(container[typeid(T)]);
+        else
+            return std::any_cast<T&>(container[typeid(T)] = T());
     }
 
 private:
