@@ -11,7 +11,7 @@
 #include <taskflow/taskflow.hpp>
 
 #include <dynamo/internal/types.hpp>
-#include <dynamo/utils/type_map.hpp>
+#include <dynamo/utils/containers.hpp>
 
 /**
 @file dynamo/internal/process.hpp
@@ -211,9 +211,7 @@ namespace dynamo {
                 }) | 
                 ranges::to<std::vector>();
 
-            TBehaviourOuput result = compute(agent, active_behaviours, inputs ...);
-            std::cout << agent.name() << " has finished reasonning. The result is : " << result << "\n";
-            return result;
+            return compute(agent, active_behaviours, inputs ...);
         };
 
         /**

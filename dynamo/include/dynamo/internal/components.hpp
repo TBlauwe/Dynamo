@@ -5,6 +5,8 @@
 
 #include <taskflow/taskflow.hpp>
 
+#include <dynamo/utils/containers.hpp>
+
 /**
 @file dynamo/internal/components.hpp
 @brief Defines some basic components/tags
@@ -101,6 +103,17 @@ namespace dynamo::type {
         @brief Pointer to an existing taskflow.
         */
         tf::Taskflow* taskflow;
+    };
+
+    /**
+    @brief Component holding a ref to command queue to delay commands set during async tasks.
+    */
+    struct CommandsQueueHandle
+    {
+        /**
+        @brief Pointer to an existing taskflow.
+        */
+        ThreadsafeQueue<std::function<void(flecs::world&)>>* queue {};
     };
 
     /**

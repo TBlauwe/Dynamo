@@ -3,10 +3,10 @@
 
 #include <spdlog/fmt/bundled/format.h>
 
+#include <dynamo/utils/containers.hpp>
 #include <dynamo/internal/archetype.hpp>
 #include <dynamo/internal/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
-#include <dynamo/utils/type_map.hpp>
 
 /**
 @file dynamo/Simulation.hpp
@@ -75,7 +75,6 @@ namespace dynamo {
                 .kind(flecs::PreUpdate)
                 .each([this](flecs::entity e, type::IsProcessing& process)
                     {
-                        //std::cout << "Status for " << e.get_object(flecs::ChildOf).name() << " : " << process.is_finished() << std::endl;
                         if(process.is_finished())
                             e.remove<type::IsProcessing>();
                     }
@@ -225,6 +224,7 @@ namespace dynamo {
         @brief Keep all taskflow alive so we do not have to build them again.
         */
         std::list<tf::Taskflow> taskflows {};
+        ThreadsafeQueue<std::function<void(flecs::world& world)>> commands_queue {};
 
     public:
         /**

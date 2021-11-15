@@ -5,6 +5,7 @@ dynamo::Simulation::Simulation() {
     _world.import<module::GlobalPerception>();
 
     agents_query = _world.query<dynamo::type::Agent>();
+    _world.set<type::CommandsQueueHandle>({&commands_queue});
 }
 
 void dynamo::Simulation::shutdown() {
@@ -35,6 +36,10 @@ dynamo::Artefact dynamo::Simulation::artefact(const char *name) {
 
 void dynamo::Simulation::step(float elapsed_time) {
     _world.progress(elapsed_time);
+    while (auto command = commands_queue.pop())
+    {
+        command.value()(_world);
+    }
 }
 
 void dynamo::Simulation::step_n(unsigned int n, float elapsed_time) {

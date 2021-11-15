@@ -27,33 +27,39 @@ public:
 
     TOutput compute(Agent agent, std::vector<Behaviour_t> active_behaviours, TInputs ... inputs) const override
     {
-        std::vector<Behaviour_t> out{};
-        std::sample(active_behaviours.begin(), active_behaviours.end(), std::back_inserter(out), 1, std::mt19937{ std::random_device{}() });
-        return out[0](agent, inputs ...);
+        return active_behaviours[rand()%active_behaviours.size()](agent, inputs ...);
     }
 };
 
 class SimpleReasonner : public Reasonner
 {
 public:
-    SimpleReasonner(Strategies* strategies, Agent agent) : Reasonner(strategies, agent) { std::cout << strategies << std::endl; }
+    SimpleReasonner(Strategies* strategies, Agent agent) : Reasonner(strategies, agent) {}
 
 private:
     void build() override
     {
         auto t0 = emplace([](Agent agent)
             {
-                std::cout << "Stress : " << agent.entity().get<Stress>()->stress << "\n";;
+                auto* command_queue = agent.entity().world().get<type::CommandsQueueHandle>()->queue;
+                command_queue->push([e = agent.entity()](flecs::world& world){e.mut(world).set<Stress>({12.0f}); });
             }
         );
 
         auto t1 = emplace([](Agent agent)
             {
+                auto* command_queue = agent.entity().world().get<type::CommandsQueueHandle>()->queue;
+                //command_queue->push([&agent](flecs::world& world){std::cout << "Hello"; });
+                command_queue->push([e = agent.entity()](flecs::world& world){e.mut(world).set<Stress>({9.0f}); });
+                //command_queue->emplace([agent]()mutable { agent.set<Stress>({ 9.0f }); });
+                //const_cast<tf::Taskflow*>()->taskflow.emplace([](){});
             }
         );
 
         auto t2 = emplace([](Agent agent)
             {
+                auto* command_queue = agent.entity().world().get<type::CommandsQueueHandle>()->queue;
+                command_queue->push([e = agent.entity()](flecs::world& world){e.mut(world).set<Stress>({12.0f}); });
             }
         );
 
@@ -63,12 +69,6 @@ private:
         t3.succeed(t1, t2);
     }
 };
-
-template<typename T>
-void test()
-{
-    std::cout << typeid(T).name() << std::endl;
-}
 
 int main(int argc, char** argv) {
 
@@ -143,6 +143,13 @@ int main(int argc, char** argv) {
     sim.agent(archetype, "Arthur6");
     sim.agent(archetype, "Arthur7");
     sim.agent(archetype, "Arthur8");
+    sim.agent(archetype, "Arthur9");
+    sim.agent(archetype, "Arthur9");
+    sim.agent(archetype, "Arthur10");
+    sim.agent(archetype, "Arthur11");
+    sim.agent(archetype, "Arthur11");
+    sim.agent(archetype, "Arthur12");
+    sim.agent(archetype, "Arthur13");
     auto bob = sim.agent(another_archetype, "Bob");
 
     std::vector<flecs::entity_view> agents{};
@@ -161,10 +168,6 @@ int main(int argc, char** argv) {
         //.perceived_by(bob)
         .perceived_by(arthur)
         ;
-
-    tf::Taskflow taskflow;
-    taskflow.emplace([&sim, arthur]() {sim.get<RandomStrategy<std::string>>()(arthur); });
-    sim.executor.run(taskflow);
 
     // 5. Show graph
     ogdf::Graph G;
@@ -204,16 +207,6 @@ int main(int argc, char** argv) {
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
     sim.step_n(100);
-    //tf::Taskflow main;
-    //main.emplace([&tick]() {
-    //    tick.run(); 
-    //    });
-    //for (int i = 0; i < 100; i++) {
-    //    sim.world().frame_begin();
-    //    sim.executor.run(main).wait();
-    //    std::cout << sim.world().delta_time();
-    //    sim.world().frame_end();
-    //}
     sim.shutdown();
 
     return 0;
