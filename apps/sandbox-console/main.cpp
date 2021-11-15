@@ -41,25 +41,18 @@ private:
     {
         auto t0 = emplace([](Agent agent)
             {
-                auto* command_queue = agent.entity().world().get<type::CommandsQueueHandle>()->queue;
-                command_queue->push([e = agent.entity()](flecs::world& world){e.mut(world).set<Stress>({12.0f}); });
             }
         );
 
         auto t1 = emplace([](Agent agent)
             {
-                auto* command_queue = agent.entity().world().get<type::CommandsQueueHandle>()->queue;
-                //command_queue->push([&agent](flecs::world& world){std::cout << "Hello"; });
-                command_queue->push([e = agent.entity()](flecs::world& world){e.mut(world).set<Stress>({9.0f}); });
-                //command_queue->emplace([agent]()mutable { agent.set<Stress>({ 9.0f }); });
-                //const_cast<tf::Taskflow*>()->taskflow.emplace([](){});
+                agent.set<Stress>({ 9.0f });
             }
         );
 
         auto t2 = emplace([](Agent agent)
             {
-                auto* command_queue = agent.entity().world().get<type::CommandsQueueHandle>()->queue;
-                command_queue->push([e = agent.entity()](flecs::world& world){e.mut(world).set<Stress>({12.0f}); });
+                agent.set<Stress>({ 12.0f });
             }
         );
 
@@ -97,6 +90,7 @@ int main(int argc, char** argv) {
         .kind(flecs::PreUpdate)
         .each([](flecs::entity entity, Stress& stress)
             {
+                std::cout << "Stress " << entity << " : " << stress.stress << std::endl;
                 if (stress.stress > 0.f)
                 {
                     stress.stress -= entity.delta_time();
@@ -130,27 +124,22 @@ int main(int argc, char** argv) {
         .add_reasonner<SimpleReasonner>()
         ;
 
-    auto another_archetype = sim.agent_archetype(archetype, "Archetype_Advanced")
-        .add_shared<Tag>();
-
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
-    sim.agent(archetype, "Arthur1");
-    sim.agent(archetype, "Arthur2");
-    sim.agent(archetype, "Arthur3");
-    sim.agent(archetype, "Arthur4");
-    sim.agent(archetype, "Arthur5");
-    sim.agent(archetype, "Arthur6");
-    sim.agent(archetype, "Arthur7");
-    sim.agent(archetype, "Arthur8");
-    sim.agent(archetype, "Arthur9");
-    sim.agent(archetype, "Arthur9");
-    sim.agent(archetype, "Arthur10");
-    sim.agent(archetype, "Arthur11");
-    sim.agent(archetype, "Arthur11");
-    sim.agent(archetype, "Arthur12");
-    sim.agent(archetype, "Arthur13");
-    auto bob = sim.agent(another_archetype, "Bob");
+    //sim.agent(archetype, "Arthur2");
+    //sim.agent(archetype, "Arthur3");
+    //sim.agent(archetype, "Arthur4");
+    //sim.agent(archetype, "Arthur5");
+    //sim.agent(archetype, "Arthur6");
+    //sim.agent(archetype, "Arthur7");
+    //sim.agent(archetype, "Arthur8");
+    //sim.agent(archetype, "Arthur9");
+    //sim.agent(archetype, "Arthur9");
+    //sim.agent(archetype, "Arthur10");
+    //sim.agent(archetype, "Arthur11");
+    //sim.agent(archetype, "Arthur11");
+    //sim.agent(archetype, "Arthur12");
+    //sim.agent(archetype, "Arthur13");
 
     std::vector<flecs::entity_view> agents{};
     sim.for_each([&agents](flecs::entity agent, type::Agent& _) {
@@ -165,7 +154,6 @@ int main(int argc, char** argv) {
     // 3. Create a percept seen by all entities
     sim.percept<type::Hearing>(radio)
         .perceived_by(radio)
-        //.perceived_by(bob)
         .perceived_by(arthur)
         ;
 
@@ -206,7 +194,7 @@ int main(int argc, char** argv) {
     SL.call(GA);
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
-    sim.step_n(100);
+    sim.step_n(1000);
     sim.shutdown();
 
     return 0;

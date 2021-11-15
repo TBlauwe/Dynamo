@@ -105,7 +105,10 @@ namespace dynamo {
     class EntityManipulator : public EntityWrapper
     {
     public:
-        explicit EntityManipulator(flecs::entity entity) : EntityWrapper{ entity } {};
+        explicit EntityManipulator(flecs::entity entity) : EntityWrapper{ entity }
+        {
+            commands_queue = m_entity.world().get<type::CommandsQueueHandle>()->queue;
+        };
 
         /**
         @brief Add a component (with default value).
@@ -114,7 +117,16 @@ namespace dynamo {
         template<typename TType>
         T& add()
         {
-            m_entity.add<TType>();
+            if(should_defer())
+            {
+                commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
+                    flecs::entity(world, id).add<TType>();
+                });
+            }
+            else
+            {
+                m_entity.add<TType>();
+            }
             return *static_cast<T*>(this);
         }
 
@@ -125,7 +137,16 @@ namespace dynamo {
         template<typename TType>
         T& set(TType&& value)
         {
-            m_entity.set<TType>(std::forward<TType>(value));
+            if(should_defer())
+            {
+                commands_queue->push([id = m_entity.id(), args = std::forward<TType>(value)](flecs::world& world) mutable {
+                    flecs::entity(world, id).set<TType>(args);
+                });
+            }
+            else
+            {
+                m_entity.set<TType>(std::forward<TType>(value));
+            }
             return *static_cast<T*>(this);
         }
 
@@ -134,7 +155,7 @@ namespace dynamo {
         @tparam TType Component's type.
         */
         template<typename TType>
-        bool has()
+        bool has() const
         {
             return m_entity.has<TType>();
         }
@@ -144,7 +165,7 @@ namespace dynamo {
         @tparam TType Component's type.
         */
         template<typename TType>
-        TType const * get()
+        TType const * get() const
         {
             return m_entity.get<TType>();
         }
@@ -152,6 +173,9 @@ namespace dynamo {
         /**
         @brief Returns a pointer to the component.
         @tparam TType Component's type.
+
+        if you need to modify a component, prefer using set function as it will defer modification when possible. Otherwise, if you use
+        this pointer to modify the component while the world is in read-only (assume always when in a process), it will crash.
         */
         template<typename TType>
         TType* get_mut()
@@ -166,9 +190,50 @@ namespace dynamo {
         template<typename TType>
         T& remove()
         {
-            m_entity.remove<TType>();
+            if(should_defer())
+            {
+                commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
+                    auto entity = flecs::entity(world, id);
+                    if(entity.has<TType>())
+                        entity.remove<TType>();
+                });
+            }
+            else
+            {
+                m_entity.remove<TType>();
+            }
             return *static_cast<T*>(this);
         }
+    private:
+        /**
+        @brief Test whether the world is in read-only mode or not.
+        
+        Sometimes an entity refers to a read-only world (especially while reasonning due to
+        async processes outside conventionnal progress loop). We need to check before hand if we should defer
+        or not the modification
+        */
+        bool should_defer()
+        {
+            return m_entity.world().is_readonly();
+        }
+
+    private:
+        /**
+        @brief Pointer to simulations' commands queue to defer modifications when world is in read only.
+        */
+        type::CommandsQueue* commands_queue;
+    };
+
+    /**
+    @class 
+    @brief Convenience class if we do not know the type of the entity.
+    */
+    class Entity : public EntityManipulator<Entity> {
+    public:
+        /**
+        @brief Identify the given entity as an @c Entity
+        */
+        explicit Entity(flecs::entity entity) : EntityManipulator<Entity>(entity) {};
     };
 
     /**

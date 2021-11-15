@@ -105,6 +105,7 @@ namespace dynamo::type {
         tf::Taskflow* taskflow;
     };
 
+    using CommandsQueue = ThreadsafeQueue<std::function<void(flecs::world&)>>;
     /**
     @brief Component holding a ref to command queue to delay commands set during async tasks.
     */
@@ -113,7 +114,7 @@ namespace dynamo::type {
         /**
         @brief Pointer to an existing taskflow.
         */
-        ThreadsafeQueue<std::function<void(flecs::world&)>>* queue {};
+        CommandsQueue* queue {};
     };
 
     /**

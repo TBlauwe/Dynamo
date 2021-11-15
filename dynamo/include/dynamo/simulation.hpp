@@ -57,28 +57,27 @@ namespace dynamo {
                         if (parent.has(flecs::Prefab))
                             return;
                         // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
-                        e.set<type::ProcessHandle>({&taskflows.emplace_back(T(&strategies, Agent(parent)))});
+                        e.set<type::ProcessHandle>({ &taskflows.emplace_back(T(&strategies, Agent(parent))) });
                         e.remove<type::AddProcess<T>>();
                     }
             );
 
             _world.system<type::ProcessHandle>()
                 .term<type::IsProcessing>().oper(flecs::Not)
-                .kind(flecs::OnUpdate)
+                .kind(flecs::PreUpdate)
                 .each([this](flecs::entity e, type::ProcessHandle& process)
                     {
-                        e.set<type::IsProcessing>({ executor.run(*process.taskflow, []() {}) });
+                        e.set<type::IsProcessing>({
+                            executor.run(*process.taskflow,[id = e.id(), this]()
+                                {
+                                    commands_queue.push([id] (flecs::world& world) mutable {
+                                        flecs::entity(world, id).remove<type::IsProcessing>();
+                                        });
+                                })
+                        });
                     }
             );
 
-            _world.system<type::IsProcessing>()
-                .kind(flecs::PreUpdate)
-                .each([this](flecs::entity e, type::IsProcessing& process)
-                    {
-                        if(process.is_finished())
-                            e.remove<type::IsProcessing>();
-                    }
-            );
         };
 
         /**
@@ -186,7 +185,7 @@ namespace dynamo {
         }
 
         /**
-        @brief Add a new strategy of type @c T. Only one strategy of a specific type can be added. 
+        @brief Add a new strategy of type @c T. Only one strategy of a specific type can be added.
         Multiple calls of the same type will result in undefined behaviour.
 
         @tparam Strategy type. Must be @c DefaultConstructible.
@@ -223,8 +222,12 @@ namespace dynamo {
         /**
         @brief Keep all taskflow alive so we do not have to build them again.
         */
-        std::list<tf::Taskflow> taskflows {};
-        ThreadsafeQueue<std::function<void(flecs::world& world)>> commands_queue {};
+        std::list<tf::Taskflow> taskflows{};
+
+        /**
+        @brief Defer modification to entities to a command queue called after the end of frame.
+        */
+        type::CommandsQueue commands_queue{};
 
     public:
         /**
