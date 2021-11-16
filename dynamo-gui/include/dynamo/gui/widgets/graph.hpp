@@ -9,7 +9,7 @@
 #include <ogdf/layered/OptimalRanking.h>
 #include <ogdf/layered/SugiyamaLayout.h>
 
-namespace dynamo_gui::widget {
+namespace dynamo::widgets {
     class BrainViewer : public ImGui::Graph::SimpleGraph<int>{
         tf::Taskflow* last_taskflow {nullptr};
 

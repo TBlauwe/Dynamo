@@ -4,7 +4,7 @@
 #include <flecs.h>
 #include <imgui.h>
 
-namespace dynamo_gui::widget {
+namespace dynamo::widgets {
 
     template<typename T>
     void show(flecs::entity& e);

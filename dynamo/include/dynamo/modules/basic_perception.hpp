@@ -53,7 +53,7 @@ namespace dynamo{
                             for(auto i : iter){
                                 auto e = iter.entity(i);
                                 auto world = e.world();
-                                auto percept = PerceptBuilder(world).source<type::Hearing>(e);
+                                auto percept = PerceptBuilder(world).source<type::Hearing>(e).decay();
                                 for(flecs::entity_view& entity_view : targets[i].entities){
                                     percept.perceived_by(entity_view);
                                 }

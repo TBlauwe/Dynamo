@@ -5,7 +5,7 @@
 #include <IconsFontAwesome5.h>
 #include <spdlog/fmt/bundled/format.h>
 
-namespace dynamo_gui::widget {
+namespace dynamo::widgets {
     void inspect(flecs::entity& entity){
         if(ImGui::CollapsingHeader(fmt::format("Inspector : {}##{}", entity.name(), entity.id()).c_str())){
             ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(10.f, 10.f));
@@ -76,7 +76,7 @@ namespace dynamo_gui::widget {
     }
 
     void show_action_widget(flecs::entity& entity){
-        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
+        auto gui = entity.get_mut<type::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
         if(!ImGui::Begin(name, &gui->show_widget)){
@@ -88,7 +88,7 @@ namespace dynamo_gui::widget {
     }
 
     void show_agent_widget(flecs::entity& entity){
-        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
+        auto gui = entity.get_mut<type::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
         if(!ImGui::Begin(name, &gui->show_widget)){
@@ -100,7 +100,7 @@ namespace dynamo_gui::widget {
     }
 
     void show_artefact_widget(flecs::entity& entity){
-        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
+        auto gui = entity.get_mut<type::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
         if(!ImGui::Begin(name, &gui->show_widget)){
@@ -112,7 +112,7 @@ namespace dynamo_gui::widget {
     }
 
     void show_percept_widget(flecs::entity& entity){
-        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
+        auto gui = entity.get_mut<type::GUI>();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
         if(!ImGui::Begin("Percept", &gui->show_widget)){
             ImGui::End();
@@ -123,7 +123,7 @@ namespace dynamo_gui::widget {
     }
 
     void show_organisation_widget(flecs::entity& entity){
-        auto gui = entity.get_mut<dynamo_gui::component::GUI>();
+        auto gui = entity.get_mut<type::GUI>();
         const char * name = entity.name();
         ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
         if(!ImGui::Begin(name, &gui->show_widget)){

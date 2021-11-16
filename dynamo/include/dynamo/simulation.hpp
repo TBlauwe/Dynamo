@@ -248,8 +248,8 @@ namespace dynamo {
     template<typename TTag, typename TTerm>
     void add_tag_to(flecs::world& world, const char* tag_name, const char* term_name)
     {
-        world.system<const TTerm>(fmt::format("OnAdd_{}_Add{}", term_name, tag_name).c_str())
-            .kind(flecs::OnAdd)
+        world.observer<const TTerm>(fmt::format("OnAdd_{}_Add{}", term_name, tag_name).c_str())
+            .event(flecs::OnAdd)
             .each([](flecs::entity e, const TTerm& term)
                 {
                     e.set<TTag>({});

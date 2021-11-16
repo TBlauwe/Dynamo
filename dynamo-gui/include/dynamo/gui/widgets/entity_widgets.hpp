@@ -3,7 +3,7 @@
 
 #include <flecs.h>
 
-namespace dynamo_gui::widget {
+namespace dynamo::widgets {
     void show_action_widget(flecs::entity& entity);
     void show_agent_widget(flecs::entity& entity);
     void show_artefact_widget(flecs::entity& entity);

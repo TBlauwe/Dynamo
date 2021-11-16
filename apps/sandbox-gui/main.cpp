@@ -8,7 +8,7 @@ class Sandbox : public app::Application{
 private:
     dynamo::Simulation sim{};
     FlecsInspector flecs_inspector {sim.world()};
-    dynamo_gui::DynamoInspector dynamo_inspector {sim.world()};
+    dynamo::DynamoInspector dynamo_inspector {sim.world()};
 
     bool    is_enabled  {false};
     bool    step_once   {false};

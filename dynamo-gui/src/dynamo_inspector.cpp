@@ -4,30 +4,30 @@
 #include <imnodes.h>
 #include <IconsFontAwesome5.h>
 
-namespace dynamo_gui{
+namespace dynamo{
 
     DynamoInspector::DynamoInspector(flecs::world& world):
             world{world}
     {
-        agents_query = world.query<const dynamo::type::Agent, component::GUI>();
-        artefacts_query = world.query<const dynamo::type::Artefact, component::GUI>();
-        percepts_query = world.query<const dynamo::type::Percept, component::GUI>();
-        organisations_query = world.query<const dynamo::type::Organisation, component::GUI>();
-        actions_query = world.query<const dynamo::type::Action, component::GUI>();
+        agents_query = world.query<const type::Agent, type::GUI>();
+        artefacts_query = world.query<const type::Artefact, type::GUI>();
+        percepts_query = world.query<const type::Percept, type::GUI>();
+        organisations_query = world.query<const type::Organisation, type::GUI>();
+        actions_query = world.query<const type::Action, type::GUI>();
 
-        dynamo::add_tag_to<component::GUI, dynamo::type::Action>(world, "GUI", "Action");
-        dynamo::add_tag_to<component::GUI, dynamo::type::Agent>(world, "GUI", "Agent");
-        dynamo::add_tag_to<component::GUI, dynamo::type::Artefact>(world, "GUI", "Artefact");
-        dynamo::add_tag_to<component::GUI, dynamo::type::Organisation>(world, "GUI", "Organisation");
-        dynamo::add_tag_to<component::GUI, dynamo::type::Percept>(world, "GUI", "Percept");
+        add_tag_to<type::GUI, type::Action>(world, "GUI", "Action");
+        add_tag_to<type::GUI, type::Agent>(world, "GUI", "Agent");
+        add_tag_to<type::GUI, type::Artefact>(world, "GUI", "Artefact");
+        add_tag_to<type::GUI, type::Organisation>(world, "GUI", "Organisation");
+        add_tag_to<type::GUI, type::Percept>(world, "GUI", "Percept");
 
-        //world.observer<dynamo::type::Agent>("OnAdd_Agent_AddBrainViewer")
+        //world.observer<type::Agent>("OnAdd_Agent_AddBrainViewer")
         //        .event(flecs::OnAdd)
-        //        .each([](flecs::entity e, const dynamo::type::Agent& _){
-        //            e.set<widget::BrainViewer>(widget::BrainViewer{e.name().c_str()});
+        //        .each([](flecs::entity e, const type::Agent& _){
+        //            e.set<widgets::BrainViewer>(widgets::BrainViewer{e.name().c_str()});
         //        });
 
-        world.system<const dynamo::type::Percept>("UpdatePlot_PerceptsCount")
+        world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)
                 .iter([this](flecs::iter& iter){
                     scrolling_plot_percepts.add(iter.count());
@@ -61,7 +61,7 @@ namespace dynamo_gui{
                 ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
-                actions_query.each([this](flecs::entity e, const dynamo::type::Action &action, component::GUI& gui){
+                actions_query.each([this](flecs::entity e, const type::Action &action, type::GUI& gui){
                     ImGui::PushID(static_cast<int>(e.id()));
                     if (actions_list_filter.PassFilter(e.name())) {
                         ImGui::TableNextRow();
@@ -77,7 +77,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_action_widget(e);
+                            widgets::show_action_widget(e);
                         }
                     }
                     ImGui::PopID();
@@ -98,7 +98,7 @@ namespace dynamo_gui{
                 ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
-                agents_query.each([this](flecs::entity e, const dynamo::type::Agent &agent, component::GUI& gui) {
+                agents_query.each([this](flecs::entity e, const type::Agent &agent, type::GUI& gui) {
                     ImGui::PushID(static_cast<int>(e.id()));
                     if (agents_list_filter.PassFilter(e.name())) {
                         ImGui::TableNextRow();
@@ -114,7 +114,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_agent_widget(e);
+                            widgets::show_agent_widget(e);
                         }
                     }
                     ImGui::PopID();
@@ -135,7 +135,7 @@ namespace dynamo_gui{
                 ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
-                artefacts_query.each([this](flecs::entity e, const dynamo::type::Artefact &artefact, component::GUI& gui) {
+                artefacts_query.each([this](flecs::entity e, const type::Artefact &artefact, type::GUI& gui) {
                     ImGui::PushID(static_cast<int>(e.id()));
                     if (artefacts_list_filter.PassFilter(e.name())) {
                         ImGui::TableNextRow();
@@ -151,7 +151,7 @@ namespace dynamo_gui{
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_artefact_widget(e);
+                            widgets::show_artefact_widget(e);
                         }
                     }
                     ImGui::PopID();
@@ -173,7 +173,7 @@ namespace dynamo_gui{
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
                 organisations_query.each(
-                        [this](flecs::entity e, const dynamo::type::Organisation &organisation, component::GUI &gui) {
+                        [this](flecs::entity e, const type::Organisation &organisation, type::GUI &gui) {
                             ImGui::PushID(static_cast<int>(e.id()));
                             if (organisations_list_filter.PassFilter(e.name())) {
                                 ImGui::TableNextRow();
@@ -189,7 +189,7 @@ namespace dynamo_gui{
                                 ImGui::TableSetColumnIndex(3);
                                 ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                                 if (gui.show_widget) {
-                                    dynamo_gui::widget::show_organisation_widget(e);
+                                    widgets::show_organisation_widget(e);
                                 }
                             }
                             ImGui::PopID();
@@ -217,13 +217,13 @@ namespace dynamo_gui{
                 ImGui::TableSetupColumn("TTL", ImGuiTableColumnFlags_WidthStretch);
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
-                percepts_query.each([this](flecs::entity e, const dynamo::type::Percept &agent, component::GUI& gui) {
+                percepts_query.each([this](flecs::entity e, const type::Percept &agent, type::GUI& gui) {
                     if (agents_list_filter.PassFilter(e.name())) {
                         ImGui::PushID(static_cast<int>(e.id()));
                         ImGui::TableNextRow();
 
                         ImGui::TableSetColumnIndex(0);
-                        e.each<dynamo::type::source>([](flecs::entity obj) {
+                        e.each<type::source>([](flecs::entity obj) {
                             ImGui::Text("%s", obj.name().c_str());
                         });
 
@@ -231,14 +231,14 @@ namespace dynamo_gui{
                         ImGui::Text("%s", e.name().c_str());
 
                         ImGui::TableSetColumnIndex(2);
-                        if(e.has<dynamo::type::Decay>()){
-                            widget::show<dynamo::type::Decay>(e);
+                        if(e.has<type::Decay>()){
+                            widgets::show<type::Decay>(e);
                         }
 
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
                         if (gui.show_widget) {
-                            dynamo_gui::widget::show_percept_widget(e);
+                            widgets::show_percept_widget(e);
                         }
                         ImGui::PopID();
                     }

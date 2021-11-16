@@ -5,7 +5,7 @@
 #include <flecs.h>
 
 //TODO Find better solution for annotating plot
-namespace dynamo_gui::widget {
+namespace dynamo::widgets {
     template<typename TData, typename TEventType>
     class EventScrollingPlot : public ImGui::Widgets::ScrollingPlot<TData> {
     private:

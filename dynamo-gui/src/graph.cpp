@@ -1,7 +1,7 @@
 #include <dynamo/gui/widgets/graph.hpp>
 #include <string>
 
-void dynamo_gui::widget::BrainViewer::compute(tf::Taskflow* taskflow) {
+void dynamo::widgets::BrainViewer::compute(tf::Taskflow* taskflow) {
     if(taskflow == nullptr){
         return;
     }
@@ -11,7 +11,7 @@ void dynamo_gui::widget::BrainViewer::compute(tf::Taskflow* taskflow) {
     }
 }
 
-void dynamo_gui::widget::BrainViewer::_render() const {
+void dynamo::widgets::BrainViewer::_render() const {
     ogdf::GraphAttributes GA(graph);
 
     // Layout
@@ -37,7 +37,7 @@ void dynamo_gui::widget::BrainViewer::_render() const {
     //}
 }
 
-void dynamo_gui::widget::BrainViewer::compute_graph(tf::Taskflow* taskflow) {
+void dynamo::widgets::BrainViewer::compute_graph(tf::Taskflow* taskflow) {
     last_taskflow = taskflow;
     graph.clear();
     //nodes.clear();

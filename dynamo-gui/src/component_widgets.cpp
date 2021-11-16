@@ -4,29 +4,29 @@
 #include <dynamo/gui/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
 
-namespace dynamo_gui::widget {
+namespace dynamo::widgets {
 
     template<>
-    void show<dynamo::type::Decay>(flecs::entity& e){
-        auto* decay = e.get_mut<dynamo::type::Decay>();
+    void show<type::Decay>(flecs::entity& e){
+        auto* decay = e.get_mut<type::Decay>();
         ImGui::Widgets::InputFloatColor(decay->ttl);
     }
 
     template<>
-    void show<dynamo::type::Cooldown>(flecs::entity& e){
-        auto* cooldown = e.get_mut<dynamo::type::Cooldown>(flecs::Wildcard);
+    void show<type::Cooldown>(flecs::entity& e){
+        auto* cooldown = e.get_mut<type::Cooldown>(flecs::Wildcard);
         ImGui::Widgets::InputFloatColor(cooldown->remaining_time);
     }
 
     template<>
-    void show<dynamo::type::PeriodicEmitter>(flecs::entity& e){
-        auto* emitter = e.get_mut<dynamo::type::PeriodicEmitter>();
+    void show<type::PeriodicEmitter>(flecs::entity& e){
+        auto* emitter = e.get_mut<type::PeriodicEmitter>();
         ImGui::Widgets::InputFloatColor(emitter->cooldown);
     }
 
     template<>
-    void show<dynamo::type::Targets>(flecs::entity& e){
-        auto* targets = e.get_mut<dynamo::type::Targets>();
+    void show<type::Targets>(flecs::entity& e){
+        auto* targets = e.get_mut<type::Targets>();
         ImGui::Text("Targets : ");
         ImGui::Indent();
         for(auto& entity : targets->entities){
@@ -36,8 +36,8 @@ namespace dynamo_gui::widget {
     }
 
     template<>
-    void show<dynamo_gui::component::GUI>(flecs::entity& e){
-        auto* gui = e.get_mut<dynamo_gui::component::GUI>();
+    void show<type::GUI>(flecs::entity& e){
+        auto* gui = e.get_mut<type::GUI>();
         ImGui::Checkbox("Show GUI", &gui->show_widget);
     }
 
@@ -72,22 +72,22 @@ namespace dynamo_gui::widget {
         flecs::world world = id.world();
         switch (type) {
             case ID_TYPE::COMPONENT:
-                if(id == world.id<dynamo::type::Decay>()) {
-                    show<dynamo::type::Decay>(entity);
-                }else if(id == world.id<dynamo::type::PeriodicEmitter>()) {
-                    show<dynamo::type::PeriodicEmitter>(entity);
-                }else if(id == world.id<dynamo::type::Targets>()) {
-                    show<dynamo::type::Targets>(entity);
-                }else if(id == world.id<dynamo_gui::component::GUI>()) {
-                    show<dynamo_gui::component::GUI>(entity);
+                if(id == world.id<type::Decay>()) {
+                    show<type::Decay>(entity);
+                }else if(id == world.id<type::PeriodicEmitter>()) {
+                    show<type::PeriodicEmitter>(entity);
+                }else if(id == world.id<type::Targets>()) {
+                    show<type::Targets>(entity);
+                }else if(id == world.id<type::GUI>()) {
+                    show<type::GUI>(entity);
                 }else{
                     inspect(object);
                 }
                 break;
             case ID_TYPE::RELATION:{
                 flecs::entity relation = id.relation();
-                if(relation.id() == world.id<dynamo::type::Cooldown>()) {
-                    show<dynamo::type::Cooldown>(entity);
+                if(relation.id() == world.id<type::Cooldown>()) {
+                    show<type::Cooldown>(entity);
                 }else{
                     inspect(relation);
                     inspect(object);
