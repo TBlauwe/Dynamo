@@ -51,7 +51,8 @@ namespace dynamo {
 
     @brief Wrap an entity for convenience.
     */
-    class EntityWrapper {
+    class EntityWrapper
+    {
     public:
         /**
         @brief consider the given entity as a @c Type.
@@ -68,6 +69,30 @@ namespace dynamo {
         For more information see : https://flecs.docsforge.com/master/manual/#entity.
         */
         const char* name() { return m_entity.name(); }
+
+        /**
+        @brief Returns @c true or @ false, if has given component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        bool has() const { return m_entity.has<TType>(); }
+
+        /**
+        @brief Returns a pointer to the const component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        TType const* get() const { return m_entity.get<TType>(); }
+
+        /**
+        @brief Returns a pointer to the component.
+        @tparam TType Component's type.
+
+        if you need to modify a component, prefer using set function as it will defer modification when possible. Otherwise, if you use
+        this pointer to modify the component while the world is in read-only (assume always when in a process), it will crash.
+        */
+        template<typename TType>
+        TType* get_mut() { return m_entity.get_mut<TType>(); }
 
         /**
         @brief Returns the underlying entity.
@@ -105,10 +130,7 @@ namespace dynamo {
     class EntityManipulator : public EntityWrapper
     {
     public:
-        explicit EntityManipulator(flecs::entity entity) : EntityWrapper{ entity }
-        {
-            commands_queue = m_entity.world().get<type::CommandsQueueHandle>()->queue;
-        };
+        explicit EntityManipulator(flecs::entity entity) : EntityWrapper{ entity } {} ;
 
         /**
         @brief Add a component (with default value).
@@ -117,16 +139,7 @@ namespace dynamo {
         template<typename TType>
         T& add()
         {
-            if(should_defer())
-            {
-                commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
-                    flecs::entity(world, id).add<TType>();
-                });
-            }
-            else
-            {
-                m_entity.add<TType>();
-            }
+            m_entity.add<TType>();
             return *static_cast<T*>(this);
         }
 
@@ -137,50 +150,8 @@ namespace dynamo {
         template<typename TType>
         T& set(TType&& value)
         {
-            if(should_defer())
-            {
-                commands_queue->push([id = m_entity.id(), args = std::forward<TType>(value)](flecs::world& world) mutable {
-                    flecs::entity(world, id).set<TType>(args);
-                });
-            }
-            else
-            {
-                m_entity.set<TType>(std::forward<TType>(value));
-            }
+            m_entity.set<TType>(std::forward<TType>(value));
             return *static_cast<T*>(this);
-        }
-
-        /**
-        @brief Returns @c true or @ false, if has given component.
-        @tparam TType Component's type.
-        */
-        template<typename TType>
-        bool has() const
-        {
-            return m_entity.has<TType>();
-        }
-
-        /**
-        @brief Returns a pointer to the const component.
-        @tparam TType Component's type.
-        */
-        template<typename TType>
-        TType const * get() const
-        {
-            return m_entity.get<TType>();
-        }
-
-        /**
-        @brief Returns a pointer to the component.
-        @tparam TType Component's type.
-
-        if you need to modify a component, prefer using set function as it will defer modification when possible. Otherwise, if you use
-        this pointer to modify the component while the world is in read-only (assume always when in a process), it will crash.
-        */
-        template<typename TType>
-        TType* get_mut()
-        {
-            return m_entity.get_mut<TType>();
         }
 
         /**
@@ -190,18 +161,7 @@ namespace dynamo {
         template<typename TType>
         T& remove()
         {
-            if(should_defer())
-            {
-                commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
-                    auto entity = flecs::entity(world, id);
-                    if(entity.has<TType>())
-                        entity.remove<TType>();
-                });
-            }
-            else
-            {
-                m_entity.remove<TType>();
-            }
+            m_entity.remove<TType>();
             return *static_cast<T*>(this);
         }
     private:
@@ -215,6 +175,70 @@ namespace dynamo {
         bool should_defer()
         {
             return m_entity.world().is_readonly();
+        }
+
+    private:
+        /**
+        @brief Pointer to simulations' commands queue to defer modifications when world is in read only.
+        */
+        type::CommandsQueue* commands_queue;
+    };
+
+    /**
+    @class EntityManipulator
+
+    @brief Derived from @c EntityWrapper to expose underliying call to modify/query the state of an entity.
+
+    @tparam T Type of the derived class so we can expose a fluent API.
+    */
+    template<typename T>
+    class DefferedEntityManipulator : public EntityWrapper
+    {
+    public:
+        explicit DefferedEntityManipulator(flecs::entity entity) : EntityWrapper{ entity }
+        {
+            commands_queue = m_entity.world().template get<type::CommandsQueueHandle>()->queue;
+        };
+
+        /**
+        @brief Add a component (with default value).
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        T& add()
+        {
+            commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
+                flecs::entity(world, id).add<TType>();
+            });
+            return *static_cast<T*>(this);
+        }
+
+        /**
+        @brief Set a component (with provided value).
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        T& set(TType&& value)
+        {
+            commands_queue->push([id = m_entity.id(), args = std::forward<TType>(value)](flecs::world& world) mutable {
+                flecs::entity(world, id).set<TType>(args);
+            });
+            return *static_cast<T*>(this);
+        }
+
+        /**
+        @brief Removes a component.
+        @tparam TType Component's type.
+        */
+        template<typename TType>
+        T& remove()
+        {
+            commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
+                auto entity = flecs::entity(world, id);
+                if (entity.has<TType>())
+                    entity.remove<TType>();
+            });
+            return *static_cast<T*>(this);
         }
 
     private:
@@ -270,6 +294,16 @@ namespace dynamo {
         */
         explicit Agent(flecs::entity entity) : EntityManipulator<Agent>(entity) {};
     };
+
+    class AgentHandle : public DefferedEntityManipulator<AgentHandle>
+    {
+    public:
+        /**
+        @brief Handle for manipulating agent where every modifications are deferred.
+        */
+        explicit AgentHandle(flecs::entity entity) : DefferedEntityManipulator<AgentHandle>(entity) {};
+    };
+
 
     /**
     @class Artefact

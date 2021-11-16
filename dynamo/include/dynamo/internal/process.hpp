@@ -68,7 +68,7 @@ random_strat.add(Behaviour<TBehaviourOutput, ... TInputs>{
 namespace dynamo {
 
     //Forward Declaration
-    class Agent;
+    class AgentHandle;
 
     /**
     @class Behaviour
@@ -106,7 +106,7 @@ namespace dynamo {
         /**
         @brief Construct a named behaviour with given activation function and function.
         */
-        Behaviour(const char* name, std::function<bool(Agent)> activation_callable, std::function<TOutput(Agent, TInputs ...)> callable) :
+        Behaviour(const char* name, std::function<bool(AgentHandle)> activation_callable, std::function<TOutput(AgentHandle, TInputs ...)> callable) :
             _name{ name },
             _activation_callable{ activation_callable },
             _callable{ callable }
@@ -128,21 +128,21 @@ namespace dynamo {
         /**
         @brief Tells whether or not this behaviour should be taken into account for the specified agent.
         */
-        bool is_active(Agent agent) const {
+        bool is_active(AgentHandle agent) const {
             return _activation_callable(agent);
         };
 
         /**
         @brief Compute behaviour for the specified agent.
         */
-        TOutput operator()(Agent agent, TInputs ... inputs) const {
+        TOutput operator()(AgentHandle agent, TInputs ... inputs) const {
             return _callable(agent, inputs ...);
         };
 
     private:
         const char* _name;
-        std::function<TOutput(Agent)> _callable;
-        std::function<bool(Agent, TInputs ...)> _activation_callable;
+        std::function<TOutput(AgentHandle)> _callable;
+        std::function<bool(AgentHandle, TInputs ...)> _activation_callable;
     };
 
     /**
@@ -200,7 +200,7 @@ namespace dynamo {
 
         It will automatically deduced which behaviours should be taken into account before using them.
         */
-        TOutput operator()(Agent agent, TInputs ... inputs) const
+        TOutput operator()(AgentHandle agent, TInputs ... inputs) const
         {
             assert(behaviours.size() > 0 && "Strategy with no behaviour. Use add().");
 
@@ -217,7 +217,7 @@ namespace dynamo {
         /**
         @brief Pure virtual function telling how this strategy should operate.
         */
-        virtual TOutput compute(Agent, std::vector<Behaviour_t>, TInputs ...) const = 0;
+        virtual TOutput compute(AgentHandle, std::vector<Behaviour_t>, TInputs ...) const = 0;
 
     protected:
         std::vector<Behaviour_t> behaviours{};
@@ -258,7 +258,7 @@ namespace dynamo {
         /**
         @brief Construct a reasonner for the specified agent.
         */
-        Reasonner(Strategies * strategies, Agent agent) : strategies{ strategies }, agent { agent } {}
+        Reasonner(Strategies * strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
 
         /**
         @brief Implicit conversion operator to convert it into taskflow.
@@ -301,7 +301,7 @@ namespace dynamo {
         virtual void build() = 0;
 
         Strategies * strategies;
-        Agent agent;
+        AgentHandle agent;
         tf::Taskflow taskflow{};
     };
 }

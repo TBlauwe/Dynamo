@@ -122,8 +122,11 @@ namespace dynamo::type {
     */
     struct IsProcessing
     {
+        /**
+        @brief Current status of a running taskflow.
+        */
         tf::Future<void> status;
-
+        
         /**
         @brief Returns @c true or @false if the process is finished or not.
         */

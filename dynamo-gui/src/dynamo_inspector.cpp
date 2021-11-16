@@ -223,7 +223,7 @@ namespace dynamo_gui{
                         ImGui::TableNextRow();
 
                         ImGui::TableSetColumnIndex(0);
-                        e.each<dynamo::relation::source>([](flecs::entity obj) {
+                        e.each<dynamo::type::source>([](flecs::entity obj) {
                             ImGui::Text("%s", obj.name().c_str());
                         });
 
@@ -231,8 +231,8 @@ namespace dynamo_gui{
                         ImGui::Text("%s", e.name().c_str());
 
                         ImGui::TableSetColumnIndex(2);
-                        if(e.has<dynamo::component::Decay>()){
-                            widget::show<dynamo::component::Decay>(e);
+                        if(e.has<dynamo::type::Decay>()){
+                            widget::show<dynamo::type::Decay>(e);
                         }
 
                         ImGui::TableSetColumnIndex(3);

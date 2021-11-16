@@ -132,7 +132,7 @@ if(DYN_BUILD_DOCS)
         configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
         # note the option ALL which allows to build the docs together with the application
-        add_custom_target(doc_doxygen ALL
+        add_custom_target(doc_doxygen
                 COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 COMMENT "Generating API documentation with Doxygen"

@@ -26,13 +26,14 @@ public:
         }
 
         std::vector<flecs::entity_view> agents {};
-        sim.agents_query.each([&agents](flecs::entity agent, dynamo::type::Agent& _){
+        sim.for_each([&agents](flecs::entity agent, dynamo::type::Agent& _){
             agents.emplace_back(agent);
         });
 
         sim.artefact("Radio").entity()
             .set<dynamo::type::PeriodicEmitter, dynamo::type::Message>({0.5f})
-            .set<dynamo::type::Targets>({agents});
+            .set<dynamo::type::Targets>({agents})
+            ;
     }
 
 private:

@@ -25,7 +25,7 @@ class RandomStrategy : public Strategy<TOutput, TOutput, TInputs ...>
     using Behaviour_t = Behaviour<TOutput, TInputs...>;
 public:
 
-    TOutput compute(Agent agent, std::vector<Behaviour_t> active_behaviours, TInputs ... inputs) const override
+    TOutput compute(AgentHandle agent, std::vector<Behaviour_t> active_behaviours, TInputs ... inputs) const override
     {
         return active_behaviours[rand()%active_behaviours.size()](agent, inputs ...);
     }
@@ -34,23 +34,23 @@ public:
 class SimpleReasonner : public Reasonner
 {
 public:
-    SimpleReasonner(Strategies* strategies, Agent agent) : Reasonner(strategies, agent) {}
+    SimpleReasonner(Strategies* strategies, AgentHandle agent) : Reasonner(strategies, agent) {}
 
 private:
     void build() override
     {
-        auto t0 = emplace([](Agent agent)
+        auto t0 = emplace([](AgentHandle agent)
             {
             }
         );
 
-        auto t1 = emplace([](Agent agent)
+        auto t1 = emplace([](AgentHandle agent)
             {
                 agent.set<Stress>({ 9.0f });
             }
         );
 
-        auto t2 = emplace([](Agent agent)
+        auto t2 = emplace([](AgentHandle agent)
             {
                 agent.set<Stress>({ 12.0f });
             }
@@ -90,7 +90,6 @@ int main(int argc, char** argv) {
         .kind(flecs::PreUpdate)
         .each([](flecs::entity entity, Stress& stress)
             {
-                std::cout << "Stress " << entity << " : " << stress.stress << std::endl;
                 if (stress.stress > 0.f)
                 {
                     stress.stress -= entity.delta_time();
@@ -102,13 +101,13 @@ int main(int argc, char** argv) {
     auto& random_strat = sim.add<RandomStrategy<std::string>>(); 
     random_strat.add(Behaviour<std::string>{
         "MyFirstBehaviour",
-            [](Agent agent) -> bool {return true; },
-            [](Agent agent) -> std::string {return "Yeah"; }
+            [](AgentHandle agent) -> bool {return true; },
+            [](AgentHandle agent) -> std::string {return "Yeah"; }
     });
     random_strat.add(Behaviour<std::string>{
         "MySecondBehaviour",
-            [](Agent agent) -> bool {return true; },
-            [](Agent agent) -> std::string {return "Nay (but Yeah!)"; }
+            [](AgentHandle agent) -> bool {return true; },
+            [](AgentHandle agent) -> std::string {return "Nay (but Yeah!)"; }
     });
 
 
@@ -126,20 +125,9 @@ int main(int argc, char** argv) {
 
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
-    //sim.agent(archetype, "Arthur2");
-    //sim.agent(archetype, "Arthur3");
-    //sim.agent(archetype, "Arthur4");
-    //sim.agent(archetype, "Arthur5");
-    //sim.agent(archetype, "Arthur6");
-    //sim.agent(archetype, "Arthur7");
-    //sim.agent(archetype, "Arthur8");
-    //sim.agent(archetype, "Arthur9");
-    //sim.agent(archetype, "Arthur9");
-    //sim.agent(archetype, "Arthur10");
-    //sim.agent(archetype, "Arthur11");
-    //sim.agent(archetype, "Arthur11");
-    //sim.agent(archetype, "Arthur12");
-    //sim.agent(archetype, "Arthur13");
+    for (int i = 0; i < 100; i++) {
+        sim.agent(archetype, fmt::format("Agent {}", i).c_str());
+    }
 
     std::vector<flecs::entity_view> agents{};
     sim.for_each([&agents](flecs::entity agent, type::Agent& _) {
@@ -194,7 +182,7 @@ int main(int argc, char** argv) {
     SL.call(GA);
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
-    sim.step_n(1000);
+    sim.step_n(10000);
     sim.shutdown();
 
     return 0;
