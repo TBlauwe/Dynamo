@@ -46,7 +46,8 @@ private:
         );
 
         auto t3 = process<strat::Random<std::string>>();
-        //auto t4 = process<strat::InfluenceGraph<int>>();
+        auto t5 = process<strat::Random<std::string, int>>(5);
+        //auto t4 = process<strat::InfluenceGraph<int>>(std::vector<int>{0,1,2,3,4,5});
 
         t1.succeed(t0);
         t3.succeed(t1, t2);
@@ -100,6 +101,18 @@ int main(int argc, char** argv) {
             [](AgentHandle agent) {return "Nay (but Yeah!)"; }
     );
 
+    auto& random_int_strat = sim.add<strat::Random<std::string, int>>();
+    random_int_strat.add(
+        "MyFirstBehaviour",
+        [](AgentHandle agent) {return true; },
+        [](AgentHandle agent, int&& arg) {return std::to_string(arg); }
+    );
+    random_int_strat.add(
+        "MySecondBehaviour",
+        [](AgentHandle agent) {return true; },
+        [](AgentHandle agent, int&& arg) {return std::to_string(arg + 10); }
+    );
+
     //auto& influence_graph_strat = sim.add<strat::InfluenceGraph<int>>();
     //influence_graph_strat.add(Behaviour<std::vector<dynamo::strat::Influence<int>>, const std::vector<int const*>&>{
     //    "MyOtherBehaviour",
@@ -121,7 +134,7 @@ int main(int argc, char** argv) {
 
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 0; i++) {
         sim.agent(archetype, fmt::format("Agent {}", i).c_str());
     }
 

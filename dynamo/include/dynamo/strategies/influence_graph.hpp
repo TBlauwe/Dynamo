@@ -40,23 +40,31 @@ A set of influences is going from U to V.
 template<typename TInput>
 class InfluenceGraph : public Strategy<TInput, std::vector<Influence<TInput>>, std::vector<TInput>>
 {
-    using Inputs        = std::vector<TInput>;
-    using Behaviour_t   = Behaviour<std::vector<Influence<TInput>>, const std::vector<TInput const *>&>;
-    using Influences    = std::unordered_multimap<Behaviour_t const *, const Influence<TInput>>;
-    using Scores        = std::unordered_map<TInput, int>;
+    using Inputs            = std::vector<TInput>;
+    using BehaviourOutputs  = std::vector<Influence<TInput>>;
+    using Behaviour_t       = Behaviour<BehaviourOutputs, Inputs>;
+
+    using Influences        = std::unordered_multimap<Behaviour_t const *, const Influence<TInput>>;
+    using Scores            = std::unordered_map<TInput const *, int>;
 
 public:
 
-    TInput compute(AgentHandle agent, const std::vector<Behaviour_t const *> active_behaviours, Inputs inputs) const override
+    TInput compute(AgentHandle agent, const std::vector<Behaviour_t const *> active_behaviours, Inputs&& inputs) const override
     {
-        auto view = initialize_scores(inputs);
+        Influences influences{};
+        Scores scores{};
+
+        for (const auto& input : inputs)
+        {
+            auto pair = scores.emplace(std::make_pair(&input, 0));
+        }
 
         // Compute each behaviour 
-        for (const Behaviour_t& behaviour : active_behaviours)
+        for (Behaviour_t const * const behaviour : active_behaviours)
         {
-            for (const auto& influence : behaviour(agent, view))
+            for (const auto& influence : (*behaviour)(agent, inputs))
             {
-                influences.insert(std::make_pair(&behaviour, influence));
+                influences.insert(std::make_pair(behaviour, influence));
                 if (influence.positive)
                     scores[influence.end] += 1;
                 else
@@ -89,23 +97,7 @@ public:
         //}
         return *(sorted_scores.begin()->data);
     }
-
-private:
-    std::vector<TInput const *> initialize_scores(const Inputs& inputs)
-    {
-        std::vector<TInput const*> view;
-        for (const auto& input : inputs)
-        {
-            auto pair = scores.emplace(std::make_pair(input, 0));
-            view.emplace(&pair.first);
-        }
-        return view;
-    }
-
-    Influences influences{};
-    Scores scores{};
 };
-
 }
 
 #endif //DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP

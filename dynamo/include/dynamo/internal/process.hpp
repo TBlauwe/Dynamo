@@ -7,7 +7,6 @@
 #include <thread>
 #include <functional>
 
-#include <range/v3/all.hpp>
 #include <taskflow/taskflow.hpp>
 
 #include <dynamo/internal/types.hpp>
@@ -135,14 +134,14 @@ namespace dynamo {
         /**
         @brief Compute behaviour for the specified agent.
         */
-        TOutput operator()(AgentHandle agent, TInputs ... inputs) const {
-            return _callable(agent, inputs ...);
+        TOutput operator()(AgentHandle agent, TInputs&& ... inputs) const {
+            return _callable(agent, std::forward<TInputs>(inputs) ...);
         };
 
     private:
         const char* _name;
-        std::function<TOutput(AgentHandle)> _callable;
-        std::function<bool(AgentHandle, TInputs ...)> _activation_callable;
+        std::function<TOutput(AgentHandle, TInputs&& ...)> _callable;
+        std::function<bool(AgentHandle)> _activation_callable;
     };
 
     /**
@@ -199,19 +198,21 @@ namespace dynamo {
 
         It will automatically deduced which behaviours should be taken into account before using them.
         */
-        TOutput operator()(AgentHandle agent, TInputs ... inputs) const
+        TOutput operator()(AgentHandle agent, TInputs&& ... inputs) const
         {
             assert(behaviours.size() > 0 && "Strategy with no behaviour. Use add().");
-            return compute(agent, active_behaviours(agent), inputs ...);
+            return compute(agent, active_behaviours(agent), std::forward<TInputs>(inputs) ...);
         }
 
         /**
         @brief Pure virtual function telling how this strategy should operate.
         */
-        virtual TOutput compute(AgentHandle, const std::vector<Behaviour_t const *>, TInputs ...) const = 0;
+        virtual TOutput compute(AgentHandle, const std::vector<Behaviour_t const *>, TInputs&& ...) const = 0;
 
     protected:
         std::vector<Behaviour_t> behaviours{};
+
+
 
     private:
         std::vector<Behaviour_t const *> active_behaviours(AgentHandle agent) const
@@ -293,8 +294,8 @@ namespace dynamo {
         template<typename T, typename ... TInputs>
         tf::Task process(TInputs&& ... inputs)
         {
-            return taskflow.emplace([strat = this->strategies, a = this->agent, ... args = std::forward<TInputs>(inputs)]() {
-                strat->get<T>()(a, args...);
+            return taskflow.emplace([strat = this->strategies, a = this->agent, ... args = std::forward<TInputs>(inputs)]() mutable {
+                strat->get<T>()(a, std::forward<TInputs>(args) ...);
             });
         };
 
