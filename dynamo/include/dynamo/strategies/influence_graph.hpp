@@ -1,105 +1,111 @@
-#ifndef DYNAMO_INFLUENCE_GRAPH_HPP
-#define DYNAMO_INFLUENCE_GRAPH_HPP
+#ifndef DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP
+#define DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP
 
 #include <functional>
 #include <algorithm>
 #include <vector>
+#include <unordered_map>
+
+#include <dynamo/internal/process.hpp>
+
+namespace dynamo::strat {
 
 /**
- * An influence is either a positive or negative influence between an object Tu to an object Tv.
- * @tparam Tu Type of the object influencing.
- * @tparam Tv Type of the object influenced.
- */
-template<typename Tu, typename Tv>
+An influence is either a positive or negative influence between a behaviour to an object @c T.
+@tparam T Type of the object influenced.
+*/
+template<typename T>
 struct Influence
 {
-    const Tu*	start;
-    const Tv*	end;
-    bool		positive;
+    T const * end;
+    bool positive;
 };
 
 /**
- * A score is an integer associated with a object of type Tv.
- * @tparam Tv Type of the object associated with a score.
- */
-template<typename Tv>
+A score is an integer associated with a object of type @c T.
+@tparam T Type of the object associated with a score.
+*/
+template<typename T>
 struct Score
 {
-    const Tv* data;
+    T const * data;
     int score;
 };
 
 /**
- * An influence graph is a bipartite graph composed of two sets of vertex : U and V or left and right.
- * A set of influences is coming from U to V.
- * @tparam Tu type of U nodes.
- * @tparam Tv type of V nodes.
- */
-template<typename Tu, typename Tv>
-class InfluenceGraph
+An influence graph is a bipartite graph composed of two sets of vertex : U or behaviours and V corresponding to the inputs.
+A set of influences is going from U to V.
+@tparam TInput type of V nodes.
+*/
+template<typename TInput>
+class InfluenceGraphStrategy : public Strategy<TInput, std::vector<Influence<TInput>>, std::vector<TInput>>
 {
-public :
-    std::vector<Tu>	U {};
-    std::vector<Tv>	V {};
-
-    std::vector<Influence<Tu, Tv>>	positive_influences {};
-    std::vector<Influence<Tu, Tv>>	negative_influences {};
-    std::vector<Score<Tv>>			scores {};
-    std::vector<const Tv*>			highest_scores {};
+    using Inputs        = std::vector<TInput>;
+    using Behaviour_t   = Behaviour<std::vector<Influence<TInput>>, const std::vector<TInput const *>&>;
+    using Influences    = std::unordered_multimap<Behaviour_t const *, const Influence<TInput>>;
+    using Scores        = std::unordered_map<TInput, int>;
 
 public:
-    InfluenceGraph() = default;
-    InfluenceGraph(const std::vector<Tu>& u_vec, const std::vector<Tv>& v_vec, std::function<std::vector<Influence<Tu, Tv>>(const Tu&, const std::vector<Tv>&)> compute) :
-            U{u_vec},
-            V{v_vec}
-    {
-        std::unordered_map<const Tv*, int> _scores;
-        for (const Tv& v : V)
-        {
-            _scores.emplace(&v, 0);
-        }
 
-        for (const Tu& u : U)
+    TInput compute(AgentHandle agent, std::vector<Behaviour_t const *> active_behaviours, Inputs inputs) const override
+    {
+        auto view = initialize_scores(inputs);
+
+        // Compute each behaviour 
+        for (const Behaviour_t& behaviour : active_behaviours)
         {
-            for (Influence<Tu, Tv>& influence : compute(u, V))
+            for (const auto& influence : behaviour(agent, view))
             {
+                influences.insert(std::make_pair(&behaviour, influence));
                 if (influence.positive)
-                {
-                    positive_influences.emplace_back(&u, influence.end, true);
-                    _scores[influence.end] += 1;
-                }
+                    scores[influence.end] += 1;
                 else
-                {
-                    negative_influences.emplace_back(&u, influence.end, false);
-                    _scores[influence.end] -= 1;
-                }
+                    scores[influence.end] -= 1;
             }
         }
 
-        for (const auto& [v, score] : _scores)
+        std::vector<Score<TInput>> sorted_scores {};
+        // Sort scores by decreasing order
+        for (const auto& [input, score] : scores)
         {
-            scores.emplace_back(v, score);
+            sorted_scores.emplace_back(input, score);
         }
 
-        std::sort(scores.begin(), scores.end(),
-                  [](const Score<Tv>& a, const Score<Tv>& b)
-                  {
-                      return a.score > b.score;
-                  }
+        std::sort(sorted_scores.begin(), sorted_scores.end(),
+            [](const Score<TInput>& a, const Score<TInput>& b)
+            {
+                return a.score > b.score;
+            }
         );
 
-        if (scores.begin() != scores.end()) {
-            int max_value = scores.begin()->score;
-            for (const auto& influence_score : scores)
-            {
-                if (influence_score.score == max_value)
-                    highest_scores.push_back(influence_score.data);
-            }
-        }
+        //if (sorted_scores.begin() != sorted_scores.end()) {
+        //    int max_value = sorted_scores.begin()->score;
+        //    for (const auto [input, score] : sorted_scores)
+        //    {
+        //        if (score == max_value)
+        //            highest_scores.push_back(influence_score.data);
+        //    }
+        //    
+        //}
+        return *(sorted_scores.begin()->data);
     }
 
-    inline std::vector<Score<Tv>> get_scores() { return scores; };
-    inline std::vector<const Tv*> get_highest_scores(){ return highest_scores; };
+private:
+    std::vector<TInput const *> initialize_scores(const Inputs& inputs)
+    {
+        std::vector<TInput const*> view;
+        for (const auto& input : inputs)
+        {
+            auto pair = scores.emplace(std::make_pair(input, 0));
+            view.emplace(&pair.first);
+        }
+        return view;
+    }
+
+    Influences influences{};
+    Scores scores{};
 };
 
-#endif //DYNAMO_INFLUENCE_GRAPH_HPP
+}
+
+#endif //DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP

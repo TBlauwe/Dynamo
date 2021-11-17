@@ -30,10 +30,19 @@ class TypeMap
 
 public:
     /**
-    @brief Get element by type @c T.
+    @brief Get const element by type @c T.
     */
     template<class T>
-    T& get()
+    const T& get() const
+    {
+        return std::any_cast<const T&>(container.at(typeid(T)));
+    }
+
+    /**
+    @brief Get mutable element by type @c T.
+    */
+    template<class T>
+    T& get_mut()
     {
         return std::any_cast<T&>(container.at(typeid(T)));
     }

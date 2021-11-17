@@ -9,6 +9,7 @@
 #include <ogdf/layered/SugiyamaLayout.h>
 #include <ogdf/fileformats/GraphIO.h>
 
+#include <dynamo/strategies/all.hpp>
 #include <dynamo/simulation.hpp>
 
 struct Stress {
@@ -19,22 +20,10 @@ struct Tag {};
 
 using namespace dynamo;
 
-template<typename TOutput, typename ... TInputs>
-class RandomStrategy : public Strategy<TOutput, TOutput, TInputs ...>
-{
-    using Behaviour_t = Behaviour<TOutput, TInputs...>;
-public:
-
-    TOutput compute(AgentHandle agent, std::vector<Behaviour_t> active_behaviours, TInputs ... inputs) const override
-    {
-        return active_behaviours[rand()%active_behaviours.size()](agent, inputs ...);
-    }
-};
-
 class SimpleReasonner : public Reasonner
 {
 public:
-    SimpleReasonner(Strategies* strategies, AgentHandle agent) : Reasonner(strategies, agent) {}
+    SimpleReasonner(Strategies const * const strategies, AgentHandle agent) : Reasonner(strategies, agent) {}
 
 private:
     void build() override
@@ -56,7 +45,7 @@ private:
             }
         );
 
-        auto t3 = process<RandomStrategy<std::string>>();
+        auto t3 = process<strat::Random<std::string>>();
 
         t1.succeed(t0);
         t3.succeed(t1, t2);
@@ -98,7 +87,7 @@ int main(int argc, char** argv) {
     );
 
     // X. Experiment
-    auto& random_strat = sim.add<RandomStrategy<std::string>>(); 
+    auto& random_strat = sim.add<strat::Random<std::string>>(); 
     random_strat.add(Behaviour<std::string>{
         "MyFirstBehaviour",
             [](AgentHandle agent) -> bool {return true; },
@@ -166,7 +155,7 @@ int main(int argc, char** argv) {
 
 
     // Layout
-    for (ogdf::node v : G.nodes)
+    for (ogdf::node v : G.nodes)    
         GA.width(v) = GA.height(v) = 5.0;
 
     ogdf::SugiyamaLayout SL;

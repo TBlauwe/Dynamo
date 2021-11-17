@@ -203,24 +203,29 @@ namespace dynamo {
         TOutput operator()(AgentHandle agent, TInputs ... inputs) const
         {
             assert(behaviours.size() > 0 && "Strategy with no behaviour. Use add().");
-
-            auto active_behaviours = 
-                behaviours | 
-                ranges::views::filter([&agent](const Behaviour_t& beh) {
-                    return beh.is_active(agent);
-                }) | 
-                ranges::to<std::vector>();
-
-            return compute(agent, active_behaviours, inputs ...);
-        };
+            return compute(agent, active_behaviours(agent), inputs ...);
+        }
 
         /**
         @brief Pure virtual function telling how this strategy should operate.
         */
-        virtual TOutput compute(AgentHandle, std::vector<Behaviour_t>, TInputs ...) const = 0;
+        virtual TOutput compute(AgentHandle, const std::vector<Behaviour_t const *>, TInputs ...) const = 0;
 
     protected:
         std::vector<Behaviour_t> behaviours{};
+
+    private:
+        std::vector<Behaviour_t const *> active_behaviours(AgentHandle agent) const
+        {
+            std::vector<Behaviour_t const *> container{};
+            for (const auto& behaviour : behaviours)
+            {
+                if (behaviour.is_active(agent))
+                    container.emplace_back(&behaviour);
+            }
+            assert(container.size() > 0 && "Strategy with no active behaviour !");
+            return container;
+        }
     };
 
     using Strategies = TypeMap;
@@ -258,7 +263,7 @@ namespace dynamo {
         /**
         @brief Construct a reasonner for the specified agent.
         */
-        Reasonner(Strategies * strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
+        Reasonner(Strategies const * const  strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
 
         /**
         @brief Implicit conversion operator to convert it into taskflow.
@@ -300,9 +305,9 @@ namespace dynamo {
         */
         virtual void build() = 0;
 
-        Strategies * strategies;
+        Strategies const * const strategies;
         AgentHandle agent;
-        tf::Taskflow taskflow{};
+        tf::Taskflow taskflow {};
     };
 }
 #endif //DYNAMO_PROCESS_HPP
