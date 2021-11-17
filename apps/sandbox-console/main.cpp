@@ -46,6 +46,7 @@ private:
         );
 
         auto t3 = process<strat::Random<std::string>>();
+        //auto t4 = process<strat::InfluenceGraph<int>>();
 
         t1.succeed(t0);
         t3.succeed(t1, t2);
@@ -88,17 +89,23 @@ int main(int argc, char** argv) {
 
     // X. Experiment
     auto& random_strat = sim.add<strat::Random<std::string>>(); 
-    random_strat.add(Behaviour<std::string>{
+    random_strat.add(
         "MyFirstBehaviour",
-            [](AgentHandle agent) -> bool {return true; },
-            [](AgentHandle agent) -> std::string {return "Yeah"; }
-    });
-    random_strat.add(Behaviour<std::string>{
+            [](AgentHandle agent) {return true; },
+            [](AgentHandle agent) {return "Yeah"; }
+    );
+    random_strat.add(
         "MySecondBehaviour",
-            [](AgentHandle agent) -> bool {return true; },
-            [](AgentHandle agent) -> std::string {return "Nay (but Yeah!)"; }
-    });
+            [](AgentHandle agent) {return true; },
+            [](AgentHandle agent) {return "Nay (but Yeah!)"; }
+    );
 
+    //auto& influence_graph_strat = sim.add<strat::InfluenceGraph<int>>();
+    //influence_graph_strat.add(Behaviour<std::vector<dynamo::strat::Influence<int>>, const std::vector<int const*>&>{
+    //    "MyOtherBehaviour",
+    //        [](AgentHandle agent) -> bool {return true; },
+    //        [](AgentHandle agent) -> std::string {return "Yeah"; }
+    //});
 
     // -- Register some processes/reasonner
     // You must register them before populating the simulation.

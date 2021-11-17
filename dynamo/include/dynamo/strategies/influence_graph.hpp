@@ -38,7 +38,7 @@ A set of influences is going from U to V.
 @tparam TInput type of V nodes.
 */
 template<typename TInput>
-class InfluenceGraphStrategy : public Strategy<TInput, std::vector<Influence<TInput>>, std::vector<TInput>>
+class InfluenceGraph : public Strategy<TInput, std::vector<Influence<TInput>>, std::vector<TInput>>
 {
     using Inputs        = std::vector<TInput>;
     using Behaviour_t   = Behaviour<std::vector<Influence<TInput>>, const std::vector<TInput const *>&>;
@@ -47,7 +47,7 @@ class InfluenceGraphStrategy : public Strategy<TInput, std::vector<Influence<TIn
 
 public:
 
-    TInput compute(AgentHandle agent, std::vector<Behaviour_t const *> active_behaviours, Inputs inputs) const override
+    TInput compute(AgentHandle agent, const std::vector<Behaviour_t const *> active_behaviours, Inputs inputs) const override
     {
         auto view = initialize_scores(inputs);
 

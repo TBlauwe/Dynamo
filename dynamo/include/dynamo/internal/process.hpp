@@ -188,11 +188,10 @@ namespace dynamo {
 
         @tparam T Behaviour type must correspond to the one accepted by this strategy.
         */
-        template<typename T>
-        void add(T&& behaviour)
+        template<typename ... Args>
+        void add(Args&&... args)
         {
-            static_assert(std::is_same_v<T, std::decay_t<Behaviour_t>>, "Wrong type passed, must be a Behaviour<TOut>.");
-            behaviours.emplace_back(std::forward<T>(behaviour));
+            behaviours.emplace_back(args...);
         }
 
         /**
