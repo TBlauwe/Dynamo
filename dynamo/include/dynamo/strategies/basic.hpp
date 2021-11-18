@@ -17,7 +17,7 @@ namespace dynamo::strat{
         using Behaviour_t = Behaviour<TOutput, TInputs ...>;
     public:
 
-        TOutput compute(AgentHandle agent, const std::vector<Behaviour_t const*> active_behaviours, TInputs&& ... inputs) const override
+        TOutput compute(AgentHandle agent, const std::vector<Behaviour_t const*> active_behaviours, TInputs ... inputs) const override
         {
             return (* active_behaviours[rand() % active_behaviours.size()])(agent, std::forward<TInputs>(inputs) ...);
         }

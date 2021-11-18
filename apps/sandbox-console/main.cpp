@@ -45,8 +45,8 @@ private:
             }
         );
 
-        auto t3 = process<strat::Random<std::string>>();
-        auto t5 = process<strat::Random<std::string, int>>(5);
+        auto [t3, o1] = process<strat::Random, std::string>();
+        auto [t5, o2] = process<strat::Random, std::string, std::string>(o1);
         //auto t4 = process<strat::InfluenceGraph<int>>(std::vector<int>{0,1,2,3,4,5});
 
         t1.succeed(t0);
@@ -101,16 +101,21 @@ int main(int argc, char** argv) {
             [](AgentHandle agent) {return "Nay (but Yeah!)"; }
     );
 
-    auto& random_int_strat = sim.add<strat::Random<std::string, int>>();
+    auto& random_int_strat = sim.add<strat::Random<std::string, std::string>>();
     random_int_strat.add(
         "MyFirstBehaviour",
         [](AgentHandle agent) {return true; },
-        [](AgentHandle agent, int&& arg) {return std::to_string(arg); }
+        [](AgentHandle agent, std::string arg) {
+            std::cout << "Oups " + arg << "\n";
+            return "Oups " + arg; 
+        }
     );
     random_int_strat.add(
         "MySecondBehaviour",
         [](AgentHandle agent) {return true; },
-        [](AgentHandle agent, int&& arg) {return std::to_string(arg + 10); }
+        [](AgentHandle agent, std::string arg) {
+            std::cout << "Arff " + arg << "\n";
+            return "Arff " + arg; }
     );
 
     //auto& influence_graph_strat = sim.add<strat::InfluenceGraph<int>>();
@@ -134,7 +139,7 @@ int main(int argc, char** argv) {
 
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
-    for (int i = 0; i < 0; i++) {
+    for (int i = 0; i < 100; i++) {
         sim.agent(archetype, fmt::format("Agent {}", i).c_str());
     }
 
@@ -191,7 +196,7 @@ int main(int argc, char** argv) {
     SL.call(GA);
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
-    sim.step_n(10000);
+    sim.step_n(1000);
     sim.shutdown();
 
     return 0;

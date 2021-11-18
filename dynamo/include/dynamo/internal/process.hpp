@@ -69,6 +69,15 @@ namespace dynamo {
     //Forward Declaration
     class AgentHandle;
 
+    template<typename T>
+    struct Process
+    {
+        tf::Task task;
+        std::shared_ptr<T> output;
+
+        //suceed(Task)
+    };
+
     /**
     @class Behaviour
 
@@ -198,16 +207,16 @@ namespace dynamo {
 
         It will automatically deduced which behaviours should be taken into account before using them.
         */
-        TOutput operator()(AgentHandle agent, TInputs&& ... inputs) const
+        TOutput operator()(AgentHandle agent, TInputs ... inputs) const
         {
             assert(behaviours.size() > 0 && "Strategy with no behaviour. Use add().");
-            return compute(agent, active_behaviours(agent), std::forward<TInputs>(inputs) ...);
+            return compute(agent, active_behaviours(agent), inputs ...);
         }
 
         /**
         @brief Pure virtual function telling how this strategy should operate.
         */
-        virtual TOutput compute(AgentHandle, const std::vector<Behaviour_t const *>, TInputs&& ...) const = 0;
+        virtual TOutput compute(AgentHandle, const std::vector<Behaviour_t const *>, TInputs ...) const = 0;
 
     protected:
         std::vector<Behaviour_t> behaviours{};
@@ -291,12 +300,18 @@ namespace dynamo {
         /**
         @brief Emplace a reasonner.
         */
-        template<typename T, typename ... TInputs>
-        tf::Task process(TInputs&& ... inputs)
+        template<template<typename, typename ...> typename T, typename TOutput, typename ... TInputs>
+        Process<TOutput> process(std::shared_ptr<TInputs> ... inputs)
         {
-            return taskflow.emplace([strat = this->strategies, a = this->agent, ... args = std::forward<TInputs>(inputs)]() mutable {
-                strat->get<T>()(a, std::forward<TInputs>(args) ...);
-            });
+            std::shared_ptr<TOutput> output = std::make_shared<TOutput>();
+            return Process<TOutput>{
+                    taskflow.emplace([strat = this->strategies, a = this->agent, ... args = inputs, output]() mutable
+                    {
+                        *output = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
+
+                     }),
+                    output
+            };
         };
 
     private:
