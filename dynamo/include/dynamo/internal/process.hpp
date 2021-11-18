@@ -68,14 +68,56 @@ namespace dynamo {
 
     //Forward Declaration
     class AgentHandle;
-
+    
+    /**
+    @class Process
+    @brief A process is a glorified function that has multiple inputs and one output (specified by @c T).
+    */
     template<typename T>
-    struct Process
+    class Process
     {
-        tf::Task task;
-        std::shared_ptr<T> output;
+        friend class AgentModel;
+        template <typename U>
+        friend class Process;
 
-        //suceed(Task)
+    public:
+        Process(tf::Taskflow& taskflow) : task{taskflow.placeholder()} {}
+
+        /**
+        @brief Set name of the process (Use for debugging/visualization).
+        */
+        void name(const char* name)
+        {
+            task.name(name);
+        }
+        
+        /**
+        @brief Get name of the process.
+        */
+        const char * name()
+        {
+            return task.name();
+        }
+
+        /**
+        @brief After @c t is finished, this process can run (provided other dependencies are finished).
+        */
+        void succeed(tf::Task& t)
+        {
+            task.succeed(t);
+        }
+
+    private:
+
+        template <typename U>
+        void succeed(Process<U>& p)
+        {
+            succeed(p.task);
+        }
+
+    private:
+        std::shared_ptr<T> result{ std::make_shared<T>() };
+        tf::Task task;
     };
 
     /**
@@ -182,6 +224,7 @@ namespace dynamo {
     template<typename TOutput, typename TBehaviourOuput = TOutput, typename ... TInputs>
     class Strategy
     {
+        using Strategy_t = Strategy<TOutput, TBehaviourOuput, TInputs ...>;
         using Behaviour_t = Behaviour<TBehaviourOuput, TInputs ...>;
 
     public:
@@ -197,9 +240,10 @@ namespace dynamo {
         @tparam T Behaviour type must correspond to the one accepted by this strategy.
         */
         template<typename ... Args>
-        void add(Args&&... args)
+        Strategy_t& behaviour(Args&&... args)
         {
             behaviours.emplace_back(args...);
+            return *this;
         }
 
         /**
@@ -209,7 +253,7 @@ namespace dynamo {
         */
         TOutput operator()(AgentHandle agent, TInputs ... inputs) const
         {
-            assert(behaviours.size() > 0 && "Strategy with no behaviour. Use add().");
+            assert(behaviours.size() > 0 && "Strategy with no behaviour. Add behaviour with your_strat.behaviour(args..).");
             return compute(agent, active_behaviours(agent), inputs ...);
         }
 
@@ -239,25 +283,25 @@ namespace dynamo {
 
     using Strategies = TypeMap;
     /**
-    @class Reasonner
+    @class AgentModel
 
-    @brief A reasonner is a graph of tasks that represents cognitive processes
+    @brief An agent model is a graph of tasks/computation to represent cognitive processes
 
-    A reasonner must be register before the simulation starts (otherwise, it will not be
+    An agent model must be register before the simulation starts (otherwise, it will not be
     triggered until it is registered).
 
-    To create a reasonner, inherit this class and implement the @c build() function.
+    To create an agent model, inherit this class and implement the @c build() function.
 
-    You should not manually create a reasonner. It will be automatically created for you.
+    You should not manually create an agent. It will be automatically created for you.
     See below :
 
     @code{.cpp}
     Simulation sim;
     //...
-    sim.register_reasonner<YourReasonner>();
+    sim.agent_model<YourAgentModel>();
     //...
-    // For an agent to use your reasonner, use this :
-    agent.reason<YourReasonner>();
+    // For an agent to use your agent model, use this :
+    agent.reason<YourAgentModel>();
     //...
     while(run())
     {
@@ -266,20 +310,30 @@ namespace dynamo {
 
     @endcode
     */
-    class Reasonner
+    class AgentModel
     {
     public:
         /**
-        @brief Construct a reasonner for the specified agent.
+        @brief Construct an agent model for the specified agent.
         */
-        Reasonner(Strategies const * const  strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
+        AgentModel(Strategies const * const  strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
 
         /**
         @brief Implicit conversion operator to convert it into taskflow.
         */
-        inline operator tf::Taskflow && () {
+        inline operator tf::Taskflow && ()
+        {
             build();
+            taskflow.name(name());
             return std::move(taskflow);
+        }
+
+        /**
+        @brief Dump the graph to a DOT format.
+        */
+        std::string to_graphviz() const
+        {
+            return taskflow.dump();
         }
 
     protected:
@@ -298,20 +352,19 @@ namespace dynamo {
         };
 
         /**
-        @brief Emplace a reasonner.
+        @brief Emplace a process.
         */
         template<template<typename, typename ...> typename T, typename TOutput, typename ... TInputs>
-        Process<TOutput> process(std::shared_ptr<TInputs> ... inputs)
+        Process<TOutput> process(Process<TInputs>& ... inputs)
         {
-            std::shared_ptr<TOutput> output = std::make_shared<TOutput>();
-            return Process<TOutput>{
-                    taskflow.emplace([strat = this->strategies, a = this->agent, ... args = inputs, output]() mutable
-                    {
-                        *output = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
-
-                     }),
-                    output
-            };
+            Process<TOutput> p(taskflow);
+            p.task.work([strat = this->strategies, a = this->agent, ... args = inputs.result, res = p.result]() mutable
+            {
+                *res = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
+                }),
+  
+            (p.succeed(inputs), ...);
+            return p;
         };
 
     private:
@@ -319,6 +372,11 @@ namespace dynamo {
         @brief Pure virtual function used to build a graph of cognitives processes.
         */
         virtual void build() = 0;
+
+        /**
+        @brief Pure virtual function to return the name of this flow (for visualization).
+        */
+        virtual constexpr const char * name() const = 0;
 
         Strategies const * const strategies;
         AgentHandle agent;

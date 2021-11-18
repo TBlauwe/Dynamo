@@ -34,11 +34,11 @@ namespace dynamo {
 
         //TODO add constraint
         /**
-        @brief Register a reasonner so that it can be instantiaed for each relevant agent and executed when required.
+        @brief Register an agent model so that it can be instantiaed for each relevant agent and executed when required.
         @tparam Must be a callable of type std::function<void(Agent)>. /!\ Not enforced ! /!\
         */
         template<typename T>
-        void register_reasonner()
+        void agent_model()
         {
             /**
             When an @c type::AddProcess<T> is added and if the parent is not a prefab (to circumvent copying),
@@ -177,13 +177,6 @@ namespace dynamo {
         */
         flecs::world& world();
 
-
-        template<class T>
-        T& get()
-        {
-            return strategies.get<T>();
-        }
-
         /**
         @brief Add a new strategy of type @c T. Only one strategy of a specific type can be added.
         Multiple calls of the same type will result in undefined behaviour.
@@ -191,7 +184,7 @@ namespace dynamo {
         @tparam Strategy type. Must be @c DefaultConstructible.
         */
         template<class T>
-        T& add()
+        T& strategy()
         {
             return strategies.add<T>();
         }

@@ -20,37 +20,46 @@ struct Tag {};
 
 using namespace dynamo;
 
-class SimpleReasonner : public Reasonner
+class SimpleReasonner : public AgentModel
 {
 public:
-    SimpleReasonner(Strategies const * const strategies, AgentHandle agent) : Reasonner(strategies, agent) {}
+    SimpleReasonner(Strategies const * const strategies, AgentHandle agent) : AgentModel(strategies, agent) {}
 
 private:
+
+    virtual constexpr const char* name() const { return "MySuperReasonner"; }
+
     void build() override
     {
         auto t0 = emplace([](AgentHandle agent)
             {
             }
         );
+        t0.name("Random task");
 
         auto t1 = emplace([](AgentHandle agent)
             {
                 agent.set<Stress>({ 9.0f });
             }
         );
+        t1.name("Random task");
 
         auto t2 = emplace([](AgentHandle agent)
             {
                 agent.set<Stress>({ 12.0f });
             }
         );
+        t2.name("Random task");
 
-        auto [t3, o1] = process<strat::Random, std::string>();
-        auto [t5, o2] = process<strat::Random, std::string, std::string>(o1);
+        auto process_a = process<strat::Random, std::string>();
+        process_a.name("Random string");
+        auto process_b = process<strat::Random, int>();
+        process_b.name("Random int");
+        auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
+        process_c.name("Random aggregator");
         //auto t4 = process<strat::InfluenceGraph<int>>(std::vector<int>{0,1,2,3,4,5});
 
         t1.succeed(t0);
-        t3.succeed(t1, t2);
     }
 };
 
@@ -89,34 +98,46 @@ int main(int argc, char** argv) {
     );
 
     // X. Experiment
-    auto& random_strat = sim.add<strat::Random<std::string>>(); 
-    random_strat.add(
-        "MyFirstBehaviour",
+    sim.strategy<strat::Random<std::string>>()
+        .behaviour(
+            "MyFirstBehaviour",
             [](AgentHandle agent) {return true; },
             [](AgentHandle agent) {return "Yeah"; }
-    );
-    random_strat.add(
-        "MySecondBehaviour",
+        )
+        .behaviour(
+            "MySecondBehaviour",
             [](AgentHandle agent) {return true; },
             [](AgentHandle agent) {return "Nay (but Yeah!)"; }
-    );
+        );
 
-    auto& random_int_strat = sim.add<strat::Random<std::string, std::string>>();
-    random_int_strat.add(
-        "MyFirstBehaviour",
-        [](AgentHandle agent) {return true; },
-        [](AgentHandle agent, std::string arg) {
-            std::cout << "Oups " + arg << "\n";
-            return "Oups " + arg; 
-        }
-    );
-    random_int_strat.add(
-        "MySecondBehaviour",
-        [](AgentHandle agent) {return true; },
-        [](AgentHandle agent, std::string arg) {
-            std::cout << "Arff " + arg << "\n";
-            return "Arff " + arg; }
-    );
+    sim.strategy<strat::Random<int>>()
+        .behaviour(
+            "MyFirstBehaviour",
+            [](AgentHandle agent) {return true; },
+            [](AgentHandle agent) {return 0; }
+        )
+        .behaviour(
+            "MySecondBehaviour",
+            [](AgentHandle agent) {return true; },
+            [](AgentHandle agent) {return 1; }
+        );
+
+    sim.strategy<strat::Random<std::string, std::string, int>>()
+        .behaviour(
+            "MyFirstBehaviour",
+            [](AgentHandle agent) {return true; },
+            [](AgentHandle agent, std::string arg, int arg2) {
+                std::cout << "Oups " + arg + std::to_string(arg2) << "\n";
+                return "Oups " + arg; 
+            }
+        )
+        .behaviour(
+            "MySecondBehaviour",
+            [](AgentHandle agent) {return true; },
+            [](AgentHandle agent, std::string arg, int arg2) {
+                std::cout << "Arff " + arg + std::to_string(arg2) << "\n";
+                return "Arff " + arg; }
+        );
 
     //auto& influence_graph_strat = sim.add<strat::InfluenceGraph<int>>();
     //influence_graph_strat.add(Behaviour<std::vector<dynamo::strat::Influence<int>>, const std::vector<int const*>&>{
@@ -127,19 +148,19 @@ int main(int argc, char** argv) {
 
     // -- Register some processes/reasonner
     // You must register them before populating the simulation.
-    sim.register_reasonner<SimpleReasonner>();
+    sim.agent_model<SimpleReasonner>();
 
 
     // -- Create some entities to populate the simulation;
     // First, let's create a prefab for our agents, or an archetype :
     auto archetype = sim.agent_archetype("Archetype_Basic")
         .add<Stress>()
-        .add_reasonner<SimpleReasonner>()
+        .agent_model<SimpleReasonner>()
         ;
 
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 0; i++) {
         sim.agent(archetype, fmt::format("Agent {}", i).c_str());
     }
 
@@ -159,6 +180,9 @@ int main(int argc, char** argv) {
         .perceived_by(arthur)
         ;
 
+
+    sim.step_n(1000);
+
     // 5. Show graph
     ogdf::Graph G;
     ogdf::GraphAttributes GA(G,
@@ -169,18 +193,14 @@ int main(int argc, char** argv) {
         ogdf::GraphAttributes::nodeStyle |
         ogdf::GraphAttributes::nodeTemplate);
 
-    ogdf::node node_a = G.newNode();
-    ogdf::node node_b = G.newNode();
-    ogdf::node node_c = G.newNode();
-    GA.label(node_a) = "A";
-    GA.label(node_b) = "B";
-    GA.label(node_c) = "C";
-    G.newEdge(node_a, node_b);
-    G.newEdge(node_a, node_c);
+    std::cout << arthur.agent_models()[0];
+    std::ifstream test(arthur.agent_models()[0]);
+    ogdf::GraphIO::readDOT(GA, G, test);
+    //ogdf::GraphIO::read(GA, G, std::istringstream(arthur.agent_models()[0]));
 
 
     // Layout
-    for (ogdf::node v : G.nodes)    
+    for (ogdf::node v : G.nodes)
         GA.width(v) = GA.height(v) = 5.0;
 
     ogdf::SugiyamaLayout SL;
@@ -196,7 +216,6 @@ int main(int argc, char** argv) {
     SL.call(GA);
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
-    sim.step_n(1000);
     sim.shutdown();
 
     return 0;

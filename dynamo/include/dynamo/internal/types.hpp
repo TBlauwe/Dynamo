@@ -293,6 +293,20 @@ namespace dynamo {
         To construct an @c Agent , see @c AgentBuilder .
         */
         explicit Agent(flecs::entity entity) : EntityManipulator<Agent>(entity) {};
+
+        std::vector<std::string> agent_models()
+        {
+            std::vector<std::string> models{};
+            m_entity.children([&models](flecs::entity e) 
+                {
+                    if (e.has<type::ProcessHandle>())
+                    {
+                        models.emplace_back(e.get<type::ProcessHandle>()->taskflow->dump());
+                    }
+                }
+            );
+            return models;
+        }
     };
 
     class AgentHandle : public DefferedEntityManipulator<AgentHandle>

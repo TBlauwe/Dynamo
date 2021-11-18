@@ -119,9 +119,9 @@ namespace dynamo
         AgentArchetype(flecs::world& world, AgentArchetype& archetype, const char* name) : Archetype<AgentArchetype>{ world, archetype, name } {}
 
         template<typename T>
-        AgentArchetype& add_reasonner()
+        AgentArchetype& agent_model()
         {
-            static_assert(std::is_base_of<Reasonner, T>::value, "Wrong type passed : T is not inheriting from Reasonner.");
+            static_assert(std::is_base_of<AgentModel, T>::value, "Wrong type passed : T is not inheriting from AgentModel.");
 
             auto reasonnner_entity = m_entity.world().entity();
             reasonnner_entity
