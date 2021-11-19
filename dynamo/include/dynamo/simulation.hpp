@@ -25,7 +25,12 @@ namespace dynamo {
         /**
         @brief Construct an empty simulation.
         */
-        Simulation();
+        Simulation() : Simulation(std::thread::hardware_concurrency()) {};
+
+        /**
+        @brief Construct an empty simulation. Also set the number of threads (default: std::thread::hardware_concurrency).
+        */
+        Simulation(size_t number_of_threads) : executor{number_of_threads};
 
         /**
         @brief Destroy the simulation. Ensure all threads are finished.
@@ -195,7 +200,7 @@ namespace dynamo {
 
         For more information, see https://taskflow.github.io/
         */
-        tf::Executor    executor{};
+        tf::Executor    executor;
 
     private:
         /**

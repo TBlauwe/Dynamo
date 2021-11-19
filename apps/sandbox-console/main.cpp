@@ -59,12 +59,20 @@ private:
         process_c.name("Random aggregator");
         //auto t4 = process<strat::InfluenceGraph<int>>(std::vector<int>{0,1,2,3,4,5});
 
-        t1.succeed(t0);
     }
 };
 
 int main(int argc, char** argv) {
 
+    const int number_of_agents = 100;
+    const int number_of_ticks = 1000;
+    unsigned int n = std::thread::hardware_concurrency();
+
+    std::cout << "Number of agents : " << number_of_agents << std::endl;
+    std::cout << "Number of ticks : " << number_of_ticks << std::endl;
+    std::cout << "Number of threads : " << n << std::endl;
+    std::cout << " -- Simulation starting --" << std::endl;
+    const auto start_time = std::chrono::system_clock::now();
 
     // -----------------------------
     // SETUP
@@ -74,14 +82,14 @@ int main(int argc, char** argv) {
     Simulation sim;
 
     // -- System to print the beginning of a tick
-    std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
-    sim.world().system<>()
-        .kind(flecs::PreFrame)
-        .iter([](flecs::iter& iter)
-            {
-                std::cout << "\n -- Simulation : Tick " << iter.world().get_tick() << " - " << iter.delta_time() << "s" << std::endl;
-            }
-    );
+    //std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
+    //sim.world().system<>()
+    //    .kind(flecs::PreFrame)
+    //    .iter([](flecs::iter& iter)
+    //        {
+    //            std::cout << "\n -- Simulation : Tick " << iter.world().get_tick() << " - " << iter.delta_time() << "s" << std::endl;
+    //        }
+    //);
 
     // -- Create some cognitive models
 
@@ -127,7 +135,6 @@ int main(int argc, char** argv) {
             "MyFirstBehaviour",
             [](AgentHandle agent) {return true; },
             [](AgentHandle agent, std::string arg, int arg2) {
-                std::cout << "Oups " + arg + std::to_string(arg2) << "\n";
                 return "Oups " + arg; 
             }
         )
@@ -135,7 +142,6 @@ int main(int argc, char** argv) {
             "MySecondBehaviour",
             [](AgentHandle agent) {return true; },
             [](AgentHandle agent, std::string arg, int arg2) {
-                std::cout << "Arff " + arg + std::to_string(arg2) << "\n";
                 return "Arff " + arg; }
         );
 
@@ -160,7 +166,7 @@ int main(int argc, char** argv) {
 
     // Then, we can create agent using our archetype :
     auto arthur = sim.agent(archetype, "Arthur");
-    for (int i = 0; i < 0; i++) {
+    for (int i = 0; i < number_of_agents; i++) {
         sim.agent(archetype, fmt::format("Agent {}", i).c_str());
     }
 
@@ -181,7 +187,7 @@ int main(int argc, char** argv) {
         ;
 
 
-    sim.step_n(1000);
+    sim.step_n(number_of_ticks);
 
     // 5. Show graph
     ogdf::Graph G;
@@ -217,6 +223,10 @@ int main(int argc, char** argv) {
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
     sim.shutdown();
+
+    const std::chrono::duration<double, std::milli> duration = std::chrono::system_clock::now() - start_time;
+    std::cout << " -- Simulation ending --" << number_of_ticks << std::endl;
+    std::cout << "Elapsed time : " << duration.count() << "ms" << std::endl;
 
     return 0;
 }

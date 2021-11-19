@@ -1,6 +1,6 @@
 #include <dynamo/simulation.hpp>
 
-dynamo::Simulation::Simulation() {
+dynamo::Simulation::Simulation(size_t _) {
     _world.import<module::Core>();
     _world.import<module::GlobalPerception>();
 
