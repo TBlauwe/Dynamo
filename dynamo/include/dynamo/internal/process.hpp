@@ -100,7 +100,7 @@ namespace dynamo {
         */
         const char * name()
         {
-            return task.name();
+            return task.name().c_str();
         }
 
         /**
