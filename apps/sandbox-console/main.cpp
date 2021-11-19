@@ -39,6 +39,7 @@ private:
 
         auto t1 = emplace([](AgentHandle agent)
             {
+                std::this_thread::sleep_for(std::chrono::seconds(2));
                 agent.set<Stress>({ 9.0f });
             }
         );
@@ -46,13 +47,17 @@ private:
 
         auto t2 = emplace([](AgentHandle agent)
             {
+                std::this_thread::sleep_for(std::chrono::seconds(2));
                 agent.set<Stress>({ 12.0f });
             }
         );
         t2.name("Random task");
 
+        t0.succeed(t1, t2);
+
         auto process_a = process<strat::Random, std::string>();
         process_a.name("Random string");
+        process_a.succeed(t0);
         auto process_b = process<strat::Random, int>();
         process_b.name("Random int");
         auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
@@ -64,13 +69,13 @@ private:
 
 int main(int argc, char** argv) {
 
-    const int number_of_agents = 100;
-    const int number_of_ticks = 1000;
-    unsigned int n = std::thread::hardware_concurrency();
+    const size_t number_of_agents = 100;
+    const size_t number_of_ticks = 1000;
+    const size_t number_of_threads = 2;
 
     std::cout << "Number of agents : " << number_of_agents << std::endl;
     std::cout << "Number of ticks : " << number_of_ticks << std::endl;
-    std::cout << "Number of threads : " << n << std::endl;
+    std::cout << "Number of threads : " << number_of_threads << std::endl;
     std::cout << " -- Simulation starting --" << std::endl;
     const auto start_time = std::chrono::system_clock::now();
 
@@ -79,7 +84,7 @@ int main(int argc, char** argv) {
     // -----------------------------
 
     // -- Create an empty simulation
-    Simulation sim;
+    Simulation sim{number_of_threads};
 
     // -- System to print the beginning of a tick
     //std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
@@ -222,11 +227,14 @@ int main(int argc, char** argv) {
     SL.call(GA);
     ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
+    const std::chrono::duration<double, std::milli> duration_ticks = std::chrono::system_clock::now() - start_time;
+    std::cout << " -- Simulation (ticks) ending in : " << duration_ticks.count() << "ms" << std::endl;
+    std::cout << "Waiting for reasonning to finish ..." << std::endl;
     sim.shutdown();
 
     const std::chrono::duration<double, std::milli> duration = std::chrono::system_clock::now() - start_time;
-    std::cout << " -- Simulation ending --" << number_of_ticks << std::endl;
-    std::cout << "Elapsed time : " << duration.count() << "ms" << std::endl;
+    std::cout << "Done waiting ! " << std::endl;
+    std::cout << "Total elapsed time : " << duration.count() << "ms" << std::endl;
 
     return 0;
 }

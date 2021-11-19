@@ -1,6 +1,8 @@
 #include <dynamo/simulation.hpp>
 
-dynamo::Simulation::Simulation(size_t _) {
+dynamo::Simulation::Simulation() : Simulation(std::thread::hardware_concurrency()) {}
+
+dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_threads } {
     _world.import<module::Core>();
     _world.import<module::GlobalPerception>();
 
@@ -9,6 +11,10 @@ dynamo::Simulation::Simulation(size_t _) {
 }
 
 void dynamo::Simulation::shutdown() {
+    for_each([](flecs::entity e, type::Agent& _)
+        {
+            Agent(e).cancel_all_reasonning();
+        });
     executor.wait_for_all();
 }
 
@@ -36,6 +42,38 @@ dynamo::Artefact dynamo::Simulation::artefact(const char *name) {
 
 void dynamo::Simulation::step(float elapsed_time) {
     _world.progress(elapsed_time);
+
+    /** Performance critical section
+    --------------------------------
+    1. First method : flush_commands_queue();
+    Flush all delayed commands
+    Pros :
+        * Ensure that all commands send by reasonner are applied as soon as possible and in the same iteration
+    Cons :
+        * Reasonners have an heavy impact on main loop performance
+    Since we flush commands queue until they are no more commands, reasonners can still append commands to it (which delay even more the main loop)
+    
+    2. Second method : pop_commands_queue();
+    Pop commands one by one for each tick, if there is one:
+
+    Pros :
+        * Extremely faster. Main loop can run as fast as possible
+    Cons :
+        * Only pop one command per tick. Not a problem if the amount of commands a low, may be if it is high
+            * However, maybe with the gain in speed, this is not really a problem ?
+    
+    Overall, I think it is better to stick with the second method (for my current application at least). Maybe offer the choice ? Or define/find better alternatives ?
+    */
+    pop_commands_queue();
+}
+
+void dynamo::Simulation::pop_commands_queue() {
+    auto command = commands_queue.pop();
+    if (command.has_value())
+        command.value()(_world);
+}
+
+void dynamo::Simulation::flush_commands_queue() {
     while (auto command = commands_queue.pop())
     {
         command.value()(_world);

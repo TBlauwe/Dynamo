@@ -25,12 +25,12 @@ namespace dynamo {
         /**
         @brief Construct an empty simulation.
         */
-        Simulation() : Simulation(std::thread::hardware_concurrency()) {};
+        Simulation();
 
         /**
         @brief Construct an empty simulation. Also set the number of threads (default: std::thread::hardware_concurrency).
         */
-        Simulation(size_t number_of_threads) : executor{number_of_threads};
+        Simulation(size_t number_of_threads);
 
         /**
         @brief Destroy the simulation. Ensure all threads are finished.
@@ -194,7 +194,11 @@ namespace dynamo {
             return strategies.add<T>();
         }
 
-    public:
+    private:
+        void pop_commands_queue();
+        void flush_commands_queue();
+
+    private:
         /**
         @brief Thanks to taskflow, we used this library to incorporate task programming for our cognitive reasonning.
 
@@ -202,7 +206,6 @@ namespace dynamo {
         */
         tf::Executor    executor;
 
-    private:
         /**
         @brief ECS Database.
 
@@ -227,7 +230,6 @@ namespace dynamo {
         */
         type::CommandsQueue commands_queue{};
 
-    public:
         /**
         @brief Associative container to store strategies by their types. So only one strategy of a same type can be defined.
         */

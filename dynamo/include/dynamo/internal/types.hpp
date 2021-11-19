@@ -307,6 +307,23 @@ namespace dynamo {
             );
             return models;
         }
+        
+        template<typename T>
+        void for_each_children(T&& func)
+        {
+            m_entity.children(std::forward<std::function<void(flecs::entity)>>(func));
+        }
+
+        void cancel_all_reasonning()
+        {
+            m_entity.children([](flecs::entity child) {
+                if (child.has<type::IsProcessing>())
+                {
+                    auto* p = child.get_mut<type::IsProcessing>();
+                    p->status.cancel();
+                }
+            });
+        }
     };
 
     class AgentHandle : public DefferedEntityManipulator<AgentHandle>
