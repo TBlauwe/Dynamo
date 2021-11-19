@@ -37,10 +37,10 @@ An influence graph is a bipartite graph composed of two sets of vertex : U or be
 A set of influences is going from U to V.
 @tparam TInput type of V nodes.
 */
-template<typename TInput>
-class InfluenceGraph : public Strategy<TInput, std::vector<Influence<TInput>>, std::vector<TInput>>
+template<typename TOutput, typename TInput>
+class InfluenceGraph : public Strategy<TInput, std::vector<Influence<TInput>>, TInput>
 {
-    using Inputs            = std::vector<TInput>;
+    using Inputs            = TInput;
     using BehaviourOutputs  = std::vector<Influence<TInput>>;
     using Behaviour_t       = Behaviour<BehaviourOutputs, Inputs>;
 

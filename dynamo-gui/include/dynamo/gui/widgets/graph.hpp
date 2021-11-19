@@ -23,7 +23,7 @@ namespace dynamo::widgets {
         void _render() const override ;
     };
 
-    template<typename Tu, typename Tv>
+ /*   template<typename Tu, typename Tv>
     class InfluenceGraphViewer : public ImGui::Flow::ColoredBipartiteGraph<Tu, Tv> {
     private:
         const InfluenceGraph<Tu, Tv> *influence_graph;
@@ -75,7 +75,7 @@ namespace dynamo::widgets {
 
             this->compute_highest();
         }
-    };
+    };*/
 }
 
 #endif //DYNAMO_GRAPH_HPP

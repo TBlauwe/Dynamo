@@ -39,7 +39,6 @@ private:
 
         auto t1 = emplace([](AgentHandle agent)
             {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
                 agent.set<Stress>({ 9.0f });
             }
         );
@@ -47,7 +46,6 @@ private:
 
         auto t2 = emplace([](AgentHandle agent)
             {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
                 agent.set<Stress>({ 12.0f });
             }
         );
@@ -62,7 +60,9 @@ private:
         process_b.name("Random int");
         auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
         process_c.name("Random aggregator");
-        //auto t4 = process<strat::InfluenceGraph<int>>(std::vector<int>{0,1,2,3,4,5});
+
+        //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
+        //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);
 
     }
 };
@@ -70,8 +70,8 @@ private:
 int main(int argc, char** argv) {
 
     const size_t number_of_agents = 100;
-    const size_t number_of_ticks = 1000;
-    const size_t number_of_threads = 2;
+    const size_t number_of_ticks = 10000;
+    const size_t number_of_threads = std::thread::hardware_concurrency();
 
     std::cout << "Number of agents : " << number_of_agents << std::endl;
     std::cout << "Number of ticks : " << number_of_ticks << std::endl;

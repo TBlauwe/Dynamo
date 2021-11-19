@@ -82,6 +82,10 @@ namespace dynamo {
 
     public:
         Process(tf::Taskflow& taskflow) : task{taskflow.placeholder()} {}
+        Process(tf::Taskflow& taskflow, T&& output) : task{ taskflow.placeholder() }
+        {
+            *result = std::forward<T>(output);
+        }
 
         /**
         @brief Set name of the process (Use for debugging/visualization).
@@ -366,6 +370,12 @@ namespace dynamo {
             (p.succeed(inputs), ...);
             return p;
         };
+
+        template<typename TOutput>
+        Process<TOutput> static_value(TOutput&& output)
+        {
+            return Process<TOutput>(taskflow, std::forward<TOutput>(output));;
+        }
 
     private:
         /**
