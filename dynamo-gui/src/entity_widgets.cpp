@@ -107,9 +107,10 @@ namespace dynamo::widgets {
             ImGui::End();
             return;
         }
-        BrainViewer bv(name);
-        bv.render();
-
+        if (entity.has<type::BrainViewer>())
+        {
+            entity.get<type::BrainViewer>()->viewer.render();
+        }
         inspect(entity);
         ImGui::End();
     }

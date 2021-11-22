@@ -21,11 +21,33 @@ namespace dynamo{
         add_tag_to<type::GUI, type::Organisation>(world, "GUI", "Organisation");
         add_tag_to<type::GUI, type::Percept>(world, "GUI", "Percept");
 
-        //world.observer<type::Agent>("OnAdd_Agent_AddBrainViewer")
-        //        .event(flecs::OnAdd)
-        //        .each([](flecs::entity e, const type::Agent& _){
-        //            e.set<widgets::BrainViewer>(widgets::BrainViewer{e.name().c_str()});
-        //        });
+        world.observer<const type::Agent>("OnAdd_Agent_AddBrainViewer")
+            .event(flecs::OnAdd)
+            .each([](flecs::entity e, const type::Agent& _){
+                e.add<type::BrainViewer>();
+            });
+
+        world.observer<type::ProcessHandle>("OnSet_Process_AddNodeToBrainViewer")
+            .event(flecs::OnSet)
+            .each([](flecs::entity e, type::ProcessHandle& handle) {
+            auto parent = e.get_object(flecs::ChildOf);
+            if (parent.has(flecs::Prefab))
+                return;
+            auto& bv = *parent.get_mut<type::BrainViewer>();
+            handle.taskflow->for_each_task([&bv](tf::Task task) {
+                auto& node_a = bv.viewer.node(task.name().c_str());
+                for (int i = 0; i < task.num_successors(); i++)
+                {
+                    node_a.input_pin("Input");
+                }
+                for (int i = 0; i < task.num_dependents(); i++)
+                {
+                    node_a.output_pin("Output");
+                }
+                });
+            });
+
+
 
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)

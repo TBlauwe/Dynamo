@@ -8,6 +8,11 @@ namespace dynamo::type {
     struct GUI {
         bool show_widget = false;
     };
+
+    struct BrainViewer
+    {
+        widgets::BrainViewer viewer{};
+    };
 }
 
 #endif //DYNAMO_CORE_HPP

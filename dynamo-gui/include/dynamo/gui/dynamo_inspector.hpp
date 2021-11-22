@@ -6,6 +6,7 @@
 #include <dynamo/gui/widgets/plot.hpp>
 
 namespace dynamo{
+
     class DynamoInspector{
     private:
         flecs::world& world;

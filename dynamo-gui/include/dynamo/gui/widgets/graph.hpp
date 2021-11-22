@@ -10,17 +10,17 @@
 #include <ogdf/layered/SugiyamaLayout.h>
 
 namespace dynamo::widgets {
-    class BrainViewer : public ImGui::Graph::SimpleGraph<int>{
-        tf::Taskflow* last_taskflow {nullptr};
+    class BrainViewer : public ImGui::Graph::FlowGraph{ 
+        //tf::Taskflow* last_taskflow {nullptr};
 
     public:
-        explicit BrainViewer(const char * name) : ImGui::Graph::SimpleGraph<int>(name){}
+        explicit BrainViewer() : ImGui::Graph::FlowGraph(){}
 
         void compute(tf::Taskflow* taskflow);
 
     private:
         void compute_graph(tf::Taskflow* taskflow);
-        void _render() const override ;
+        //void _render() const override ;
     };
 
  /*   template<typename Tu, typename Tv>
