@@ -62,7 +62,9 @@ namespace dynamo {
                         if (parent.has(flecs::Prefab))
                             return;
                         // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
-                        e.set<type::ProcessHandle>({ &taskflows.emplace_back(T(&strategies, AgentHandle(parent))) });
+                        auto process = T(&strategies, AgentHandle(parent));
+                        e.set_name(process.name());
+                        e.set<type::ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
                         e.remove<type::AddProcess<T>>();
                     }
             );

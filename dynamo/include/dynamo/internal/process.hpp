@@ -340,6 +340,11 @@ namespace dynamo {
             return taskflow.dump();
         }
 
+        /**
+        @brief Pure virtual function to return the name of this flow (for visualization).
+        */
+        virtual constexpr const char* name() const = 0;
+
     protected:
 
         /**
@@ -382,11 +387,6 @@ namespace dynamo {
         @brief Pure virtual function used to build a graph of cognitives processes.
         */
         virtual void build() = 0;
-
-        /**
-        @brief Pure virtual function to return the name of this flow (for visualization).
-        */
-        virtual constexpr const char * name() const = 0;
 
         Strategies const * const strategies;
         AgentHandle agent;
