@@ -70,6 +70,47 @@ namespace dynamo{
             show_percepts_panel();
             ImGui::EndTabBar();
         }
+
+        actions_query.each([this](flecs::entity e, const type::Action& action, type::GUI& gui) {
+                if (gui.show_widget) {
+                    ImGui::PushID(static_cast<int>(e.id()));
+                    widgets::show_action_widget(e);
+                    ImGui::PopID();
+                }
+           });
+
+        agents_query.each([this](flecs::entity e, const type::Agent& agent, type::GUI& gui) {
+                if (gui.show_widget) {
+                    ImGui::PushID(static_cast<int>(e.id()));
+                    widgets::show_agent_widget(e);
+                    ImGui::PopID();
+                }
+            });
+
+        artefacts_query.each([this](flecs::entity e, const type::Artefact& artefact, type::GUI& gui) {
+                if (gui.show_widget) {
+                    ImGui::PushID(static_cast<int>(e.id()));
+                    widgets::show_artefact_widget(e);
+                    ImGui::PopID();
+                }
+            });
+
+        organisations_query.each([this](flecs::entity e, const type::Organisation& organisation, type::GUI& gui) {
+                    if (gui.show_widget) {
+                        ImGui::PushID(static_cast<int>(e.id()));
+                        widgets::show_organisation_widget(e);
+                        ImGui::PopID();
+                    }
+            });
+
+        percepts_query.each([this](flecs::entity e, const type::Percept& agent, type::GUI& gui) {
+                if (gui.show_widget) {
+                    ImGui::PushID(static_cast<int>(e.id()));
+                    widgets::show_percept_widget(e);
+                    ImGui::PopID();
+                }
+            });
+
         ImGui::End();
     }
 
@@ -98,9 +139,6 @@ namespace dynamo{
 
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
-                        if (gui.show_widget) {
-                            widgets::show_action_widget(e);
-                        }
                     }
                     ImGui::PopID();
                 });
@@ -135,9 +173,6 @@ namespace dynamo{
 
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
-                        if (gui.show_widget) {
-                            widgets::show_agent_widget(e);
-                        }
                     }
                     ImGui::PopID();
                 });
@@ -172,9 +207,6 @@ namespace dynamo{
 
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
-                        if (gui.show_widget) {
-                            widgets::show_artefact_widget(e);
-                        }
                     }
                     ImGui::PopID();
                 });
@@ -210,9 +242,6 @@ namespace dynamo{
 
                                 ImGui::TableSetColumnIndex(3);
                                 ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
-                                if (gui.show_widget) {
-                                    widgets::show_organisation_widget(e);
-                                }
                             }
                             ImGui::PopID();
                         });
@@ -240,7 +269,7 @@ namespace dynamo{
                 ImGui::TableSetupColumn("Show", ImGuiTableColumnFlags_WidthFixed);
                 ImGui::TableHeadersRow();
                 percepts_query.each([this](flecs::entity e, const type::Percept &agent, type::GUI& gui) {
-                    if (agents_list_filter.PassFilter(e.name())) {
+                    if (percepts_list_filter.PassFilter(e.name())) {
                         ImGui::PushID(static_cast<int>(e.id()));
                         ImGui::TableNextRow();
 
@@ -259,9 +288,6 @@ namespace dynamo{
 
                         ImGui::TableSetColumnIndex(3);
                         ImGui::Checkbox(ICON_FA_EXTERNAL_LINK_ALT, &gui.show_widget);
-                        if (gui.show_widget) {
-                            widgets::show_percept_widget(e);
-                        }
                         ImGui::PopID();
                     }
                 });
@@ -269,35 +295,5 @@ namespace dynamo{
             }
             ImGui::EndTabItem();
         }
-    }
-
-    void DynamoInspector::show_node_editor() {
-        if(!ImGui::Begin("simple node editor")) {
-            ImGui::End();
-            return;
-        }
-
-        ImNodes::BeginNodeEditor();
-        {
-            ImNodes::BeginNode(1);
-
-            ImNodes::BeginNodeTitleBar();
-            ImGui::TextUnformatted("simple node :)");
-            ImNodes::EndNodeTitleBar();
-
-            ImNodes::BeginInputAttribute(2);
-            ImGui::Text("input");
-            ImNodes::EndInputAttribute();
-
-            ImNodes::BeginOutputAttribute(3);
-            ImGui::Indent(40);
-            ImGui::Text("output");
-            ImNodes::EndOutputAttribute();
-
-            ImNodes::EndNode();
-        }
-        ImNodes::MiniMap(.1f, ImNodesMiniMapLocation_BottomLeft);
-        ImNodes::EndNodeEditor();
-        ImGui::End();
     }
 }
