@@ -8,16 +8,8 @@ FlecsInspector::FlecsInspector(flecs::world &world) : world{world} {}
 void FlecsInspector::update() {
     scrolling_plot_delta_time.push({ImGui::GetIO().DeltaTime});
     scrolling_plot_world_delta_time.push({world.delta_time()});
-    scrolling_plot_fps.push({ImGui::GetIO().Framerate});
-    table_count = 0;
-    entities_count = 0;
-    float delta = 0;
-    for (auto it : world) {
-        delta += it.delta_system_time();
-        table_count += 1;
-        entities_count += it.count();
-    }
-    scrolling_plot_entities.push({static_cast<int>(entities_count)});
+    scrolling_plot_fps.push({ImGui::GetIO().Framerate});   
+    scrolling_plot_entities.push({world.count<flecs::entity>()});
 }
 
 void FlecsInspector::show() {
