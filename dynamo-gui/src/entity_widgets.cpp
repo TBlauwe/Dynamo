@@ -69,6 +69,18 @@ namespace dynamo::widgets {
                         show_component_widget(entity, id_type, id);
                     }
                 });
+                entity.children([&entity](flecs::entity child) {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ImGui::GetColorU32(static_cast<ImVec4>(ImColor::HSV(0.75f, 0.6f, 0.6f))));
+                        ImGui::Text("HAS CHILD");
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text("%s ", child.name().c_str());
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text("...");
+                        ImGui::TableSetColumnIndex(3);
+                        inspect(child);
+                });
                 ImGui::PopStyleVar();
                 ImGui::EndTable();
             }
@@ -95,6 +107,9 @@ namespace dynamo::widgets {
             ImGui::End();
             return;
         }
+        BrainViewer bv(name);
+        bv.render();
+
         inspect(entity);
         ImGui::End();
     }

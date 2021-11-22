@@ -3,8 +3,15 @@
 #include <imgui-addons/imgui-addons.hpp>
 #include <dynamo/gui/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
+#include <dynamo/modules/basic_stress.hpp>
 
 namespace dynamo::widgets {
+
+    template<>
+    void show<type::Stress>(flecs::entity& e) {
+        auto* stress = e.get_mut<type::Stress>();
+        ImGui::Widgets::InputFloatColor(stress->value);
+    }
 
     template<>
     void show<type::Decay>(flecs::entity& e){
@@ -76,6 +83,8 @@ namespace dynamo::widgets {
                     show<type::Decay>(entity);
                 }else if(id == world.id<type::PeriodicEmitter>()) {
                     show<type::PeriodicEmitter>(entity);
+                }else if (id == world.id<type::Stress>()) {
+                    show<type::Stress>(entity);
                 }else if(id == world.id<type::Targets>()) {
                     show<type::Targets>(entity);
                 }else if(id == world.id<type::GUI>()) {
