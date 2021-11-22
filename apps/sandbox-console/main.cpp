@@ -2,21 +2,9 @@
 #include <chrono>
 #include <thread>
 
-#include <ogdf/basic/Graph.h>
-#include <ogdf/layered/MedianHeuristic.h>
-#include <ogdf/layered/OptimalHierarchyLayout.h>
-#include <ogdf/layered/OptimalRanking.h>
-#include <ogdf/layered/SugiyamaLayout.h>
-#include <ogdf/fileformats/GraphIO.h>
-
 #include <dynamo/strategies/all.hpp>
 #include <dynamo/simulation.hpp>
-
-struct Stress {
-    float stress{ 100.0f };
-};
-
-struct Tag {};
+#include <dynamo/modules/basic_stress.hpp>
 
 using namespace dynamo;
 
@@ -39,14 +27,14 @@ private:
 
         auto t1 = emplace([](AgentHandle agent)
             {
-                agent.set<Stress>({ 9.0f });
+                agent.set<type::Stress>({ 9.0f });
             }
         );
         t1.name("Random task");
 
         auto t2 = emplace([](AgentHandle agent)
             {
-                agent.set<Stress>({ 12.0f });
+                agent.set<type::Stress>({ 12.0f });
             }
         );
         t2.name("Random task");
@@ -63,7 +51,6 @@ private:
 
         //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
         //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);
-
     }
 };
 
@@ -85,6 +72,7 @@ int main(int argc, char** argv) {
 
     // -- Create an empty simulation
     Simulation sim{number_of_threads};
+    sim.world().import<module::BasicStress>();
 
     // -- System to print the beginning of a tick
     //std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
@@ -96,21 +84,7 @@ int main(int argc, char** argv) {
     //        }
     //);
 
-    // -- Create some cognitive models
-
-    // Stress passively decrease
-    sim.world().system<Stress>()
-        .kind(flecs::PreUpdate)
-        .each([](flecs::entity entity, Stress& stress)
-            {
-                if (stress.stress > 0.f)
-                {
-                    stress.stress -= entity.delta_time();
-                }
-            }
-    );
-
-    // X. Experiment
+    // -- Define strategies and behaviours
     sim.strategy<strat::Random<std::string>>()
         .behaviour(
             "MyFirstBehaviour",
@@ -165,7 +139,7 @@ int main(int argc, char** argv) {
     // -- Create some entities to populate the simulation;
     // First, let's create a prefab for our agents, or an archetype :
     auto archetype = sim.agent_archetype("Archetype_Basic")
-        .add<Stress>()
+        .add<type::Stress>()
         .agent_model<SimpleReasonner>()
         ;
 
@@ -191,41 +165,7 @@ int main(int argc, char** argv) {
         .perceived_by(arthur)
         ;
 
-
     sim.step_n(number_of_ticks);
-
-    // 5. Show graph
-    ogdf::Graph G;
-    ogdf::GraphAttributes GA(G,
-        ogdf::GraphAttributes::nodeGraphics |
-        ogdf::GraphAttributes::edgeGraphics |
-        ogdf::GraphAttributes::nodeLabel |
-        ogdf::GraphAttributes::edgeStyle |
-        ogdf::GraphAttributes::nodeStyle |
-        ogdf::GraphAttributes::nodeTemplate);
-
-    std::cout << arthur.agent_models()[0];
-    std::ifstream test(arthur.agent_models()[0]);
-    ogdf::GraphIO::readDOT(GA, G, test);
-    //ogdf::GraphIO::read(GA, G, std::istringstream(arthur.agent_models()[0]));
-
-
-    // Layout
-    for (ogdf::node v : G.nodes)
-        GA.width(v) = GA.height(v) = 5.0;
-
-    ogdf::SugiyamaLayout SL;
-    SL.setRanking(new ogdf::OptimalRanking);
-    SL.setCrossMin(new ogdf::MedianHeuristic);
-
-    auto* ohl = new ogdf::OptimalHierarchyLayout;
-    ohl->layerDistance(30.0);
-    ohl->nodeDistance(25.0);
-    ohl->weightBalancing(0.8);
-    SL.setLayout(ohl);
-
-    SL.call(GA);
-    ogdf::GraphIO::write(GA, "taskflow.svg", ogdf::GraphIO::drawSVG);
 
     const std::chrono::duration<double, std::milli> duration_ticks = std::chrono::system_clock::now() - start_time;
     std::cout << " -- Simulation (ticks) ending in : " << duration_ticks.count() << "ms" << std::endl;
