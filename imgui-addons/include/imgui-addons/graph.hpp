@@ -349,7 +349,9 @@ namespace ImGui{
 
             inline void link(Node a, const char * output_name, Node b, const char* input_name)
             {
-                links.emplace_back(next_id(), a.output_pin(output_name), b.input_pin(input_name));
+                a.output_pin(output_name);
+                b.input_pin(input_name);
+                //links.emplace_back(next_id(), a.output_pin(output_name), b.input_pin(input_name));
             }
 
             inline void clear()

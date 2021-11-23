@@ -14,13 +14,6 @@ void dynamo::widgets::BrainViewer::compute(tf::Taskflow* taskflow) {
 
 void dynamo::widgets::BrainViewer::_render() const
 {
-    const ImVec2 origin(50.f, 50.f);
-    const ImVec2 offset(200.f, 20.f);
-
-    ImVec2 cursor(origin);
-    ImVec2 dimensions(0.0f, 0.0f);
-    float max_length = 0.f;
-
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;
     for (const auto& node : nodes)
     {
@@ -39,14 +32,14 @@ void dynamo::widgets::BrainViewer::_render() const
             }
         }
 
-        dimensions = node.render();
+        ImVec2 dimensions = node.render();
+
 
         { // SET POSITION
-            ImNodes::SetNodeGridSpacePos(node.id, cursor);
+
+            
+            ImNodes::SetNodeGridSpacePos(node.id, nodes_pos.at(&node));
             ImNodes::SetNodeDraggable(node.id, false);
-            if (max_length < dimensions.x)
-                max_length = dimensions.x;
-            cursor.y += dimensions.y + offset.y;
         }
 
         ImNodes::PopColorStyle();
@@ -66,54 +59,57 @@ void dynamo::widgets::BrainViewer::_render() const
     ImNodes::PopColorStyle();
 }
 
-//void dynamo::widgets::BrainViewer::_render() const {
-//    ogdf::GraphAttributes GA(graph);
-//
-//    // Layout
-//    for (ogdf::node v : graph.nodes)
-//        GA.width(v) = GA.height(v) = 20.0;
-//
-//    ogdf::SugiyamaLayout SL;
-//    SL.setRanking(new ogdf::OptimalRanking);
-//    SL.setCrossMin(new ogdf::MedianHeuristic);
-//
-//    auto *ohl = new ogdf::OptimalHierarchyLayout;
-//    ohl->layerDistance(30.0);
-//    ohl->nodeDistance(25.0);
-//    ohl->weightBalancing(0.8);
-//    SL.setLayout(ohl);
-//
-//    SL.call(GA);
-//
-//    //for (const auto& node : nodes) {
-//        //node.render();
-//        //ImNodes::SetNodeGridSpacePos(static_cast<int>(node.id), {static_cast<float>(GA.x(ogdf_node)), static_cast<float>(GA.y(ogdf_node))});
-//        //ImNodes::SetNodeDraggable(static_cast<int>(node.id), false);
-//    //}
-//}
-
 void dynamo::widgets::BrainViewer::compute_graph(tf::Taskflow* taskflow) {
     clear();
     nodes_hash.clear();
-
+    hash_nodes.clear();
+    nodes_pos.clear();
     last_taskflow = taskflow;
 
-    taskflow->for_each_task([this](const tf::Task& task){
-        switch (task.type()) {
-        case tf::TaskType::MODULE:
-        case tf::TaskType::PLACEHOLDER:
-        case tf::TaskType::CUDAFLOW:
-        case tf::TaskType::SYCLFLOW:
-        case tf::TaskType::STATIC:
-        case tf::TaskType::DYNAMIC:
-        case tf::TaskType::CONDITION:
-        case tf::TaskType::ASYNC:
-        case tf::TaskType::UNDEFINED:
-        default:
-            std::cout << "Task name : " << task.name() << " | Hash : " << task.hash_value() << "\n";
-            nodes_hash.emplace(&node(task.name().c_str()), task.hash_value());
-            //nodes.emplace_back(ImGui::Widgets::Node<tf::Task>{*this, task.name().c_str(), &task, [](const tf::Task * task){}});
-            break;
-        }
+    ogdf::Graph g;
+    ogdf::GraphAttributes ga(g);
+    std::unordered_map<ImGui::Graph::Node const*, ogdf::node> matching{};
+
+
+    taskflow->for_each_task([this, &g, &matching](const tf::Task& task){
+            auto& n = node(task.name().c_str());
+            size_t hash = task.hash_value();
+            nodes_hash.emplace(&n,hash);
+            hash_nodes.emplace(hash, &n);
+            matching.emplace(&n, g.newNode());
     });
+
+    taskflow->for_each_task([this, &g, &matching](const tf::Task& task) {
+        auto& n = *hash_nodes.at(task.hash_value());
+        task.for_each_dependent([&n, this](tf::Task child) {
+            auto& m = *hash_nodes.at(child.hash_value());
+            link(m, "Output", n, "Input");
+            });
+        });
+
+
+    // Layout
+    for (auto v : g.nodes)
+    {
+        ga.width(v) = 200;
+        ga.height(v) = 50.0f;
+    }
+
+    ogdf::SugiyamaLayout SL;
+    SL.setRanking(new ogdf::OptimalRanking);
+    SL.setCrossMin(new ogdf::MedianHeuristic);
+
+    auto* ohl = new ogdf::OptimalHierarchyLayout;
+    ohl->layerDistance(30.0);
+    ohl->nodeDistance(25.0);
+    ohl->weightBalancing(0.8);
+    SL.setLayout(ohl);
+
+    SL.call(ga);
+
+    for (const auto& node : nodes)
+    {
+        auto v = matching.at(&node);
+        nodes_pos.emplace(&node, ImVec2{ static_cast<float>(ga.x(v)), static_cast<float>(ga.y(v)) });
+    }
 }

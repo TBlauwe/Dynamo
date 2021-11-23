@@ -23,10 +23,11 @@ namespace dynamo::widgets {
         void _render() const override ;
 
     private:
-        ogdf::Graph graph;
-        ogdf::GraphAttributes graph_attributes;
         flecs::entity entity;
+
         std::unordered_map<ImGui::Graph::Node const *, size_t> nodes_hash{};
+        std::unordered_map<size_t, ImGui::Graph::Node const*> hash_nodes{};
+        std::unordered_map<ImGui::Graph::Node const *, ImVec2> nodes_pos{};
     };
 
  /*   template<typename Tu, typename Tv>
