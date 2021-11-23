@@ -6,9 +6,12 @@
 
 namespace dynamo{
 
-    DynamoInspector::DynamoInspector(flecs::world& world):
-            world{world}
+    DynamoInspector::DynamoInspector(Simulation& sim):
+        sim{sim},
+        world{sim.world()}
     {
+        world.set<type::ActiveTasks>({ sim.executor.make_observer<TasksObs>() });
+
         agents_query = world.query<const type::Agent, type::GUI>();
         artefacts_query = world.query<const type::Artefact, type::GUI>();
         percepts_query = world.query<const type::Percept, type::GUI>();
@@ -24,30 +27,18 @@ namespace dynamo{
         world.observer<const type::Agent>("OnAdd_Agent_AddBrainViewer")
             .event(flecs::OnAdd)
             .each([](flecs::entity e, const type::Agent& _){
-                e.add<type::BrainViewer>();
+                e.set<type::BrainViewer>({e});
             });
 
         world.observer<type::ProcessHandle>("OnSet_Process_AddNodeToBrainViewer")
             .event(flecs::OnSet)
             .each([](flecs::entity e, type::ProcessHandle& handle) {
-            auto parent = e.get_object(flecs::ChildOf);
-            if (parent.has(flecs::Prefab))
-                return;
-            auto& bv = *parent.get_mut<type::BrainViewer>();
-            handle.taskflow->for_each_task([&bv](tf::Task task) {
-                auto& node_a = bv.viewer.node(task.name().c_str());
-                for (int i = 0; i < task.num_successors(); i++)
-                {
-                    node_a.input_pin("Input");
-                }
-                for (int i = 0; i < task.num_dependents(); i++)
-                {
-                    node_a.output_pin("Output");
-                }
-                });
+                auto parent = e.get_object(flecs::ChildOf);
+                if (parent.has(flecs::Prefab))
+                    return;
+                auto& viewer = parent.get_mut<type::BrainViewer>()->viewer;
+                viewer.compute(handle.taskflow);
             });
-
-
 
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)

@@ -6,18 +6,18 @@
 #include <dynamo/gui/widgets/plot.hpp>
 
 namespace dynamo{
-
     class DynamoInspector{
     private:
-        flecs::world& world;
+        Simulation&     sim;
+        flecs::world&   world;
 
-        widgets::EventScrollingPlot<size_t, float>       scrolling_plot_percepts{world, "Percepts", 1000};
+        widgets::EventScrollingPlot<size_t, float> scrolling_plot_percepts{world, "Percepts", 1000};
 
-        flecs::query<const type::Action, type::GUI> actions_query ;
-        flecs::query<const type::Agent, type::GUI> agents_query ;
-        flecs::query<const type::Artefact, type::GUI> artefacts_query ;
-        flecs::query<const type::Organisation, type::GUI> organisations_query ;
-        flecs::query<const type::Percept, type::GUI> percepts_query ;
+        flecs::query<const type::Action,        type::GUI> actions_query ;
+        flecs::query<const type::Agent,         type::GUI> agents_query ;
+        flecs::query<const type::Artefact,      type::GUI> artefacts_query ;
+        flecs::query<const type::Organisation,  type::GUI> organisations_query ;
+        flecs::query<const type::Percept,       type::GUI> percepts_query ;
 
         ImGuiTextFilter actions_list_filter;
         ImGuiTextFilter agents_list_filter;
@@ -26,7 +26,7 @@ namespace dynamo{
         ImGuiTextFilter percepts_list_filter;
 
     public:
-        explicit DynamoInspector(flecs::world& world);
+        explicit DynamoInspector(Simulation&);
 
         void show();
 

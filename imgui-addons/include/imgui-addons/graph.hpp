@@ -27,7 +27,7 @@ namespace ImGui{
             void render() const;
 
         protected:
-            inline unsigned int next_id() { return current_id++; }
+            inline size_t next_id() { return current_id++; }
         
         private:    
             virtual void _render() const = 0;
@@ -70,7 +70,7 @@ namespace ImGui{
         struct Node {
 
             GraphViewer*    graph;
-            size_t    id;
+            size_t          id;
             const char*     name;
             std::list<Pin>	input_pins{};
             std::list<Pin>	output_pins{};
@@ -347,17 +347,15 @@ namespace ImGui{
                 return nodes.emplace_back(this, name);
             }
 
-            inline void link(Node a, const char * output_name, Node b, const char * input_name)
+            inline void link(Node a, const char * output_name, Node b, const char* input_name)
             {
-                const auto& output_pin = a.output_pin(output_name); 
-                const auto& input_pin = b.input_pin(input_name);
-                links.emplace_back(next_id(), output_pin, input_pin);
+                links.emplace_back(next_id(), a.output_pin(output_name), b.input_pin(input_name));
             }
 
             inline void clear()
             {
                 nodes.clear();
-                links.clear();
+                links.clear();           
             }
 
         private:
@@ -405,9 +403,7 @@ namespace ImGui{
                 ImNodes::PopColorStyle();
             };
 
-        private:
-            ogdf::Graph graph{};
-
+        protected:
             std::list<Node> nodes{};
             std::vector<Link> links{};
         };

@@ -68,6 +68,33 @@ namespace dynamo {
 
     //Forward Declaration
     class AgentHandle;
+    template<typename T>
+    class Process;
+
+    //enum class ProcessType : int
+    //{
+    //    Simple = 0,
+    //    Composed,
+    //    Conditional,
+    //    Static,
+    //    Undefined
+    //};
+
+    //struct ProcessNode
+    //{
+    //    ProcessType type { ProcessType::Undefined };
+    //    size_t      hash { 0 };
+    //};
+
+    //// Graph structure
+    //typedef boost::adjacency_list<
+    //    boost::vecS, boost::vecS, boost::directedS,
+    //    boost::property<boost::vertex_bundle_t, ProcessNode>,
+    //    boost::no_property,
+    //    boost::no_property
+    //> FlowGraph;
+
+    //typedef boost::graph_traits<FlowGraph>::vertex_descriptor vertex_t;
     
     /**
     @class Process
@@ -77,6 +104,7 @@ namespace dynamo {
     class Process
     {
         friend class AgentModel;
+
         template <typename U>
         friend class Process;
 

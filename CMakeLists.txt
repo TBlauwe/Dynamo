@@ -74,6 +74,7 @@ endif()
 
 # Building
 # --------
+
 MESSAGE(STATUS "")
 MESSAGE(STATUS "Building targets")
 MESSAGE(STATUS "================")

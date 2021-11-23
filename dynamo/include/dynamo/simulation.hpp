@@ -21,6 +21,7 @@ namespace dynamo {
     */
     class Simulation
     {
+        friend class DynamoInspector;
     public:
         /**
         @brief Construct an empty simulation.

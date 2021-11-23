@@ -19,12 +19,15 @@ private:
     {
         auto t0 = emplace([](AgentHandle agent)
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
         );
         t0.name("Random task");
 
         auto t1 = emplace([](AgentHandle agent)
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
                 agent.set<type::Stress>({ 9.0f });
             }
         );
@@ -32,6 +35,8 @@ private:
 
         auto t2 = emplace([](AgentHandle agent)
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
                 agent.set<type::Stress>({ 12.0f });
             }
         );
@@ -56,13 +61,13 @@ private:
 class Sandbox : public app::Application{
 
 private:
-    dynamo::Simulation sim{};
-    FlecsInspector flecs_inspector {sim.world()};
-    dynamo::DynamoInspector dynamo_inspector {sim.world()};
+    dynamo::Simulation      sim{};
+    FlecsInspector          flecs_inspector     {sim.world()};
+    dynamo::DynamoInspector dynamo_inspector    {sim};
 
-    bool    is_enabled  {false};
-    bool    step_once   {false};
-    float   timescale   {1.0f};
+    bool    is_enabled      {false};
+    bool    step_once       {false};
+    float   timescale       {1.0f};
     float   min_timescale   {.05f};
     float   max_timescale   {10.0f};
 
@@ -70,7 +75,7 @@ public:
     Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox")
     {
-        const size_t number_of_agents = 100;
+        const size_t number_of_agents = 1;
         // -- Setup
         sim.world().import<module::BasicStress>();
 

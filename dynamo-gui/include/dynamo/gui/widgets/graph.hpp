@@ -11,16 +11,22 @@
 
 namespace dynamo::widgets {
     class BrainViewer : public ImGui::Graph::FlowGraph{ 
-        //tf::Taskflow* last_taskflow {nullptr};
+        tf::Taskflow* last_taskflow {nullptr};
 
     public:
-        explicit BrainViewer() : ImGui::Graph::FlowGraph(){}
+        explicit BrainViewer(flecs::entity e) : entity{ e }, ImGui::Graph::FlowGraph() {}
 
         void compute(tf::Taskflow* taskflow);
 
     private:
         void compute_graph(tf::Taskflow* taskflow);
-        //void _render() const override ;
+        void _render() const override ;
+
+    private:
+        ogdf::Graph graph;
+        ogdf::GraphAttributes graph_attributes;
+        flecs::entity entity;
+        std::unordered_map<ImGui::Graph::Node const *, size_t> nodes_hash{};
     };
 
  /*   template<typename Tu, typename Tv>
