@@ -32,7 +32,11 @@ namespace ImGui {
 
         GRAY_n = IM_COL32(70, 70, 70, 255),
         GRAY_h = IM_COL32(119, 119, 119, 255),
-        GRAY_s = IM_COL32(177, 177, 177, 255)
+        GRAY_s = IM_COL32(177, 177, 177, 255),
+
+        WHITE_n = IM_COL32(139, 139, 139, 255),
+        WHITE_h = IM_COL32(189, 180, 189, 255),
+        WHITE_s = IM_COL32(239, 239, 239, 255)
     };
 }
 

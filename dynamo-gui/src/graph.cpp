@@ -47,9 +47,9 @@ void dynamo::widgets::BrainViewer::_render() const
         ImNodes::PopColorStyle();
     }
 
-    ImNodes::PushColorStyle(ImNodesCol_Link, ImGui::Color::GRAY_n);
-    ImNodes::PushColorStyle(ImNodesCol_LinkHovered, ImGui::Color::GRAY_h);
-    ImNodes::PushColorStyle(ImNodesCol_LinkSelected, ImGui::Color::GRAY_s);
+    ImNodes::PushColorStyle(ImNodesCol_Link, ImGui::Color::WHITE_n);
+    ImNodes::PushColorStyle(ImNodesCol_LinkHovered, ImGui::Color::WHITE_h);
+    ImNodes::PushColorStyle(ImNodesCol_LinkSelected, ImGui::Color::WHITE_s);
     for (const auto& link : links)
     {
         link.render();
