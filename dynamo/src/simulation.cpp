@@ -5,6 +5,7 @@ dynamo::Simulation::Simulation() : Simulation(std::thread::hardware_concurrency(
 dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_threads } {
     _world.import<module::Core>();
     _world.import<module::GlobalPerception>();
+    _world.set<flecs::rest::Rest>({});
 
     agents_query = _world.query<dynamo::type::Agent>();
     _world.set<type::CommandsQueueHandle>({&commands_queue});
