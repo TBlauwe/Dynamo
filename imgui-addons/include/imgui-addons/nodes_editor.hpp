@@ -16,6 +16,14 @@
 
 namespace ImGui{
     namespace Flow {
+
+        struct Counter
+        {
+            size_t count{ 0 };
+
+            inline size_t next_id() { return count++; }
+        };
+
         class EditorContext {
             friend class Graph;
             friend class Node;
@@ -32,11 +40,7 @@ namespace ImGui{
             void begin() const;
             void end() const;
 
-        protected:
-            inline size_t next_id() { return current_id++; }
-
-        private:
-            size_t current_id { 0 };
+        public:
             ImNodesEditorContext* editor { nullptr };
         };
 
@@ -72,26 +76,26 @@ namespace ImGui{
 
         struct Node {
 
-            EditorContext*  context;
+            Counter*        counter;
             size_t          id;
             const char*     name;
             std::list<Pin>	input_pins{};
             std::list<Pin>	output_pins{};
 
-            Node(EditorContext* graph, const char * name) :
-                context  { context },
-                id     { graph->next_id() },
-                name   { name }
+            Node(Counter* counter, const char * name) :
+                counter { counter },
+                id      { counter->next_id()},
+                name    { name }
             {}
 
             inline Pin& input_pin(const char * _name)
             {
-                return input_pins.emplace_back(context->next_id(), _name);
+                return input_pins.emplace_back(counter->next_id(), _name);
             }
 
             inline Pin& output_pin(const char * _name)
             {
-                return output_pins.emplace_back(context->next_id(), _name);
+                return output_pins.emplace_back(counter->next_id(), _name);
             }
 
             ImVec2 render() const
@@ -348,11 +352,14 @@ namespace ImGui{
             Node& node(const char* name);
             void link(Node* a, const char* output_name, Node* b, const char* input_name);
             void clear();
+            void render() const;
 
-            virtual void render() const = 0;
+        private:
+            virtual void render_graph() const = 0;
 
         protected:
             EditorContext       context {};
+            Counter             id_count{};
             std::list<Node>     nodes {};
             std::vector<Link>   links {};
         };

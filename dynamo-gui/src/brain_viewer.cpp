@@ -5,13 +5,16 @@
 
 dynamo::widgets::BrainViewer::BrainViewer(flecs::entity e, tf::Taskflow* taskflow) :
     entity{ e }, taskflow{ taskflow }, ImGui::Flow::Graph()
-{}
+{
+    build();
+}
 
-void dynamo::widgets::BrainViewer::render() const
+void dynamo::widgets::BrainViewer::render_graph() const
 {
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;
     for (const auto& node : nodes)
     {
+        std::cout << "Called\n";
         { // SET STYLE
             if (active_tasks.contains(nodes_hash.at(&node)))
             {
@@ -75,7 +78,7 @@ void dynamo::widgets::BrainViewer::build() {
             auto n = hash_nodes.at(task.hash_value());
             auto no = matching.at(n);
             task.for_each_dependent(
-                [n, this, &matching, no , &g] (tf::Task child) mutable
+                [&n, this, &matching, &no , &g] (tf::Task child) mutable
                 {
                     auto m = hash_nodes.at(child.hash_value());
                     g.newEdge(matching.at(m), no);

@@ -11,19 +11,19 @@ ImGui::Flow::EditorContext::EditorContext() :
     style.PinCircleRadius   = 5.f;
 }
 
-ImGui::Flow::EditorContext::EditorContext(ImGui::Flow::EditorContext&& that) : current_id{current_id}, editor{std::exchange(that.editor, nullptr)}
+ImGui::Flow::EditorContext::EditorContext(ImGui::Flow::EditorContext&& that) : editor{std::exchange(that.editor, nullptr)}
 {}
 
 ImGui::Flow::EditorContext& ImGui::Flow::EditorContext::operator=(ImGui::Flow::EditorContext&& that)
 {
     std::swap(editor, that.editor);
-    std::swap(current_id, that.current_id);
     return *this;
 }
 
 ImGui::Flow::EditorContext::~EditorContext()
 {
-    ImNodes::EditorContextFree(editor);
+    if(editor != nullptr)
+        ImNodes::EditorContextFree(editor);
 }
 
 void ImGui::Flow::EditorContext::begin() const
@@ -40,12 +40,19 @@ void ImGui::Flow::EditorContext::end() const
 
 ImGui::Flow::Node& ImGui::Flow::Graph::node(const char* name)
 {
-    return nodes.emplace_back(&context, name);
+    return nodes.emplace_back(&id_count, name);
 }
 
 void ImGui::Flow::Graph::link(Node* a, const char* output_name, Node* b, const char* input_name)
 {
-    links.emplace_back(context.next_id(), a->output_pin(output_name), b->input_pin(input_name));
+    links.emplace_back(id_count.next_id(), a->output_pin(output_name), b->input_pin(input_name));
+}
+
+void ImGui::Flow::Graph::render() const
+{
+    context.begin();
+    this->render_graph();
+    context.end();
 }
 
 inline void ImGui::Flow::Graph::clear()

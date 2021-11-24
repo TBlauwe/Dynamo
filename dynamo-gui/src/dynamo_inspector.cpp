@@ -4,6 +4,8 @@
 #include <imnodes.h>
 #include <IconsFontAwesome5.h>
 
+struct tag{};
+
 namespace dynamo{
 
     DynamoInspector::DynamoInspector(Simulation& sim):
@@ -11,7 +13,6 @@ namespace dynamo{
         world{sim.world()}
     {
         world.set<type::ActiveTasks>({ sim.executor.make_observer<TasksObs>() });
-
         agents_query        = world.query<const type::Agent, type::GUI>();
         artefacts_query     = world.query<const type::Artefact, type::GUI>();
         percepts_query      = world.query<const type::Percept, type::GUI>();
@@ -24,21 +25,15 @@ namespace dynamo{
         add_tag_to<type::GUI, type::Organisation>(world, "GUI", "Organisation");
         add_tag_to<type::GUI, type::Percept>(world, "GUI", "Percept");
 
-        //world.observer<>("OnAdd_Agent_AddBrainViewer")
-        //    .event(flecs::OnAdd)
-        //    .each([](flecs::entity e, const type::Agent& _){
-        //        e.set<type::BrainViewer>({e});
-        //    });
 
-        //world.observer<type::ProcessHandle>("OnSet_Process_AddNodeToBrainViewer")
-        //    .event(flecs::OnSet)
-        //    .each([](flecs::entity e, type::ProcessHandle& handle) {
-        //        auto parent = e.get_object(flecs::ChildOf);
-        //        if (parent.has(flecs::Prefab))
-        //            return;
-        //        auto& viewer = parent.get_mut<type::BrainViewer>()->viewer;
-        //        viewer.compute(handle.taskflow);
-        //    });
+        world.observer<type::ProcessHandle>("OnSet_Process_AddNodeToBrainViewer")
+            .event(flecs::OnSet)
+            .each([](flecs::entity e, type::ProcessHandle& handle) {
+                auto parent = e.get_object(flecs::ChildOf);
+                if (parent.has(flecs::Prefab))
+                    return;
+               parent.set<type::BrainViewer>({parent, handle.taskflow});
+            });
 
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)
