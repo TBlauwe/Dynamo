@@ -17,59 +17,41 @@ public:
 private:
     void build() override
     {
-        {
-        auto t0 = emplace([](AgentHandle agent)
-            {
-            }
-        );
-        t0.name("Random task");
+        // -- Create simple tasks with no behaviours
+        // Empty task
+        auto t0 = emplace([](AgentHandle agent) {});
+        t0.name("Empty task");
 
-        auto t1 = emplace([](AgentHandle agent)
-            {
-                agent.set<type::Stress>({ 9.0f });
-            }
-        );
-        t1.name("Random task");
+        // Task mutating the agent (deferred)
+        auto t1 = emplace([](AgentHandle agent) { agent.set<type::Stress>({ 9.0f }); });
+        t1.name("Set stress to 9");
 
-        auto t2 = emplace([](AgentHandle agent)
-            {
-                agent.set<type::Stress>({ 12.0f });
-            }
-        );
-        t2.name("Random task");
+        // Task also mutating the agent (deferred)
+        auto t2 = emplace([](AgentHandle agent) { agent.set<type::Stress>({ 12.0f }); });
+        t2.name("Set stress to 12");
 
-        t0.succeed(t1, t2);
-        }
-
-        auto t0 = emplace([](AgentHandle agent)
-            {
-            }
-        );
-        t0.name("Random task");
-
-        auto t1 = emplace([](AgentHandle agent)
-            {
-                agent.set<type::Stress>({ 9.0f });
-            }
-        );
-        t1.name("Random task");
-
-        auto t2 = emplace([](AgentHandle agent)
-            {
-                agent.set<type::Stress>({ 12.0f });
-            }
-        );
-        t2.name("Random task");
-
+        // For t0 to launch, t1 and t2 must be finished
         t0.succeed(t1, t2);
 
+        // -- Create complex tasks with changing behaviour
+        // Process with a random strategy that returns a string
+        // and has no inputs
+        // NOTE: A random strategy selects randomly a behaviour
+        // and execute it. Complex strategy can be defined to take
+        // into account one or multiple behaviours
         auto process_a = process<strat::Random, std::string>();
         process_a.name("Random string");
-        process_a.succeed(t0);
+        process_a.succeed(t0); // This process is dependant of t0
+
+        // Process with a random strategy that returns an int
+        // and has no inputs
         auto process_b = process<strat::Random, int>();
         process_b.name("Random int");
+
+        // Process with a random strategy that returns a string
+        // and has two inputs (string and int)
         auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
-        process_c.name("Random aggregator");
+        process_c.name("Aggregate");
 
         //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
         //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);

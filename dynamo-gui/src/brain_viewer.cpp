@@ -14,7 +14,6 @@ void dynamo::widgets::BrainViewer::render_graph() const
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;
     for (const auto& node : nodes)
     {
-        std::cout << "Called\n";
         { // SET STYLE
             if (active_tasks.contains(nodes_hash.at(&node)))
             {
