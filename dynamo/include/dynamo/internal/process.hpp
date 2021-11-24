@@ -384,6 +384,7 @@ namespace dynamo {
         tf::Task emplace(T&& t)
         {
             return taskflow.emplace([a = this->agent, &t]() {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 std::forward<T>(t)(a);
             });
         };
@@ -397,6 +398,7 @@ namespace dynamo {
             Process<TOutput> p(taskflow);
             p.task.work([strat = this->strategies, a = this->agent, ... args = inputs.result, res = p.result]() mutable
             {
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 *res = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
                 }),
   

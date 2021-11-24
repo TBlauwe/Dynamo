@@ -92,8 +92,8 @@ void dynamo::widgets::BrainViewer::compute_graph(tf::Taskflow* taskflow) {
     // Layout
     for (auto v : g.nodes)
     {
-        ga.width(v) = 50;
-        ga.height(v) = 20.0f;
+        ga.width(v) = 100.0f;
+        ga.height(v) = 100.0f;
     }
 
     ogdf::SugiyamaLayout SL;
@@ -101,8 +101,8 @@ void dynamo::widgets::BrainViewer::compute_graph(tf::Taskflow* taskflow) {
     SL.setCrossMin(new ogdf::MedianHeuristic);
 
     auto* ohl = new ogdf::OptimalHierarchyLayout;
-    ohl->layerDistance(300.0);
-    ohl->nodeDistance(100.0);
+    ohl->layerDistance(200.0);
+    ohl->nodeDistance(200.0);
     ohl->weightBalancing(0.8);
     SL.setLayout(ohl);
     SL.call(ga);

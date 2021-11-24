@@ -17,17 +17,15 @@ public:
 private:
     void build() override
     {
+        {
         auto t0 = emplace([](AgentHandle agent)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
             }
         );
         t0.name("Random task");
 
         auto t1 = emplace([](AgentHandle agent)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
                 agent.set<type::Stress>({ 9.0f });
             }
         );
@@ -35,8 +33,29 @@ private:
 
         auto t2 = emplace([](AgentHandle agent)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                agent.set<type::Stress>({ 12.0f });
+            }
+        );
+        t2.name("Random task");
 
+        t0.succeed(t1, t2);
+        }
+
+        auto t0 = emplace([](AgentHandle agent)
+            {
+            }
+        );
+        t0.name("Random task");
+
+        auto t1 = emplace([](AgentHandle agent)
+            {
+                agent.set<type::Stress>({ 9.0f });
+            }
+        );
+        t1.name("Random task");
+
+        auto t2 = emplace([](AgentHandle agent)
+            {
                 agent.set<type::Stress>({ 12.0f });
             }
         );
@@ -75,7 +94,7 @@ public:
     Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox")
     {
-        const size_t number_of_agents = 1;
+        const size_t number_of_agents = 10;
         // -- Setup
         sim.world().import<module::BasicStress>();
 
