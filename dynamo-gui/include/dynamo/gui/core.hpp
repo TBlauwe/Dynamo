@@ -1,10 +1,12 @@
-#ifndef DYNAMO_CORE_HPP
-#define DYNAMO_CORE_HPP
+#ifndef DYNAMO_GUI_CORE_HPP
+#define DYNAMO_GUI_CORE_HPP
 
-#include <dynamo/gui/widgets/graph.hpp>
-#include <taskflow/taskflow.hpp>
 #include <mutex>
 #include <string>
+
+#include <taskflow/taskflow.hpp>
+
+#include <dynamo/gui/widgets/brain_viewer.hpp>
 
 namespace dynamo
 {
@@ -55,8 +57,8 @@ namespace dynamo
         {
             widgets::BrainViewer viewer;
 
-            BrainViewer() : viewer(0) {};
-            BrainViewer(flecs::entity e) : viewer(e) {};
+            BrainViewer() : viewer() {};
+            BrainViewer(flecs::entity e, tf::Taskflow* taskflow) : viewer(e, taskflow) {};
         };
 
         struct ActiveTasks
@@ -66,4 +68,4 @@ namespace dynamo
     }
 }
 
-#endif //DYNAMO_CORE_HPP
+#endif //DYNAMO_GUI_CORE_HPP

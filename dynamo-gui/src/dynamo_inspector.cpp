@@ -12,11 +12,11 @@ namespace dynamo{
     {
         world.set<type::ActiveTasks>({ sim.executor.make_observer<TasksObs>() });
 
-        agents_query = world.query<const type::Agent, type::GUI>();
-        artefacts_query = world.query<const type::Artefact, type::GUI>();
-        percepts_query = world.query<const type::Percept, type::GUI>();
+        agents_query        = world.query<const type::Agent, type::GUI>();
+        artefacts_query     = world.query<const type::Artefact, type::GUI>();
+        percepts_query      = world.query<const type::Percept, type::GUI>();
         organisations_query = world.query<const type::Organisation, type::GUI>();
-        actions_query = world.query<const type::Action, type::GUI>();
+        actions_query       = world.query<const type::Action, type::GUI>();
 
         add_tag_to<type::GUI, type::Action>(world, "GUI", "Action");
         add_tag_to<type::GUI, type::Agent>(world, "GUI", "Agent");
@@ -24,21 +24,21 @@ namespace dynamo{
         add_tag_to<type::GUI, type::Organisation>(world, "GUI", "Organisation");
         add_tag_to<type::GUI, type::Percept>(world, "GUI", "Percept");
 
-        world.observer<const type::Agent>("OnAdd_Agent_AddBrainViewer")
-            .event(flecs::OnAdd)
-            .each([](flecs::entity e, const type::Agent& _){
-                e.set<type::BrainViewer>({e});
-            });
+        //world.observer<>("OnAdd_Agent_AddBrainViewer")
+        //    .event(flecs::OnAdd)
+        //    .each([](flecs::entity e, const type::Agent& _){
+        //        e.set<type::BrainViewer>({e});
+        //    });
 
-        world.observer<type::ProcessHandle>("OnSet_Process_AddNodeToBrainViewer")
-            .event(flecs::OnSet)
-            .each([](flecs::entity e, type::ProcessHandle& handle) {
-                auto parent = e.get_object(flecs::ChildOf);
-                if (parent.has(flecs::Prefab))
-                    return;
-                auto& viewer = parent.get_mut<type::BrainViewer>()->viewer;
-                viewer.compute(handle.taskflow);
-            });
+        //world.observer<type::ProcessHandle>("OnSet_Process_AddNodeToBrainViewer")
+        //    .event(flecs::OnSet)
+        //    .each([](flecs::entity e, type::ProcessHandle& handle) {
+        //        auto parent = e.get_object(flecs::ChildOf);
+        //        if (parent.has(flecs::Prefab))
+        //            return;
+        //        auto& viewer = parent.get_mut<type::BrainViewer>()->viewer;
+        //        viewer.compute(handle.taskflow);
+        //    });
 
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)

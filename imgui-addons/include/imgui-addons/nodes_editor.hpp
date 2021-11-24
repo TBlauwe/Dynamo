@@ -1,36 +1,39 @@
-#ifndef IMGUI_ADDONS_GRAPH_HPP
-#define IMGUI_ADDONS_GRAPH_HPP
+#ifndef IMGUI_ADDONS_NODES_EDITOR_HPP
+#define IMGUI_ADDONS_NODES_EDITOR_HPP
 
-#include <imnodes.h>
-#include <imgui-addons/imgui-addons.hpp>
+
 #include <string>
 #include <vector>
 #include <unordered_set>
+
 #include <ogdf/layered/MedianHeuristic.h>
 #include <ogdf/layered/OptimalHierarchyLayout.h>
 #include <ogdf/layered/OptimalRanking.h>
 #include <ogdf/layered/SugiyamaLayout.h>
+#include <imnodes.h>
+
+#include <imgui-addons/imgui-addons.hpp>
 
 namespace ImGui{
-
-    namespace Graph {
-        class GraphViewer {
+    namespace Flow {
+        class EditorContext {
+            friend class Graph;
             friend class Node;
 
         public:
-            explicit GraphViewer(); 
-            GraphViewer(const GraphViewer& that);
-            GraphViewer& operator=(const GraphViewer& that);
-            ~GraphViewer();                        
+            explicit EditorContext(); 
+            EditorContext(const EditorContext& that) = delete;
+            EditorContext(EditorContext&& that);
+            EditorContext& operator=(const EditorContext& that) = delete;
+            EditorContext& operator=(EditorContext&& that);
+            ~EditorContext();                        
 
         public:
-            void render() const;
+            void begin() const;
+            void end() const;
 
         protected:
             inline size_t next_id() { return current_id++; }
-        
-        private:    
-            virtual void _render() const = 0;
 
         private:
             size_t current_id { 0 };
@@ -69,26 +72,26 @@ namespace ImGui{
 
         struct Node {
 
-            GraphViewer*    graph;
+            EditorContext*  context;
             size_t          id;
             const char*     name;
             std::list<Pin>	input_pins{};
             std::list<Pin>	output_pins{};
 
-            Node(GraphViewer* graph, const char * name) :
-                graph  { graph },
+            Node(EditorContext* graph, const char * name) :
+                context  { context },
                 id     { graph->next_id() },
                 name   { name }
             {}
 
             inline Pin& input_pin(const char * _name)
             {
-                return input_pins.emplace_back(graph->next_id(), _name);
+                return input_pins.emplace_back(context->next_id(), _name);
             }
 
             inline Pin& output_pin(const char * _name)
             {
-                return output_pins.emplace_back(graph->next_id(), _name);
+                return output_pins.emplace_back(context->next_id(), _name);
             }
 
             ImVec2 render() const
@@ -337,75 +340,21 @@ namespace ImGui{
     //    };
     //}
 
-        class FlowGraph : public GraphViewer
+        class Graph
         {
         public:
-            explicit FlowGraph() : GraphViewer(){}
+            Graph() = default;
 
-            inline Node& node(const char * name)
-            {
-                return nodes.emplace_back(this, name);
-            }
+            Node& node(const char* name);
+            void link(Node* a, const char* output_name, Node* b, const char* input_name);
+            void clear();
 
-            inline void link(Node* a, const char * output_name, Node* b, const char* input_name)
-            {
-                links.emplace_back(next_id(), a->output_pin(output_name), b->input_pin(input_name));
-            }
-
-            inline void clear()
-            {
-                nodes.clear();
-                links.clear();           
-            }
-
-        private:
-            void _render() const override 
-            {
-
-                const ImVec2 origin (50.f, 50.f );
-                const ImVec2 offset (200.f, 20.f );
-
-                ImVec2 cursor(origin);
-                ImVec2 dimensions (0.0f, 0.0f);
-                float max_length = 0.f;
-
-                for (const auto& node : nodes) 
-                {
-                    { // SET STYLE
-                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::BLUE_n);
-                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::BLUE_h);
-                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::BLUE_s);
-                    }
-
-                    dimensions = node.render();
-
-                    { // SET POSITION
-                        ImNodes::SetNodeGridSpacePos(node.id, cursor);
-                        if (max_length < dimensions.x)
-                            max_length = dimensions.x;
-                        cursor.y += dimensions.y + offset.y;
-                    }
-
-                    ImNodes::PopColorStyle();
-                    ImNodes::PopColorStyle();
-                    ImNodes::PopColorStyle();
-                }
-
-                ImNodes::PushColorStyle(ImNodesCol_Link, ImGui::Color::GREEN_n);
-                ImNodes::PushColorStyle(ImNodesCol_LinkHovered, ImGui::Color::GREEN_h);
-                ImNodes::PushColorStyle(ImNodesCol_LinkSelected, ImGui::Color::GREEN_s);
-                for (const auto& link : links)
-                {
-                    link.render();
-                }
-                ImNodes::PopColorStyle();
-                ImNodes::PopColorStyle();
-                ImNodes::PopColorStyle();
-            };
+            virtual void render() const = 0;
 
         protected:
-            std::list<Node> nodes{};
-            std::vector<Link> links{};
+            EditorContext       context {};
+            std::list<Node>     nodes {};
+            std::vector<Link>   links {};
         };
     }
 }

@@ -5,7 +5,7 @@ add_library(dynamo-gui
         src/flecs_inspector.cpp
         src/entity_widgets.cpp
         src/component_widgets.cpp
-        src/graph.cpp
+        src/brain_viewer.cpp
         ${HEADER_LIST})
 target_include_directories(dynamo-gui PUBLIC include)
 target_link_libraries(dynamo-gui PUBLIC dynamo imgui-addons Boost::boost)

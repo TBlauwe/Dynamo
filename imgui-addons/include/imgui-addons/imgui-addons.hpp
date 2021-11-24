@@ -2,6 +2,7 @@
 #define DYNAMO_IMGUI_ADDONS_HPP
 
 #include <string>
+
 #include <imgui.h>
 #include <implot.h>
 #include <implot_internal.h>

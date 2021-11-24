@@ -1,33 +1,33 @@
-#ifndef DYNAMO_GRAPH_HPP
-#define DYNAMO_GRAPH_HPP
+#ifndef DYNAMO_GUI_BRAIN_VIEWER_HPP
+#define DYNAMO_GUI_BRAIN_VIEWER_HPP
 
-#include <imgui-addons/graph.hpp>
-#include <dynamo/strategies/influence_graph.hpp>
 #include <taskflow/taskflow.hpp>
 #include <ogdf/layered/MedianHeuristic.h>
 #include <ogdf/layered/OptimalHierarchyLayout.h>
 #include <ogdf/layered/OptimalRanking.h>
 #include <ogdf/layered/SugiyamaLayout.h>
 
+#include <imgui-addons/nodes_editor.hpp>
+#include <dynamo/strategies/influence_graph.hpp>
+
 namespace dynamo::widgets {
-    class BrainViewer : public ImGui::Graph::FlowGraph{ 
-        tf::Taskflow* last_taskflow {nullptr};
-
+    class BrainViewer : public ImGui::Flow::Graph{ 
     public:
-        explicit BrainViewer(flecs::entity e) : entity{ e }, ImGui::Graph::FlowGraph() {}
+        BrainViewer() = default;
+        BrainViewer(flecs::entity, tf::Taskflow*);
 
-        void compute(tf::Taskflow* taskflow);
-
-    private:
-        void compute_graph(tf::Taskflow* taskflow);
-        void _render() const override ;
+        void render() const override;
 
     private:
-        flecs::entity entity;
+        void build();
 
-        std::unordered_map<ImGui::Graph::Node const *, size_t> nodes_hash{};
-        std::unordered_map<size_t, ImGui::Graph::Node const*> hash_nodes{};
-        std::unordered_map<ImGui::Graph::Node const *, ImVec2> nodes_pos{};
+    private:
+        flecs::entity entity { 0 };
+        tf::Taskflow* taskflow { nullptr };
+
+        std::unordered_map<ImGui::Flow::Node const *, size_t> nodes_hash{};
+        std::unordered_map<size_t, ImGui::Flow::Node const*> hash_nodes{};
+        std::unordered_map<ImGui::Flow::Node const *, ImVec2> nodes_pos{};
     };
 
  /*   template<typename Tu, typename Tv>
@@ -85,4 +85,4 @@ namespace dynamo::widgets {
     };*/
 }
 
-#endif //DYNAMO_GRAPH_HPP
+#endif //DYNAMO_GUI_BRAIN_VIEWER_HPP

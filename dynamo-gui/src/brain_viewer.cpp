@@ -1,18 +1,13 @@
-#include <dynamo/gui/widgets/graph.hpp>
-#include <dynamo/gui/core.hpp>
 #include <string>
 
-void dynamo::widgets::BrainViewer::compute(tf::Taskflow* taskflow) {
-    if(taskflow == nullptr){
-        return;
-    }
+#include <dynamo/gui/widgets/brain_viewer.hpp>
+#include <dynamo/gui/core.hpp>
 
-    if(taskflow != last_taskflow){
-        compute_graph(taskflow);
-    }
-}
+dynamo::widgets::BrainViewer::BrainViewer(flecs::entity e, tf::Taskflow* taskflow) :
+    entity{ e }, taskflow{ taskflow }, ImGui::Flow::Graph()
+{}
 
-void dynamo::widgets::BrainViewer::_render() const
+void dynamo::widgets::BrainViewer::render() const
 {
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;
     for (const auto& node : nodes)
@@ -33,7 +28,6 @@ void dynamo::widgets::BrainViewer::_render() const
         }
 
         ImVec2 dimensions = node.render();
-
 
         { // SET POSITION
 
@@ -59,35 +53,37 @@ void dynamo::widgets::BrainViewer::_render() const
     ImNodes::PopColorStyle();
 }
 
-void dynamo::widgets::BrainViewer::compute_graph(tf::Taskflow* taskflow) {
-    clear();
-    nodes_hash.clear();
-    hash_nodes.clear();
-    nodes_pos.clear();
-    last_taskflow = taskflow;
-
+void dynamo::widgets::BrainViewer::build() {
     ogdf::Graph g;
     ogdf::GraphAttributes ga(g);
-    std::unordered_map<ImGui::Graph::Node const*, ogdf::node> matching{};
+    std::unordered_map<ImGui::Flow::Node const*, ogdf::node> matching{};
 
-    taskflow->for_each_task([this, &g, &matching](const tf::Task& task){
+    taskflow->for_each_task(
+        [this, &g, &matching](const tf::Task& task)
+        {
             auto& n = node(task.name().c_str());
             size_t hash = task.hash_value();
             nodes_hash.emplace(&n,hash);
             hash_nodes.emplace(hash, &n);
             matching.emplace(&n, g.newNode());
-    });
+        }
+    );
 
-    taskflow->for_each_task([this, &g, &matching](tf::Task task) mutable {
-        auto n = hash_nodes.at(task.hash_value());
-        auto no = matching.at(n);
-        task.for_each_dependent([n, this, &matching, no , &g] (tf::Task child) mutable {
-            auto m = hash_nodes.at(child.hash_value());
-            g.newEdge(matching.at(m), no);
-            link(const_cast<ImGui::Graph::Node*>(m), "Output", const_cast<ImGui::Graph::Node*>(n), "Input");
-            });
-        });
-
+    taskflow->for_each_task(
+        [this, &g, &matching](tf::Task task) mutable
+        {
+            auto n = hash_nodes.at(task.hash_value());
+            auto no = matching.at(n);
+            task.for_each_dependent(
+                [n, this, &matching, no , &g] (tf::Task child) mutable
+                {
+                    auto m = hash_nodes.at(child.hash_value());
+                    g.newEdge(matching.at(m), no);
+                    link(const_cast<ImGui::Flow::Node*>(m), "Output", const_cast<ImGui::Flow::Node*>(n), "Input");
+                }
+            );
+        }
+    );
 
     // Layout
     for (auto v : g.nodes)

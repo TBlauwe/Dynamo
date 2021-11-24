@@ -1,5 +1,5 @@
-#ifndef DYNAMO_CORE_H
-#define DYNAMO_CORE_H
+#ifndef DYNAMO_CORE_HPP
+#define DYNAMO_CORE_HPP
 
 #include <vector>
 
@@ -26,4 +26,4 @@ namespace dynamo::module {
     };
 }
 
-#endif //DYNAMO_CORE_H
+#endif //DYNAMO_CORE_HPP

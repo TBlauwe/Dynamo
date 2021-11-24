@@ -1,9 +1,13 @@
-#include <dynamo/gui/core.hpp>
 #include <dynamo/gui/widgets/entity_widgets.hpp>
-#include <dynamo/gui/widgets/component_widgets.hpp>
+
+
+
 #include <imgui.h>
 #include <IconsFontAwesome5.h>
 #include <spdlog/fmt/bundled/format.h>
+
+#include <dynamo/gui/core.hpp>
+#include <dynamo/gui/widgets/component_widgets.hpp>
 
 namespace dynamo::widgets {
     void inspect(flecs::entity& entity){
