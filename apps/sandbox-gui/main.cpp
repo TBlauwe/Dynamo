@@ -14,7 +14,6 @@ public:
 
     virtual constexpr const char* name() const { return "MySuperReasonner"; }
 
-private:
     void build() override
     {
         // -- Create simple tasks with no behaviours

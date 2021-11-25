@@ -18,6 +18,11 @@ const ImGui::Flow::Node * dynamo::widgets::BrainViewer::find_node(int i) const
         return &(*it);
 }
 
+size_t dynamo::widgets::BrainViewer::find_task(const ImGui::Flow::Node * const node) const
+{
+    return nodes_hash.at(node);
+}
+
 void dynamo::widgets::BrainViewer::render_graph() const
 {
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;

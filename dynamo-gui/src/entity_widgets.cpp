@@ -112,48 +112,55 @@ namespace dynamo::widgets {
             return;
         }
         ImGui::BeginGroup();
-        if (entity.has<type::BrainViewer>())
+        ImGui::BeginChild("NodesEditorView", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1));
+        if (ImGui::BeginTable("NodesEditor", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders))
         {
-            ImGui::BeginChild("NodesEditorView", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1));
-            if (ImGui::BeginTable("NodesEditor", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders))
+            ImGui::TableSetupColumn("Brain viewer", ImGuiTableColumnFlags_WidthStretch, 480);
+            ImGui::TableSetupColumn("Process inspector");
+            ImGui::TableHeadersRow();
             {
-                ImGui::TableSetupColumn("Brain viewer", ImGuiTableColumnFlags_WidthStretch, 480);
-                ImGui::TableSetupColumn("Process inspector");
-                ImGui::TableHeadersRow();
-                ImGui::TableNextRow();
-                {
-                    const dynamo::widgets::BrainViewer* current_viewer = nullptr;
-                    ImGui::TableSetColumnIndex(0);
+                entity.children([](flecs::entity child)
                     {
-                         if (ImGui::BeginTabBar("ProcessViewer"))
+                        if (child.has<type::BrainViewer>())
                         {
-                            if (ImGui::BeginTabItem("Overall"))
+                            const dynamo::widgets::BrainViewer* current_viewer = nullptr;
+                            const dynamo::type::ProcessDetails* process_details = nullptr;
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
                             {
-                                current_viewer = &entity.get<type::BrainViewer>()->viewer;
-                                current_viewer->render();
-                                ImGui::EndTabItem();
+                                if (ImGui::BeginTabBar("ProcessViewer"))
+                                {
+                                    if (ImGui::BeginTabItem("Overall"))
+                                    {
+                                        current_viewer = &child.get<type::BrainViewer>()->viewer;
+                                        process_details = child.get<type::ProcessDetails>();
+                                        current_viewer->render();
+                                        ImGui::EndTabItem();
+                                    }
+                                    ImGui::EndTabBar();
+                                }
                             }
-                            ImGui::EndTabBar();
+                            ImGui::TableSetColumnIndex(1);
+                            {
+                                const int num_selected_nodes = ImNodes::NumSelectedNodes();
+                                if (num_selected_nodes > 0)
+                                {
+                                    std::vector<int> selected_nodes;
+                                    selected_nodes.resize(num_selected_nodes);
+                                    ImNodes::GetSelectedNodes(selected_nodes.data());
+                                    const ImGui::Flow::Node* node = current_viewer->find_node(selected_nodes[0]);
+                                    auto any_process = process_details->find(current_viewer->find_task(node));
+                                    ImGui::Text("Node : %s", node->name);
+                                    ImGui::Text("Number of inputs : %d", any_process.);
+                                }
+                            }
                         }
                     }
-                    ImGui::TableSetColumnIndex(1);
-                    {
-                        const int num_selected_nodes = ImNodes::NumSelectedNodes();
-                        if (num_selected_nodes > 0)
-                        {  
-                            std::vector<int> selected_nodes;
-                            selected_nodes.resize(num_selected_nodes);
-                            ImNodes::GetSelectedNodes(selected_nodes.data());
-                            const ImGui::Flow::Node * node = current_viewer->find_node(selected_nodes[0]);
-                            ImGui::Text("Node : %s", node->name);
-                        }
-                    }
-                }
-                ImGui::EndTable();
+                );
             }
-            ImGui::EndChild();
+            ImGui::EndTable();
         }
-
+        ImGui::EndChild();
         inspect(entity);
         ImGui::EndGroup();
         ImGui::End();

@@ -11,11 +11,9 @@ using namespace dynamo;
 class SimpleReasonner : public AgentModel
 {
 public:
-    SimpleReasonner(Strategies const * const strategies, AgentHandle agent) : AgentModel(strategies, agent) {}
+    using AgentModel::AgentModel;
 
     virtual constexpr const char* name() const { return "MySuperReasonner"; }
-
-private:
 
     void build() override
     {

@@ -357,11 +357,15 @@ namespace dynamo {
         AgentModel(Strategies const * const  strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
 
         /**
+        @brief Pure virtual function used to build a graph of cognitives processes.
+        */
+        virtual void build() = 0;
+
+        /**
         @brief Implicit conversion operator to convert it into taskflow.
         */
         inline operator tf::Taskflow && ()
         {
-            build();
             taskflow.name(name());
             return std::move(taskflow);
         }
@@ -378,6 +382,11 @@ namespace dynamo {
         @brief Pure virtual function to return the name of this flow (for visualization).
         */
         virtual constexpr const char* name() const = 0;
+
+        std::unordered_map<size_t, std::any> process_details() const
+        {
+            return map_task_to_process;
+        }
 
     protected:
 
@@ -421,10 +430,6 @@ namespace dynamo {
         }
 
     private:
-        /**
-        @brief Pure virtual function used to build a graph of cognitives processes.
-        */
-        virtual void build() = 0;
 
         Strategies const * const strategies;
         AgentHandle agent;

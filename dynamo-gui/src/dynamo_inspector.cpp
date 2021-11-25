@@ -32,7 +32,7 @@ namespace dynamo{
                 auto parent = e.get_object(flecs::ChildOf);
                 if (parent.has(flecs::Prefab))
                     return;
-               parent.set<type::BrainViewer>({parent, handle.taskflow});
+               e.set<type::BrainViewer>({e, handle.taskflow});
             });
 
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")

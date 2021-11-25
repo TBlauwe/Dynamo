@@ -17,6 +17,7 @@ namespace dynamo::widgets {
         BrainViewer(flecs::entity, tf::Taskflow*);
 
         const ImGui::Flow::Node * find_node(int i) const;
+        size_t find_task(const ImGui::Flow::Node * const) const;
 
     private:
         void render_graph() const override;

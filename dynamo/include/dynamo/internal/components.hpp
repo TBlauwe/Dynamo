@@ -105,6 +105,22 @@ namespace dynamo::type {
         tf::Taskflow* taskflow;
     };
 
+    /**
+    @brief Component with a map to retrieve the process corresponding to a task.
+    */
+    struct ProcessDetails
+    {
+        /**
+        @brief Map of task's hash to a process (encapsulated in an any, as there multiple type of processes).
+        */
+        std::unordered_map<size_t, std::any> container;
+
+        std::any find(size_t hash) const
+        {
+            return container.at(hash);
+        }
+    };
+
     using CommandsQueue = ThreadsafeQueue<std::function<void(flecs::world&)>>;
     /**
     @brief Component holding a ref to command queue to delay commands set during async tasks.
