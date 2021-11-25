@@ -151,7 +151,6 @@ namespace dynamo::widgets {
                                     const ImGui::Flow::Node* node = current_viewer->find_node(selected_nodes[0]);
                                     auto any_process = process_details->find(current_viewer->find_task(node));
                                     ImGui::Text("Node : %s", node->name);
-                                    ImGui::Text("Number of inputs : %d", any_process.);
                                 }
                             }
                         }
