@@ -9,6 +9,15 @@ dynamo::widgets::BrainViewer::BrainViewer(flecs::entity e, tf::Taskflow* taskflo
     build();
 }
 
+const ImGui::Flow::Node * dynamo::widgets::BrainViewer::find_node(int i) const
+{
+    auto it = std::find_if(nodes.begin(), nodes.end(), [i](const ImGui::Flow::Node& node) {return node.id == i; });
+    if (it == nodes.end())
+        return nullptr;
+    else
+        return &(*it);
+}
+
 void dynamo::widgets::BrainViewer::render_graph() const
 {
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;

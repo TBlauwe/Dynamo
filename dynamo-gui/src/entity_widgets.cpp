@@ -122,13 +122,15 @@ namespace dynamo::widgets {
                 ImGui::TableHeadersRow();
                 ImGui::TableNextRow();
                 {
+                    const dynamo::widgets::BrainViewer* current_viewer = nullptr;
                     ImGui::TableSetColumnIndex(0);
                     {
-                        if (ImGui::BeginTabBar("ProcessViewer"))
+                         if (ImGui::BeginTabBar("ProcessViewer"))
                         {
                             if (ImGui::BeginTabItem("Overall"))
                             {
-                                entity.get<type::BrainViewer>()->viewer.render();
+                                current_viewer = &entity.get<type::BrainViewer>()->viewer;
+                                current_viewer->render();
                                 ImGui::EndTabItem();
                             }
                             ImGui::EndTabBar();
@@ -136,7 +138,15 @@ namespace dynamo::widgets {
                     }
                     ImGui::TableSetColumnIndex(1);
                     {
-                        ImGui::Text("Process");
+                        const int num_selected_nodes = ImNodes::NumSelectedNodes();
+                        if (num_selected_nodes > 0)
+                        {  
+                            std::vector<int> selected_nodes;
+                            selected_nodes.resize(num_selected_nodes);
+                            ImNodes::GetSelectedNodes(selected_nodes.data());
+                            const ImGui::Flow::Node * node = current_viewer->find_node(selected_nodes[0]);
+                            ImGui::Text("Node : %s", node->name);
+                        }
                     }
                 }
                 ImGui::EndTable();

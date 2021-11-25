@@ -6,6 +6,7 @@
 #include <chrono>
 #include <thread>
 #include <functional>
+#include <typeinfo>
 
 #include <taskflow/taskflow.hpp>
 
@@ -68,8 +69,7 @@ namespace dynamo {
 
     //Forward Declaration
     class AgentHandle;
-    template<typename T>
-    class Process;
+
 
     //enum class ProcessType : int
     //{
@@ -395,7 +395,9 @@ namespace dynamo {
         template<template<typename, typename ...> typename T, typename TOutput, typename ... TInputs>
         Process<TOutput> process(Process<TInputs>& ... inputs)
         {
-            Process<TOutput> p(taskflow);
+            Process<TOutput, size> p(taskflow);
+            std::cout << "-- INFO :\n";
+            std::array<std::string, sizeof...(inputs)> inputs_name{};
             p.task.work([strat = this->strategies, a = this->agent, ... args = inputs.result, res = p.result]() mutable
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
