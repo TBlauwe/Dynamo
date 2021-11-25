@@ -70,15 +70,18 @@ namespace dynamo {
     //Forward Declaration
     class AgentHandle;
 
+    template<typename T>
+    using TaskMap = std::unordered_map<tf::Task, T>;
 
-    //enum class ProcessType : int
-    //{
-    //    Simple = 0,
-    //    Composed,
-    //    Conditional,
-    //    Static,
-    //    Undefined
-    //};
+    enum class ProcessType : int
+    {
+        Simple = 0,
+        Composed,
+        Conditional,
+        Static,
+        Not_a_process,
+        Undefined
+    };
 
     //struct ProcessNode
     //{
@@ -95,13 +98,24 @@ namespace dynamo {
     //> FlowGraph;
 
     //typedef boost::graph_traits<FlowGraph>::vertex_descriptor vertex_t;
+
+    /**
+    @brief Small wrapper to describe an input for a process.
+
+    Each input is associated with a task and a name for visualization
+    */
+    struct ProcessInput
+    {
+        tf::Task    task;
+        std::string name;
+    };
     
     /**
-    @class Process
-    @brief A process is a glorified function that has multiple inputs and one output (specified by @c T).
+    @class ProcessBase
+
+    @brief A process is a small addon to a task to store information for visualization.
     */
-    template<typename T>
-    class Process
+    class ProcessBase
     {
         friend class AgentModel;
 
@@ -109,53 +123,96 @@ namespace dynamo {
         friend class Process;
 
     public:
-        Process(tf::Task task, size_t nb_inputs = 0) : task{ task }, nb_inputs{ nb_inputs }
-        {
-        }
-        Process(tf::Task task, T&& output, size_t nb_inputs = 0) : task{ task }, nb_inputs{ nb_inputs }
-        {
-            *result = std::forward<T>(output);
-        }
+        /**
+        @brief Construct a process associated with provided task.
+        A process is a small addon to a task to store information for visualization.
+        */
+        ProcessBase(tf::Task task, ProcessType type = ProcessType::Undefined) : _task{ task }, type {type} {}
 
         /**
-        @brief Set name of the process (Use for debugging/visualization).
+        @brief Returns underlying task.
         */
-        inline void name(const char* name) { task.name(name); }
+        inline tf::Task task() { return _task; }
+
+        /**
+        @brief Set process' name (Use for debugging/visualization).
+        */
+        inline void name(const char* name) { _task.name(name); }
         
         /**
-        @brief Get name of the process.
+        @brief Get process' name.
         */
-        inline const char * name() const { return task.name().c_str(); }
+        inline const char * name() const { return _task.name().c_str(); }
 
         /**
-        @brief After @c t is finished, this process can run (provided other dependencies are finished).
+        @brief Add a dependency with no inputs.
         */
-        inline void succeed(tf::Task& t) { task.succeed(t); }
+        inline void succeed(tf::Task& t) { _task.succeed(t); }
 
-        inline void number_of_inputs() const { return nb_inputs; }
-        inline void name_of_inputs(const char* name)
-        {
-            inputs_names.emplace_back(name);
+        /**
+        @brief Number of inputs coming from other processes. Doesn't count dependencies with no inputs.
+        */
+        inline void number_of_inputs() const { return ; }
+
+        /**
+        @brief Set input's name for specified process.
+        */
+        template <typename U>
+        inline void input_name(Process<U>& p, const char* name) 
+        { 
+            input_names[p.task] = name;
         }
 
-        inline void name_of_inputs(size_t index) const
+        /**
+        @brief Get input's name for specified task.
+        */
+        template <typename U>
+        inline void input_name(tf::Task task) const
         {
-            return inputs_names.at(index);
+            return input_names.at(task);
         }
+        
+        virtual const char * output_value() const = 0;
 
-    private:
+        /**
+        @brief Still trying to find a generic way of getting output value without specifiyng the type.
+        */
+        friend std::ostream& operator<<(std::ostream& os, const ProcessBase& p);
+
+    protected:
 
         template <typename U>
         void succeed(Process<U>& p)
         {
             succeed(p.task);
+            input_names.emplace(p.task, typeid(U).name()); // By default, try to deduce type name at runtine.
         }
 
+    protected:
+        ProcessType type;
+        tf::Task    _task;
+        TaskMap<std::string> input_names {};
+    };
+
+    /**
+    @class Process
+    @brief A process is a glorified function that has multiple inputs and one output (specified by @c T).
+    */
+    template<typename T>
+    class Process : public ProcessBase
+    {
+
+        Process(std::shared_ptr<T> ptr, tf::Task task, ProcessType type = ProcessType::Undefined) : 
+            result{ptr}, ProcessBase{task, type} {}
+
+        //const char* output_value() override
+        //{
+        //    // TODO return null if operator is not present
+        //    return (*output)->operator<<();
+        //}
+
     private:
-        std::shared_ptr<T> result{ std::make_shared<T>() };
-        tf::Task task;
-        size_t nb_inputs;
-        std::vector<const char *> inputs_names {};
+        std::weak_ptr<T> result;
     };
 
     /**
@@ -303,8 +360,6 @@ namespace dynamo {
     protected:
         std::vector<Behaviour_t> behaviours{};
 
-
-
     private:
         std::vector<Behaviour_t const *> active_behaviours(AgentHandle agent) const
         {
@@ -371,21 +426,13 @@ namespace dynamo {
         }
 
         /**
-        @brief Dump the graph to a DOT format.
-        */
-        std::string to_graphviz() const
-        {
-            return taskflow.dump();
-        }
-
-        /**
         @brief Pure virtual function to return the name of this flow (for visualization).
         */
         virtual constexpr const char* name() const = 0;
 
-        std::unordered_map<size_t, std::any> process_details() const
+        TaskMap<ProcessBase> process_details() const
         {
-            return map_task_to_process;
+            return task_to_process;
         }
 
     protected:
@@ -410,14 +457,18 @@ namespace dynamo {
         template<template<typename, typename ...> typename T, typename TOutput, typename ... TInputs>
         Process<TOutput>& process(Process<TInputs>& ... inputs)
         {
-            auto task = taskflow.placeholder();
-            // Don't ask
-            Process<TOutput>& p = std::any_cast<Process<TOutput>&>(map_task_to_process.emplace(task.hash_value(), std::make_any<Process<TOutput>>(task, sizeof...(inputs))).first->second);
-            task.work([strat = this->strategies, a = this->agent, ... args = inputs.result, res = p.result]() mutable
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                *res = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
-                }),
+            auto task   = taskflow.placeholder();
+            auto output = std::make_shared<TOutput>();
+            std::unique_ptr<Process<TOutput>> = std::make_unique({ output, task, ProcessType::Simple });
+            //task_to_process.emplace(task, {task, output});
+
+            task.work(
+                [strat = this->strategies, a = this->agent, ... args = inputs.result, res = std::move(output)]() mutable
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                    *res = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
+                }
+            );
   
             (p.succeed(inputs), ...);
             return p;
@@ -432,9 +483,9 @@ namespace dynamo {
     private:
 
         Strategies const * const strategies;
-        AgentHandle agent;
-        tf::Taskflow taskflow {};
-        std::unordered_map<size_t, std::any> map_task_to_process;
+        AgentHandle     agent;
+        tf::Taskflow    taskflow {};
+        TaskMap<ProcessBase> task_to_process;
     };
 }
 #endif //DYNAMO_PROCESS_HPP
