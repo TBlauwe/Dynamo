@@ -109,8 +109,10 @@ namespace dynamo {
         friend class Process;
 
     public:
-        Process(tf::Taskflow& taskflow) : task{taskflow.placeholder()} {}
-        Process(tf::Taskflow& taskflow, T&& output) : task{ taskflow.placeholder() }
+        Process(tf::Task task, size_t nb_inputs = 0) : task{ task }, nb_inputs{ nb_inputs }
+        {
+        }
+        Process(tf::Task task, T&& output, size_t nb_inputs = 0) : task{ task }, nb_inputs{ nb_inputs }
         {
             *result = std::forward<T>(output);
         }
@@ -118,25 +120,27 @@ namespace dynamo {
         /**
         @brief Set name of the process (Use for debugging/visualization).
         */
-        void name(const char* name)
-        {
-            task.name(name);
-        }
+        inline void name(const char* name) { task.name(name); }
         
         /**
         @brief Get name of the process.
         */
-        const char * name()
-        {
-            return task.name().c_str();
-        }
+        inline const char * name() const { return task.name().c_str(); }
 
         /**
         @brief After @c t is finished, this process can run (provided other dependencies are finished).
         */
-        void succeed(tf::Task& t)
+        inline void succeed(tf::Task& t) { task.succeed(t); }
+
+        inline void number_of_inputs() const { return nb_inputs; }
+        inline void name_of_inputs(const char* name)
         {
-            task.succeed(t);
+            inputs_names.emplace_back(name);
+        }
+
+        inline void name_of_inputs(size_t index) const
+        {
+            return inputs_names.at(index);
         }
 
     private:
@@ -150,6 +154,8 @@ namespace dynamo {
     private:
         std::shared_ptr<T> result{ std::make_shared<T>() };
         tf::Task task;
+        size_t nb_inputs;
+        std::vector<const char *> inputs_names {};
     };
 
     /**
@@ -393,12 +399,12 @@ namespace dynamo {
         @brief Emplace a process.
         */
         template<template<typename, typename ...> typename T, typename TOutput, typename ... TInputs>
-        Process<TOutput> process(Process<TInputs>& ... inputs)
+        Process<TOutput>& process(Process<TInputs>& ... inputs)
         {
-            Process<TOutput, size> p(taskflow);
-            std::cout << "-- INFO :\n";
-            std::array<std::string, sizeof...(inputs)> inputs_name{};
-            p.task.work([strat = this->strategies, a = this->agent, ... args = inputs.result, res = p.result]() mutable
+            auto task = taskflow.placeholder();
+            // Don't ask
+            Process<TOutput>& p = std::any_cast<Process<TOutput>&>(map_task_to_process.emplace(task.hash_value(), std::make_any<Process<TOutput>>(task, sizeof...(inputs))).first->second);
+            task.work([strat = this->strategies, a = this->agent, ... args = inputs.result, res = p.result]() mutable
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
                 *res = strat->get<T<TOutput, TInputs...>>()(a, *args ...);
@@ -423,6 +429,7 @@ namespace dynamo {
         Strategies const * const strategies;
         AgentHandle agent;
         tf::Taskflow taskflow {};
+        std::unordered_map<size_t, std::any> map_task_to_process;
     };
 }
 #endif //DYNAMO_PROCESS_HPP

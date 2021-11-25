@@ -41,12 +41,12 @@ private:
 
         t0.succeed(t1, t2);
 
-        auto process_a = process<strat::Random, std::string>();
+        auto& process_a = process<strat::Random, std::string>();
         process_a.name("Random string");
         process_a.succeed(t0);
-        auto process_b = process<strat::Random, int>();
+        auto& process_b = process<strat::Random, int>();
         process_b.name("Random int");
-        auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
+        auto& process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
         process_c.name("Random aggregator");
 
         //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});

@@ -51,6 +51,8 @@ private:
         // Process with a random strategy that returns a string
         // and has two inputs (string and int)
         auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
+        process_c.name_of_inputs("A string");
+        process_c.name_of_inputs("An integer");
         process_c.name("Aggregate");
 
         //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
