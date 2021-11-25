@@ -111,11 +111,41 @@ namespace dynamo::widgets {
             ImGui::End();
             return;
         }
+        ImGui::BeginGroup();
         if (entity.has<type::BrainViewer>())
         {
-            entity.get<type::BrainViewer>()->viewer.render();
+            ImGui::BeginChild("NodesEditorView", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1));
+            if (ImGui::BeginTable("NodesEditor", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders))
+            {
+                ImGui::TableSetupColumn("Brain viewer", ImGuiTableColumnFlags_WidthStretch, 480);
+                ImGui::TableSetupColumn("Process inspector");
+                ImGui::TableHeadersRow();
+                ImGui::TableNextRow();
+                {
+                    ImGui::TableSetColumnIndex(0);
+                    {
+                        if (ImGui::BeginTabBar("ProcessViewer"))
+                        {
+                            if (ImGui::BeginTabItem("Overall"))
+                            {
+                                entity.get<type::BrainViewer>()->viewer.render();
+                                ImGui::EndTabItem();
+                            }
+                            ImGui::EndTabBar();
+                        }
+                    }
+                    ImGui::TableSetColumnIndex(1);
+                    {
+                        ImGui::Text("Process");
+                    }
+                }
+                ImGui::EndTable();
+            }
+            ImGui::EndChild();
         }
+
         inspect(entity);
+        ImGui::EndGroup();
         ImGui::End();
     }
 
