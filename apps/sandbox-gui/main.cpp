@@ -50,9 +50,9 @@ public:
         // Process with a random strategy that returns a string
         // and has two inputs (string and int)
         auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
-        process_c.name_of_inputs("A string");
-        process_c.name_of_inputs("An integer");
         process_c.name("Aggregate");
+        process_c.input_name(process_a, "A string");
+        process_c.input_name(process_b, "An integer");
 
         //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
         //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);
