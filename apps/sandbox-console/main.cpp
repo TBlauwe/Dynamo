@@ -39,13 +39,14 @@ public:
 
         t0.succeed(t1, t2);
 
-        auto& process_a = process<strat::Random, std::string>();
-        process_a.name("Random string");
+        auto process_a = process<strat::Random, std::string>();
         process_a.succeed(t0);
-        auto& process_b = process<strat::Random, int>();
+        auto process_b = process<strat::Random, int>();
         process_b.name("Random int");
-        auto& process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
+        auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
         process_c.name("Random aggregator");
+        process_c.input_name(process_a, "From random string");
+        process_c.input_name(process_b, "From random int");
 
         //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
         //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);

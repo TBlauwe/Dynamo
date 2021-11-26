@@ -123,7 +123,7 @@ namespace dynamo::widgets {
                     {
                         if (child.has<type::BrainViewer>())
                         {
-                            const dynamo::widgets::BrainViewer* current_viewer = nullptr;
+                            dynamo::widgets::BrainViewer* current_viewer = nullptr;
                             const dynamo::type::ProcessDetails* process_details = nullptr;
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
@@ -132,7 +132,7 @@ namespace dynamo::widgets {
                                 {
                                     if (ImGui::BeginTabItem("Overall"))
                                     {
-                                        current_viewer = &child.get<type::BrainViewer>()->viewer;
+                                        current_viewer = &child.get_mut<type::BrainViewer>()->viewer;
                                         process_details = child.get<type::ProcessDetails>();
                                         current_viewer->render();
                                         ImGui::EndTabItem();
@@ -149,8 +149,9 @@ namespace dynamo::widgets {
                                     selected_nodes.resize(num_selected_nodes);
                                     ImNodes::GetSelectedNodes(selected_nodes.data());
                                     const ImGui::Flow::Node* node = current_viewer->find_node(selected_nodes[0]);
-                                    auto any_process = process_details->find(current_viewer->find_task(node));
+                                    auto process = process_details->find(current_viewer->find_task(node));
                                     ImGui::Text("Node : %s", node->name);
+                                    ImGui::Text("Type : %s", to_string(process.type()));
                                 }
                             }
                         }

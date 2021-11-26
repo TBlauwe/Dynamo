@@ -48,6 +48,11 @@ void ImGui::Flow::Graph::link(Node* a, const char* output_name, Node* b, const c
     links.emplace_back(id_count.next_id(), a->output_pin(output_name), b->input_pin(input_name));
 }
 
+void ImGui::Flow::Graph::link(const Pin* a, const Pin* b)
+{
+    links.emplace_back(id_count.next_id(), a->id, b->id);
+}
+
 void ImGui::Flow::Graph::render() const
 {
     context.begin();

@@ -14,9 +14,14 @@ namespace dynamo
     public:
         TasksObs() = default;
 
-        inline bool contains(size_t hash_value) const
+        inline bool contains(tf::Task task) const
         {
-            return container.contains(hash_value);
+            return container.contains(task.hash_value());
+        }
+
+        inline bool contains(size_t hash) const
+        {
+            return container.contains(hash);
         }
 
         inline void set_up(size_t num_workers) override final {}
@@ -58,7 +63,7 @@ namespace dynamo
             widgets::BrainViewer viewer;
 
             BrainViewer() : viewer() {};
-            BrainViewer(flecs::entity e, tf::Taskflow* taskflow) : viewer(e, taskflow) {};
+            BrainViewer(flecs::entity e, tf::Taskflow* taskflow, const type::ProcessDetails* details) : viewer(e, taskflow, details) {};
         };
 
         struct ActiveTasks
