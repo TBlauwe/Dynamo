@@ -202,6 +202,7 @@ namespace dynamo {
     private:
         void pop_commands_queue();
         void flush_commands_queue();
+        void flush_for_commands_queue();
 
     private:
         /**

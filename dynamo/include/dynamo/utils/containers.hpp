@@ -103,7 +103,6 @@ class ThreadsafeQueue {
   }
 
   std::optional<T> pop() {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (queue_.empty()) {
       return {};
     }

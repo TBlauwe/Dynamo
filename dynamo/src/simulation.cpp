@@ -65,7 +65,7 @@ void dynamo::Simulation::step(float elapsed_time) {
     
     Overall, I think it is better to stick with the second method (for my current application at least). Maybe offer the choice ? Or define/find better alternatives ?
     */
-    pop_commands_queue();
+    flush_for_commands_queue();
 }
 
 void dynamo::Simulation::pop_commands_queue() {
@@ -77,6 +77,15 @@ void dynamo::Simulation::pop_commands_queue() {
 void dynamo::Simulation::flush_commands_queue() {
     while (auto command = commands_queue.pop())
     {
+        command.value()(_world);
+    }
+}
+
+void dynamo::Simulation::flush_for_commands_queue() {
+    size_t size = commands_queue.size();
+    for (int i = 0; i<size; i++)
+    {
+        auto command = commands_queue.pop();
         command.value()(_world);
     }
 }
