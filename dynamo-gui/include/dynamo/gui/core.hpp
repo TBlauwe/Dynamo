@@ -63,7 +63,7 @@ namespace dynamo
             widgets::BrainViewer viewer;
 
             BrainViewer() : viewer() {};
-            BrainViewer(flecs::entity e, tf::Taskflow* taskflow) : viewer(e, taskflow) {};
+            BrainViewer(flecs::entity e, tf::Taskflow* taskflow, const type::ProcessDetails* details) : viewer(e, taskflow, details) {};
         };
 
         struct ActiveTasks

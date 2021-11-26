@@ -3,8 +3,8 @@
 #include <dynamo/gui/widgets/brain_viewer.hpp>
 #include <dynamo/gui/core.hpp>
 
-dynamo::widgets::BrainViewer::BrainViewer(flecs::entity e, tf::Taskflow* taskflow) :
-    entity{ e }, taskflow{ taskflow }, ImGui::Flow::Graph()
+dynamo::widgets::BrainViewer::BrainViewer(flecs::entity e, const tf::Taskflow* taskflow, const type::ProcessDetails* details) :
+    entity{ e }, taskflow{ taskflow }, _details{ details }, ImGui::Flow::Graph()
 {
     build();
 }
@@ -20,7 +20,7 @@ const ImGui::Flow::Node * dynamo::widgets::BrainViewer::find_node(int i) const
 
 size_t dynamo::widgets::BrainViewer::find_task(const ImGui::Flow::Node * const node) const
 {
-    return nodes_hash.at(node);
+    return imnodes_hash.at(node);
 }
 
 void dynamo::widgets::BrainViewer::render_graph() const
@@ -29,17 +29,17 @@ void dynamo::widgets::BrainViewer::render_graph() const
     for (const auto& node : nodes)
     {
         { // SET STYLE
-            if (active_tasks.contains(nodes_hash.at(&node)))
+            if (active_tasks.contains(imnodes_hash.at(&node)))
             {
-                ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBar,            ImGui::Color::GREEN_n);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered,     ImGui::Color::GREEN_h);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected,    ImGui::Color::GREEN_s);
             }
             else
             {
-                ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::BLUE_n);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::BLUE_h);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::BLUE_s);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBar,            ImGui::Color::BLUE_n);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered,     ImGui::Color::BLUE_h);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected,    ImGui::Color::BLUE_s);
             }
         }
 
@@ -47,8 +47,7 @@ void dynamo::widgets::BrainViewer::render_graph() const
 
         { // SET POSITION
 
-            
-            ImNodes::SetNodeGridSpacePos(node.id, nodes_pos.at(&node));
+            ImNodes::SetNodeGridSpacePos(node.id, imnodes_pos.at(&node));
             ImNodes::SetNodeDraggable(node.id, false);
         }
 
@@ -57,9 +56,9 @@ void dynamo::widgets::BrainViewer::render_graph() const
         ImNodes::PopColorStyle();
     }
 
-    ImNodes::PushColorStyle(ImNodesCol_Link, ImGui::Color::WHITE_n);
-    ImNodes::PushColorStyle(ImNodesCol_LinkHovered, ImGui::Color::WHITE_h);
-    ImNodes::PushColorStyle(ImNodesCol_LinkSelected, ImGui::Color::WHITE_s);
+    ImNodes::PushColorStyle(ImNodesCol_Link,            ImGui::Color::WHITE_n);
+    ImNodes::PushColorStyle(ImNodesCol_LinkHovered,     ImGui::Color::WHITE_h);
+    ImNodes::PushColorStyle(ImNodesCol_LinkSelected,    ImGui::Color::WHITE_s);
     for (const auto& link : links)
     {
         link.render();
@@ -70,42 +69,73 @@ void dynamo::widgets::BrainViewer::render_graph() const
 }
 
 void dynamo::widgets::BrainViewer::build() {
-    ogdf::Graph g;
-    ogdf::GraphAttributes ga(g);
-    std::unordered_map<ImGui::Flow::Node const*, ogdf::node> matching{};
+    ogdf::Graph             layout_graph;
+    ogdf::GraphAttributes   graph_attributes(layout_graph);
 
+    std::unordered_map<ImGui::Flow::Node const*, ogdf::node> imnodes_ogdf_nodes{};
+
+    // -- First, initialize a node for each task
     taskflow->for_each_task(
-        [this, &g, &matching](const tf::Task& task)
+        [this, &layout_graph, &imnodes_ogdf_nodes](const tf::Task& task)
         {
-            auto& n = node(task.name().c_str());
-            size_t hash = task.hash_value();
-            nodes_hash.emplace(&n,hash);
-            hash_nodes.emplace(hash, &n);
-            matching.emplace(&n, g.newNode());
+            auto&   imnode  = node(task.name().c_str());
+            size_t  hash    = task.hash_value();
+
+            imnodes_hash.emplace(&imnode, hash);
+            hash_imnodes.emplace(hash, &imnode);
+
+            imnodes_ogdf_nodes.emplace(&imnode, layout_graph.newNode());
+
         }
     );
 
+    // -- Then, link them
     taskflow->for_each_task(
-        [this, &g, &matching](tf::Task task) mutable
+        [this, &layout_graph, &imnodes_ogdf_nodes](tf::Task task) mutable
         {
-            auto n = hash_nodes.at(task.hash_value());
-            auto no = matching.at(n);
+            auto hash           = task.hash_value();
+            auto im_target      = hash_imnodes.at(hash);
+            auto target         = imnodes_ogdf_nodes.at(im_target);
+            auto target_details = _details->find(hash);
+
             task.for_each_dependent(
-                [&n, this, &matching, &no , &g] (tf::Task child) mutable
+                [this, &imnodes_ogdf_nodes, &target , im_target, &layout_graph, &target_details] (tf::Task child) mutable
                 {
-                    auto m = hash_nodes.at(child.hash_value());
-                    g.newEdge(matching.at(m), no);
-                    link(const_cast<ImGui::Flow::Node*>(m), "Output", const_cast<ImGui::Flow::Node*>(n), "Input");
+                    auto hash = child.hash_value();
+                    auto source = hash_imnodes.at(hash);
+                    layout_graph.newEdge(imnodes_ogdf_nodes.at(source), target);
+
+                    ImGui::Flow::Pin* source_flow_pin = nullptr;
+                    if (source->output_pins.size() == 0)
+                    {
+                        source_flow_pin = &source->output_pin("");
+                    }
+                    else
+                    {
+                        source_flow_pin = &source->output_pins.front();
+                    }
+
+                    if (target_details.has_input_from(hash))
+                    {
+                        auto target_input_pin = &im_target->input_pin(target_details.input_name(hash));
+                        link(source_flow_pin, target_input_pin);
+                    }
+                    else
+                    {
+                        auto target_input_pin = &im_target->input_pin("");
+                        link(source_flow_pin, target_input_pin);
+                    }
+
                 }
             );
         }
     );
 
     // Layout
-    for (auto v : g.nodes)
+    for (auto v : layout_graph.nodes)
     {
-        ga.width(v) = 100.0f;
-        ga.height(v) = 100.0f;
+        graph_attributes.width(v) = 100.0f;
+        graph_attributes.height(v) = 100.0f;
     }
 
     ogdf::SugiyamaLayout SL;
@@ -117,11 +147,11 @@ void dynamo::widgets::BrainViewer::build() {
     ohl->nodeDistance(200.0);
     ohl->weightBalancing(0.8);
     SL.setLayout(ohl);
-    SL.call(ga);
+    SL.call(graph_attributes);
 
     for (const auto& node : nodes)
     {
-        auto v = matching.at(&node);
-        nodes_pos.emplace(&node, ImVec2{ static_cast<float>(ga.y(v)), static_cast<float>(ga.x(v)) });
+        auto v = imnodes_ogdf_nodes.at(&node);
+        imnodes_pos.emplace(&node, ImVec2{ static_cast<float>(graph_attributes.y(v)), static_cast<float>(graph_attributes.x(v)) });
     }
 }

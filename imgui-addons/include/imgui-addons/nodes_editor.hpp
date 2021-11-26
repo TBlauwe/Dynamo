@@ -69,6 +69,12 @@ namespace ImGui{
                 end{ end_pin.id }
             {}
 
+            Link(const size_t id, const size_t start, const size_t end) :
+                id{ id },
+                start{ start },
+                end{ end }
+            {}
+
             inline void render() const { 
                 ImNodes::Link(id, start, end); 
             }
@@ -351,6 +357,7 @@ namespace ImGui{
 
             Node& node(const char* name);
             void link(Node* a, const char* output_name, Node* b, const char* input_name);
+            void link(const Pin* a, const Pin* b);
             void clear();
             void render() const;
 

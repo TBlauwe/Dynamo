@@ -150,7 +150,7 @@ namespace dynamo {
         /**
         @brief Number of inputs coming from other processes. Doesn't count dependencies with no inputs.
         */
-        inline size_t number_of_inputs() const { return input_names.size(); }
+        inline size_t number_of_inputs() const { return _input_names.size(); }
 
         /**
         @brief Set input's name for specified process.
@@ -158,16 +158,25 @@ namespace dynamo {
         template <typename U>
         inline void input_name(Process<U>& p, const char* name) 
         { 
-            input_names[p.hash_value()] = name;
+            _input_names[p.hash_value()] = name;
         }
 
         /**
         @brief Get input's name for specified task.
         */
-        template <typename U>
-        inline void input_name(tf::Task task) const
+        inline const char * input_name(size_t hash) const
         {
-            return input_names.at(task.hash_value());
+            return _input_names.at(hash);
+        }
+
+        inline bool has_input_from(size_t hash) const
+        {
+            return _input_names.contains(hash);
+        }
+
+        inline TaskMap<const char *> input_names()
+        {
+            return _input_names;
         }
         
         std::type_index strategy_index() { return _strategy_index; }
@@ -178,14 +187,14 @@ namespace dynamo {
         void succeed(Process<U>& p)
         {
             succeed(p.task());
-            input_names.emplace(p.hash_value(), typeid(U).name()); // By default, try to deduce type name at runtine.
+            _input_names.emplace(p.hash_value(), typeid(U).name()); // By default, try to deduce type name at runtine.
         }
 
     private:
         ProcessType             _type;
         tf::Task                _task;
         std::type_index         _strategy_index;
-        TaskMap<std::string>    input_names {};
+        TaskMap<const char *>   _input_names {};
     };
 
     /**
@@ -233,15 +242,6 @@ namespace dynamo {
         inline void input_name(Process<U>& p, const char* name)
         {
             process.input_name(p, name);
-        }
-
-        /**
-        @brief Get input's name for specified task.
-        */
-        template <typename U>
-        inline void input_name(tf::Task task) const
-        {
-            return process.input_name(task);
         }
 
     protected:
