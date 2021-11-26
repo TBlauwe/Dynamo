@@ -130,7 +130,7 @@ namespace dynamo::widgets {
                             {
                                 if (ImGui::BeginTabBar("ProcessViewer"))
                                 {
-                                    if (ImGui::BeginTabItem("Overall"))
+                                    if (ImGui::BeginTabItem(child.name()))
                                     {
                                         current_viewer = &child.get_mut<type::BrainViewer>()->viewer;
                                         process_details = child.get<type::ProcessDetails>();

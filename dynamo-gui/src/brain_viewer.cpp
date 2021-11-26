@@ -26,21 +26,34 @@ size_t dynamo::widgets::BrainViewer::find_task(const ImGui::Flow::Node * const n
 void dynamo::widgets::BrainViewer::render_graph() const
 {
     auto& active_tasks = *entity.world().get<type::ActiveTasks>()->observer;
+
     for (const auto& node : nodes)
     {
+        auto hash = imnodes_hash.at(&node);
+        //auto target_details = _details->find(hash);
         { // SET STYLE
-            if (active_tasks.contains(imnodes_hash.at(&node)))
+            if (!entity.has<type::IsProcessing>())
             {
-                ImNodes::PushColorStyle(ImNodesCol_TitleBar,            ImGui::Color::GREEN_n);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered,     ImGui::Color::GREEN_h);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected,    ImGui::Color::GREEN_s);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::ORANGE_n);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::ORANGE_h);
+                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::ORANGE_s);
             }
             else
             {
-                ImNodes::PushColorStyle(ImNodesCol_TitleBar,            ImGui::Color::BLUE_n);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered,     ImGui::Color::BLUE_h);
-                ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected,    ImGui::Color::BLUE_s);
+                if (active_tasks.contains(hash))
+                {
+                    ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
+                    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
+                    ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
+                }
+                else
+                {
+                    ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::BLUE_n);
+                    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::BLUE_h);
+                    ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::BLUE_s);
+                }
             }
+
         }
 
         ImVec2 dimensions = node.render();

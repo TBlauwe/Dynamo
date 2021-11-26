@@ -65,6 +65,7 @@ namespace dynamo {
                         // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
                         auto process = T(&strategies, AgentHandle(parent));
                         process.build();
+                        e.set_name(process.name());
                         e.set<type::ProcessDetails>({ process.process_details() });
                         e.set<type::ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
                         e.remove<type::AddProcess<T>>();
