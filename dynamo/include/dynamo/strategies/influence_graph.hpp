@@ -38,19 +38,20 @@ A set of influences is going from U to V.
 @tparam TInput type of V nodes.
 */
 template<typename TOutput, typename TInput>
-class InfluenceGraph : public Strategy<TInput, std::vector<Influence<TInput>>, TInput>
+class InfluenceGraph : public Strategy<TOutput, std::vector<Influence<TOutput>>, TInput>
 {
     using Inputs            = TInput;
-    using BehaviourOutputs  = std::vector<Influence<TInput>>;
+    using BehaviourOutputs  = std::vector<Influence<TOutput>>;
     using Behaviour_t       = Behaviour<BehaviourOutputs, Inputs>;
 
-    using Influences        = std::unordered_multimap<Behaviour_t const *, const Influence<TInput>>;
-    using Scores            = std::unordered_map<TInput const *, int>;
+    using Influences        = std::unordered_multimap<Behaviour_t const *, const Influence<TOutput>>;
+    using Scores            = std::unordered_map<TOutput const *, int>;
 
 public:
 
-    TInput compute(AgentHandle agent, const std::vector<Behaviour_t const *> active_behaviours, Inputs&& inputs) const override
+    TOutput compute(AgentHandle agent, const std::vector<Behaviour_t const *> active_behaviours, Inputs inputs) const override
     {
+        std::cout << "Inputs : " << std::endl;
         Influences influences{};
         Scores scores{};
 
@@ -72,7 +73,7 @@ public:
             }
         }
 
-        std::vector<Score<TInput>> sorted_scores {};
+        std::vector<Score<TOutput>> sorted_scores {};
         // Sort scores by decreasing order
         for (const auto& [input, score] : scores)
         {
@@ -80,7 +81,7 @@ public:
         }
 
         std::sort(sorted_scores.begin(), sorted_scores.end(),
-            [](const Score<TInput>& a, const Score<TInput>& b)
+            [](const Score<TOutput>& a, const Score<TOutput>& b)
             {
                 return a.score > b.score;
             }

@@ -322,13 +322,13 @@ namespace dynamo {
         /**
         @brief Compute behaviour for the specified agent.
         */
-        TOutput operator()(AgentHandle agent, TInputs&& ... inputs) const {
-            return _callable(agent, std::forward<TInputs>(inputs) ...);
+        TOutput operator()(AgentHandle agent, TInputs ... inputs) const {
+            return _callable(agent, inputs...);
         };
 
     private:
         const char* _name;
-        std::function<TOutput(AgentHandle, TInputs&& ...)> _callable;
+        std::function<TOutput(AgentHandle, TInputs ...)> _callable;
         std::function<bool(AgentHandle)> _activation_callable;
     };
 
@@ -520,10 +520,19 @@ namespace dynamo {
             return p;
         };
 
-        template<typename TOutput>
-        Process<TOutput> static_value(TOutput&& output)
+        template<typename T, typename ... Args>
+        Process<T> static_value(Args&& ... args)
         {
-            return Process<TOutput>(taskflow, std::forward<TOutput>(output));;
+            auto task       = taskflow.placeholder();
+            ProcessBase& pb = task_to_process.emplace(task.hash_value(), ProcessBase{task, typeid(T), ProcessType::Static}).first->second;
+            
+            auto output = std::make_shared<T>(T{ std::forward<Args>(args)... });
+            Process<T> p (pb, output);
+
+            // Empty task that is just mainting a counter for the shared ptr.
+            task.work([res = std::move(output)](){});
+
+            return p;
         }
 
     private:

@@ -38,24 +38,28 @@ public:
         // NOTE: A random strategy selects randomly a behaviour
         // and execute it. Complex strategy can be defined to take
         // into account one or multiple behaviours
-        auto process_a = process<strat::Random, std::string>();
-        process_a.name("Random string");
-        process_a.succeed(t0); // This process is dependant of t0
+        auto p_a = process<strat::Random, std::string>();
+        p_a.name("Random string");
+        p_a.succeed(t0); // This process is dependant of t0
 
         // Process with a random strategy that returns an int
         // and has no inputs
-        auto process_b = process<strat::Random, int>();
-        process_b.name("Random int");
+        auto p_b = process<strat::Random, int>();
+        p_b.name("Random int");
 
         // Process with a random strategy that returns a string
         // and has two inputs (string and int)
-        auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
-        process_c.name("Aggregate");
-        process_c.input_name(process_a, "A string");
-        process_c.input_name(process_b, "An integer");
+        auto p_c = process<strat::Random, std::string, std::string, int>(p_a, p_b);
+        p_c.name("Aggregate");
+        p_c.input_name(p_a, "A string");
+        p_c.input_name(p_b, "An integer");
 
-        //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
-        //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);
+        auto v = static_value<std::vector<int>>(0, 1, 2, 3, 4, 5);
+        v.name("Vector");
+
+        //auto p_d = process<strat::InfluenceGraph, int, std::vector<int>>(v);
+        //p_d.name("Action selection");
+        //p_d.input_name(v, "Actions");
     }
 };
 
