@@ -530,7 +530,7 @@ namespace dynamo {
             Process<T> p (pb, output);
 
             // Empty task that is just mainting a counter for the shared ptr.
-            task.work([res = std::move(output)](){});
+            task.work([res = std::move(output)]() mutable {});
 
             return p;
         }

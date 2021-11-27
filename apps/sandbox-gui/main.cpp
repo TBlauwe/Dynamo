@@ -57,9 +57,9 @@ public:
         auto v = static_value<std::vector<int>>(0, 1, 2, 3, 4, 5);
         v.name("Vector");
 
-        //auto p_d = process<strat::InfluenceGraph, int, std::vector<int>>(v);
-        //p_d.name("Action selection");
-        //p_d.input_name(v, "Actions");
+        auto p_d = process<strat::InfluenceGraph, int, std::vector<int>>(v);
+        p_d.name("Action selection");
+        p_d.input_name(v, "Actions");
     }
 };
 
@@ -122,15 +122,25 @@ public:
                 "MySecondBehaviour",
                 [](AgentHandle agent) {return true; },
                 [](AgentHandle agent, std::string arg, int arg2) {
-                    return "Arff " + arg; }
-                );
+                    return "Arff " + arg;
+                }
+            )
+                    ;
 
-        //auto& influence_graph_strat = sim.add<strat::InfluenceGraph<int>>();
-        //influence_graph_strat.add(Behaviour<std::vector<dynamo::strat::Influence<int>>, const std::vector<int const*>&>{
-        //    "MyOtherBehaviour",
-        //        [](AgentHandle agent) -> bool {return true; },
-        //        [](AgentHandle agent) -> std::string {return "Yeah"; }
-        //});
+        sim.strategy<strat::InfluenceGraph<int, std::vector<int>>>()
+            .behaviour(
+                "WantEven",
+                [](AgentHandle agent) {return true; },
+                [](AgentHandle agent, std::vector<int> arg){
+                    std::vector<dynamo::strat::Influence<int>> output;
+                    for (int v : arg)
+                    {
+                        output.emplace_back(&v, v % 2);
+                    }
+                    return output;
+                }
+            )
+            ;
 
         // -- Register some processes/reasonner
         // You must register them before populating the simulation.

@@ -51,7 +51,6 @@ public:
 
     TOutput compute(AgentHandle agent, const std::vector<Behaviour_t const *> active_behaviours, Inputs inputs) const override
     {
-        std::cout << "Inputs : " << std::endl;
         Influences influences{};
         Scores scores{};
 
