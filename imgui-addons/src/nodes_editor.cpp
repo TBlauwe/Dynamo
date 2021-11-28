@@ -65,3 +65,30 @@ inline void ImGui::Flow::Graph::clear()
     nodes.clear();
     links.clear();
 }
+
+ImGui::Flow::Node& ImGui::Flow::BipartiteGraph::left_node(const char* name)
+{
+    return left_nodes.emplace_back(&id_count, name);
+}
+
+ImGui::Flow::Node& ImGui::Flow::BipartiteGraph::right_node(const char* name)
+{
+    return right_nodes.emplace_back(&id_count, name);
+}
+
+void ImGui::Flow::BipartiteGraph::positive_link(const ImGui::Flow::Node* a, const ImGui::Flow::Node* b)
+{
+    positive_links.emplace_back(id_count.next_id(), a->output_pins.front().id, b->input_pins.front().id);
+}
+
+void ImGui::Flow::BipartiteGraph::negative_link(const ImGui::Flow::Node* a, const ImGui::Flow::Node* b)
+{
+    negative_links.emplace_back(id_count.next_id(), a->output_pins.front().id, b->input_pins.front().id);
+}
+
+void ImGui::Flow::BipartiteGraph::render() const
+{
+    context.begin();
+    this->render_graph();
+    context.end();
+}

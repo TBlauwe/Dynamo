@@ -46,25 +46,25 @@ namespace dynamo {
 
     public:
         InfluenceGraph(AgentHandle agent, const std::vector<const Behaviour_t *>& behaviours, std::vector<T> args)
-            : values {args}
+            : _values {args}, _behaviours{behaviours}
         {
-            for (const auto& value : values)
+            for (const auto& value : _values)
             {
                 scores.emplace(std::make_pair(&value, 0));
             }
 
             for (Behaviour_t const* const behaviour : behaviours)
             {
-                for (const auto& influence : (*behaviour)(agent, values))
+                for (const auto& influence : (*behaviour)(agent, _values))
                 {
                     if (influence.positive)
                     {
-                        positive_influences.emplace(behaviour, influence.object);
+                        _positive_influences.emplace(behaviour, influence.object);
                         scores[influence.object] += 1;
                     }
                     else
                     {
-                        negative_influences.emplace(behaviour, influence.object);
+                        _negative_influences.emplace(behaviour, influence.object);
                         scores[influence.object] -= 1;
                     }
                 }
@@ -95,7 +95,32 @@ namespace dynamo {
             }
         }
 
-        size_t num_eligibles()
+        Influences& positive_influences()
+        {
+            return _positive_influences;
+        }
+
+        Influences& negative_influences()
+        {
+            return _negative_influences;
+        }
+
+        std::vector<const Behaviour_t *>& behaviours()
+        {
+            return _behaviours;
+        }
+
+        std::vector<T>& values()
+        {
+            return _values;
+        }
+
+        bool is_highest(const T* value) const
+        {
+            return std::find(highest_scores.begin(), highest_scores.end(), value) != highest_scores.end();
+        }
+
+        size_t num_eligibles() const
         {
             return highest_scores.size();
         }
@@ -105,16 +130,17 @@ namespace dynamo {
             return highest_scores;
         }
 
-        T result()
+        T result() const
         {
             return *highest_scores[rand()%(num_eligibles() - 1)];
         }
 
     private:
-        Influences      positive_influences {};
-        Influences      negative_influences {};
+        Influences      _positive_influences {};
+        Influences      _negative_influences {};
         Scores          scores {};
-        std::vector<T>  values;
+        std::vector<const Behaviour_t *>  _behaviours;
+        std::vector<T>  _values;
         std::vector<T *>  highest_scores {};
     };
 

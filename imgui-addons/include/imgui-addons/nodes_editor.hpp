@@ -271,81 +271,6 @@ namespace ImGui{
     //    private:
 
     //        void _render() const override {
-
-    //            ImVec2 cursor(origin);
-    //            ImVec2 dimensions;
-    //            float max_length = 0.f;
-
-    //            for (const auto& [name, u] : U) {
-    //                {// SET STYLE
-    //                    if (U_active.contains(name)) {
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GRAY_n);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GRAY_h);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GRAY_s);
-    //                    }
-    //                    else {
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::BLUE_n);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::BLUE_h);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::BLUE_s);
-    //                    }
-    //                }
-
-    //                dimensions = u.render();
-
-    //                { // SET POSITION
-    //                    ImNodes::SetNodeGridSpacePos(u.id, cursor);
-    //                    ImNodes::SetNodeDraggable(u.id, false);
-    //                    if (max_length < dimensions.x)
-    //                        max_length = dimensions.x;
-    //                    cursor.y += dimensions.y + offset.y;
-    //                }
-    //                ImNodes::PopColorStyle();
-    //                ImNodes::PopColorStyle();
-    //                ImNodes::PopColorStyle();
-    //            }
-    //            cursor.y = origin.y;
-    //            cursor.x += max_length + offset.x;
-
-    //            for (const auto& [name, v] : V) {
-    //                {// SET STYLE
-    //                    if (V_highest.contains(name)) {
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
-    //                    }
-    //                    else {
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::ORANGE_n);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::ORANGE_h);
-    //                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::ORANGE_s);
-    //                    }
-    //                }
-    //                dimensions = v.render();
-
-    //                { // SET POSITION
-    //                    ImNodes::SetNodeGridSpacePos(v.id, cursor);
-    //                    ImNodes::SetNodeDraggable(v.id, false);
-    //                    if (max_length < dimensions.x)
-    //                        max_length = dimensions.x;
-    //                    cursor.y += dimensions.y + offset.y;
-    //                }
-    //                ImNodes::PopColorStyle();
-    //                ImNodes::PopColorStyle();
-    //                ImNodes::PopColorStyle();
-    //            }
-
-    //            ImNodes::PushColorStyle(ImNodesCol_Link, ImGui::Color::GREEN_n);
-    //            ImNodes::PushColorStyle(ImNodesCol_LinkHovered, ImGui::Color::GREEN_h);
-    //            ImNodes::PushColorStyle(ImNodesCol_LinkSelected, ImGui::Color::GREEN_s);
-    //            for (const Link<Tu, Tv>& link : positive_links) {
-    //                link.render();
-    //            }
-
-    //            ImNodes::PushColorStyle(ImNodesCol_Link, ImGui::Color::RED_n);
-    //            ImNodes::PushColorStyle(ImNodesCol_LinkHovered, ImGui::Color::RED_h);
-    //            ImNodes::PushColorStyle(ImNodesCol_LinkSelected, ImGui::Color::RED_s);
-    //            for (const Link<Tu, Tv>& link : negative_links) {
-    //                link.render();
-    //            }
     //        };
     //    };
     //}
@@ -369,6 +294,29 @@ namespace ImGui{
             Counter             id_count{};
             std::list<Node>     nodes {};
             std::vector<Link>   links {};
+        };
+
+        class BipartiteGraph
+        {
+        public:
+            BipartiteGraph() = default;
+
+            Node& left_node(const char* name);
+            Node& right_node(const char* name);
+            void positive_link(const Node* a, const Node* b);
+            void negative_link(const Node* a, const Node* b);
+            void render() const;
+
+        private:
+            virtual void render_graph() const = 0;
+
+        protected:
+            EditorContext       context {};
+            Counter             id_count{};
+            std::list<Node>     left_nodes {};
+            std::list<Node>     right_nodes {};
+            std::vector<Link>   positive_links {};
+            std::vector<Link>   negative_links {};
         };
     }
 }

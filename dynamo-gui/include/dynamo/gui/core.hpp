@@ -7,6 +7,7 @@
 #include <taskflow/taskflow.hpp>
 
 #include <dynamo/gui/widgets/brain_viewer.hpp>
+#include <dynamo/gui/widgets/influence_graph_viewer.hpp>
 
 namespace dynamo
 {
