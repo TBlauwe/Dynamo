@@ -114,14 +114,14 @@ public:
             .behaviour(
                 "MyFirstBehaviour",
                 [](AgentHandle agent) {return true; },
-                [](AgentHandle agent, std::string arg, int arg2) {
+                [](AgentHandle agent, const std::string& arg, const int& arg2) {
                     return "Oups " + arg;
                 }
             )
             .behaviour(
                 "MySecondBehaviour",
                 [](AgentHandle agent) {return true; },
-                [](AgentHandle agent, std::string arg, int arg2) {
+                [](AgentHandle agent, const std::string& arg, const int& arg2) {
                     return "Arff " + arg;
                 }
             )
@@ -131,11 +131,11 @@ public:
             .behaviour(
                 "WantEven",
                 [](AgentHandle agent) {return true; },
-                [](AgentHandle agent, std::vector<int> arg){
-                    std::vector<dynamo::strat::Influence<int>> output;
-                    for (int v : arg)
+                [](AgentHandle agent, const std::vector<int>& arg){
+                    std::vector<dynamo::Influence<int>> output;
+                    for (const auto& v : arg)
                     {
-                        output.emplace_back(&v, v % 2);
+                        output.emplace_back(&v, !(v % 2));
                     }
                     return output;
                 }

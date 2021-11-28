@@ -86,7 +86,8 @@ void dynamo::Simulation::flush_for_commands_queue() {
     for (int i = 0; i<size; i++)
     {
         auto command = commands_queue.pop();
-        command.value()(_world);
+        if(command)
+            command.value()(_world);
     }
 }
 

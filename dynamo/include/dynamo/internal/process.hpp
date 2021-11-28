@@ -293,7 +293,7 @@ namespace dynamo {
         /**
         @brief Construct a named behaviour with given activation function and function.
         */
-        Behaviour(const char* name, std::function<bool(AgentHandle)> activation_callable, std::function<TOutput(AgentHandle, TInputs ...)> callable) :
+        Behaviour(const char* name, std::function<bool(AgentHandle)> activation_callable, std::function<TOutput(AgentHandle, const TInputs& ...)> callable) :
             _name{ name },
             _activation_callable{ activation_callable },
             _callable{ callable }
@@ -322,13 +322,13 @@ namespace dynamo {
         /**
         @brief Compute behaviour for the specified agent.
         */
-        TOutput operator()(AgentHandle agent, TInputs ... inputs) const {
+        TOutput operator()(AgentHandle agent, const TInputs& ... inputs) const {
             return _callable(agent, inputs...);
         };
 
     private:
         const char* _name;
-        std::function<TOutput(AgentHandle, TInputs ...)> _callable;
+        std::function<TOutput(AgentHandle, const TInputs& ...)> _callable;
         std::function<bool(AgentHandle)> _activation_callable;
     };
 
