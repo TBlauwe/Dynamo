@@ -67,6 +67,14 @@ namespace dynamo
             BrainViewer(flecs::entity e, tf::Taskflow* taskflow, const type::ProcessDetails* details) : viewer(e, taskflow, details) {};
         };
 
+        struct InfluenceGraphViewerInt 
+        {
+            widgets::InfluenceGraphViewer<int> viewer {};
+
+            InfluenceGraphViewerInt() = default;
+            InfluenceGraphViewerInt(dynamo::InfluenceGraph<int> graph) : viewer(graph) {};
+        };
+
         struct ActiveTasks
         {
             std::shared_ptr<TasksObs> observer;

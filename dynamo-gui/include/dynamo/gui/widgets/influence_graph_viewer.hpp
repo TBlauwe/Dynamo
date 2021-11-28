@@ -28,21 +28,21 @@ namespace dynamo::widgets
             }
 
             std::unordered_map<const T *, ImGui::Flow::Node *> object_imnodes{};
-            for (const auto* t : graph.values())
+            for (const auto& t : graph.values())
             {
                 auto& imnode = right_node("-");
                 imnode.input_pin("");
-                object_imnodes.emplace(t, &imnode);
+                object_imnodes.emplace(&t, &imnode);
             }
 
-            for (const auto [behaviour, object] : graph.positives_influences())
+            for (const auto [behaviour, object] : graph.positive_influences())
             {
-                link(behaviour_imnodes[behaviour], object_imnodes[object]);
+                positive_link(behaviour_imnodes[behaviour], object_imnodes[object]);
             }
 
-            for (const auto [behaviour, object] : graph.negatives_influences())
+            for (const auto [behaviour, object] : graph.negative_influences())
             {
-                link(behaviour_imnodes[behaviour], object_imnodes[object]);
+                negative_link(behaviour_imnodes[behaviour], object_imnodes[object]);
             }
         }
 
