@@ -111,6 +111,8 @@ namespace dynamo
                         highest_scores.push_back(score.index);
                 }
             }
+
+            selected = highest_scores[rand() % (num_eligibles() - 1)];
         }
 
         Influences& positive_influences()
@@ -158,9 +160,14 @@ namespace dynamo
             return highest_scores;
         }
 
+        size_t result_index() const
+        {
+            return selected;
+        }
+
         T result()
         {
-            return value(highest_scores[rand()%(num_eligibles() - 1)]);
+            return value(selected);
         }
 
         size_t index(const T& object)
@@ -179,6 +186,7 @@ namespace dynamo
         Influences      _positive_influences {};
         Influences      _negative_influences {};
         Scores          scores {};
+        size_t          selected { 0 };
 
         std::vector<const Behaviour_t *>    _behaviours {};
         std::vector<T>                      _values {};

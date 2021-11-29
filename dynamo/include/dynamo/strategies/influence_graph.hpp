@@ -37,6 +37,7 @@ namespace dynamo::strat
         {
             dynamo::InfluenceGraph<TOutput> graph(agent, active_behaviours, inputs);
             agent.set<dynamo::type::IGOutput<TOutput>>({ graph });
+            std::cout << "Selection : " << graph.result() << "\n";
             return graph.result();
         }
     };

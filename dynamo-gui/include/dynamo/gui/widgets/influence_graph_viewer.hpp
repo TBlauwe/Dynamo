@@ -33,8 +33,11 @@ namespace dynamo::widgets
                 auto& imnode = right_node("-");
                 imnode.input_pin("");
                 object_imnodes.emplace(&object, &imnode);
-                if (graph->is_highest(graph->index(object)))
+                size_t index = graph->index(object);
+                if (graph->is_highest(index))
                     highest.emplace(&imnode);
+                if (index = graph->result_index())
+                    selected = &imnode;
             }
 
             for (const auto [behaviour_index, object_index] : graph->positive_influences())
@@ -52,7 +55,7 @@ namespace dynamo::widgets
         {
             ImVec2 origin(50.f, 50.f);
             ImVec2 cursor(origin);
-            ImVec2 offset(50.f, 50.f);
+            ImVec2 offset(200.f, 50.f);
             float max_length = 0.f;
 
             ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::BLUE_n);
@@ -81,6 +84,12 @@ namespace dynamo::widgets
                         ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
                         ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
                         ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
+                    }
+                    else if(&node == selected)
+                    {
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_s);
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_n);
                     }
                     else {
                         ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::ORANGE_n);
@@ -124,6 +133,8 @@ namespace dynamo::widgets
     private:
         dynamo::InfluenceGraph<T>* graph {nullptr};
         std::unordered_set<const ImGui::Flow::Node *>  highest{};
+        //std::function<const char* (T&)> name_of {};
+        ImGui::Flow::Node *  selected {nullptr};
     };
 }
 

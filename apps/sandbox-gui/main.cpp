@@ -155,7 +155,6 @@ public:
             ;
 
         // Then, we can create agent using our archetype :
-        auto arthur = sim.agent(archetype, "Arthur");
         for (int i = 0; i < number_of_agents; i++) {
             sim.agent(archetype, fmt::format("Agent {}", i).c_str());
         }
