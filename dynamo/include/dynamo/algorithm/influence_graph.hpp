@@ -112,7 +112,7 @@ namespace dynamo
                 }
             }
 
-            selected = highest_scores[rand() % (num_eligibles() - 1)];
+            selected = highest_scores[rand() % (num_eligibles())];
         }
 
         Influences& positive_influences()

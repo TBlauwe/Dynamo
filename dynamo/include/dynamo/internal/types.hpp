@@ -60,6 +60,7 @@ namespace dynamo {
         We can't check if entity has the corresponding @c Type tag as it may be
         staged.
         */
+        EntityWrapper() : m_entity{ 0 } {};
         explicit EntityWrapper(flecs::entity entity) : m_entity{ entity } {};
 
         friend bool operator== (const EntityWrapper& a, const EntityWrapper& b);
@@ -100,7 +101,7 @@ namespace dynamo {
 
         For more information see : https://flecs.docsforge.com/master/manual/#entity.
         */
-        inline flecs::entity entity() { return m_entity; }
+        inline flecs::entity entity() const { return m_entity; }
 
         /**
         @brief Implicit conversion operator to @c flecs::entity.
@@ -136,7 +137,7 @@ namespace dynamo {
     class EntityManipulator : public EntityWrapper
     {
     public:
-        explicit EntityManipulator(flecs::entity entity) : EntityWrapper{ entity } {} ;
+        using EntityWrapper::EntityWrapper;
 
         /**
         @brief Add a component (with default value).
@@ -182,12 +183,6 @@ namespace dynamo {
         {
             return m_entity.world().is_readonly();
         }
-
-    private:
-        /**
-        @brief Pointer to simulations' commands queue to defer modifications when world is in read only.
-        */
-        type::CommandsQueue* commands_queue;
     };
 
     /**
@@ -260,6 +255,7 @@ namespace dynamo {
     */
     class Entity : public EntityManipulator<Entity> {
     public:
+        Entity() : EntityManipulator<Entity>() {};
         /**
         @brief Identify the given entity as an @c Entity
         */
@@ -273,6 +269,7 @@ namespace dynamo {
     */
     class Action : public EntityManipulator<Action> {
     public:
+        Action() : EntityManipulator<Action>() {};
         /**
         @brief Identify the given entity as an @c Action. Must have the corresponding
         tag.

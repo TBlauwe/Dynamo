@@ -7,6 +7,8 @@
 
 using namespace dynamo;
 
+struct Reglementary {};
+
 class SimpleReasonner : public AgentModel
 {
 public:
@@ -55,11 +57,18 @@ public:
         p_c.input_name(p_b, "An integer");
 
         auto v = static_value<std::vector<int>>(0, 1, 2, 3, 4, 5);
-        v.name("Vector");
+        v.name("Integers Vector");
 
         auto p_d = process<strat::InfluenceGraph, int, std::vector<int>>(v);
-        p_d.name("Action selection");
-        p_d.input_name(v, "Actions");
+        p_d.name("Integer selection");
+        p_d.input_name(v, "Integers");
+
+        auto p_e = process<strat::Random, std::vector<Action>>();
+        p_e.name("Potential actions");
+
+        auto p_f = process<strat::InfluenceGraph, Action, std::vector<Action>>(p_e);
+        p_f.name("Action selection");
+        p_f.input_name(p_e, "Actions");
     }
 };
 
@@ -81,7 +90,7 @@ public:
     Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox")
     {
-        const size_t number_of_agents = 1;
+        const size_t number_of_agents = 10;
 
         // -- Setup
         sim.world().import<module::BasicStress>();
@@ -143,15 +152,59 @@ public:
             )
             ;
 
+        sim.strategy<strat::Random<std::vector<Action>>>()
+            .behaviour(
+                "MyFirstBehaviour",
+                [](AgentHandle agent) {return true; },
+                [](AgentHandle agent) {
+                    std::vector<Action> output {};
+                    agent.entity().world().each([&output](flecs::entity e, const type::Action& _) {
+                        output.emplace_back(e);
+                        });
+                    return output;
+                }
+            );
+
         sim.strategy<strat::InfluenceGraph<Action, std::vector<Action>>>()
             .behaviour(
-                "WantEven",
+                "Followership passive",
                 [](AgentHandle agent) {return true; },
                 [](AgentHandle agent, const std::vector<Action>& arg){
                     std::vector<dynamo::Influence<Action>> output;
                     for (const auto& v : arg)
                     {
-                        output.emplace_back(&v, false);
+                        if(v.has<type::Ordered>())
+                            output.emplace_back(&v, true);
+                    }
+                    return output;
+                }
+            )
+            .behaviour(
+                "Stress",
+                [](AgentHandle agent) {return is_pressured(agent); },
+                [](AgentHandle agent, const std::vector<Action>& arg){
+                    std::vector<dynamo::Influence<Action>> output;
+                    for (const auto& v : arg)
+                    {
+                        if(!agent.has<type::Qualification>() && !v.has<type::Qualification>())
+                            output.emplace_back(&v, true);
+                        else if(!agent.has<type::Qualification>() && v.has<type::Qualification>())
+                            output.emplace_back(&v, false);
+                        else if(v.has<type::Qualification>() && (agent.get<type::Qualification>()->value >= v.get<type::Qualification>()->value));
+                            output.emplace_back(&v, true);
+                    }
+                    return output;
+                }
+            )
+            .behaviour(
+                "Reglementary",
+                [](AgentHandle agent) {return is_pressured(agent) && agent.has<Reglementary>(); },
+                [](AgentHandle agent, const std::vector<Action>& arg){
+                    std::vector<dynamo::Influence<Action>> output;
+                    for (const auto& v : arg)
+                    {
+                        if(v.has<type::ReglementaryCost>())
+                            output.emplace_back(&v, true);
                     }
                     return output;
                 }
@@ -183,7 +236,8 @@ public:
             .set<type::Qualification>({2})
             ;
         sim.action("Poser un garrot rapidement")
-            .set<type::Cost>({2})
+            .set<type::Cost>({ 2 })
+            .add<type::Ordered>()
             .set<type::Qualification>({1})
             ;
         sim.action("Poser un garrot dans les règles de l'art")
@@ -194,8 +248,10 @@ public:
 
         // Then, we can create agent using our archetype :
         for (int i = 0; i < number_of_agents; i++) {
-            sim.agent(archetype, fmt::format("Agent {}", i).c_str())
+            auto agent = sim.agent(archetype, fmt::format("Agent {}", i).c_str())
                 .set<type::Qualification>({rand()%3+1});
+            if (rand() % 2)
+                agent.add<Reglementary>();
         }
 
         std::vector<flecs::entity_view> agents {};

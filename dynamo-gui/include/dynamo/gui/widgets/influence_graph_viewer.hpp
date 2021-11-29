@@ -14,7 +14,7 @@ namespace dynamo::widgets
     public:
         InfluenceGraphViewer() = default;
         InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph, std::function<std::string(const T&)> get_name) 
-            : graph{ graph }, name_of { get_name }
+            : graph{ graph }, name_of { get_name}
         {
             build();
         }
@@ -41,7 +41,7 @@ namespace dynamo::widgets
             std::unordered_map<const T *, ImGui::Flow::Node *> object_imnodes{};
             for (const auto& object : graph->values())
             {
-                auto& imnode = right_node(name_of(object).c_str());
+                auto& imnode = right_node(name_of(object));
                 imnode.input_pin("");
                 object_imnodes.emplace(&object, &imnode);
                 size_t index = graph->index(object);
@@ -144,7 +144,7 @@ namespace dynamo::widgets
     private:
         dynamo::InfluenceGraph<T>* graph {nullptr};
         std::unordered_set<const ImGui::Flow::Node *>  highest{};
-        std::function<std::string(const T&)> name_of {};
+        std::function<std::string(const T&)> name_of{ [](const T&) {return "Undefined"; } };
         ImGui::Flow::Node *  selected {nullptr};
     };
 }

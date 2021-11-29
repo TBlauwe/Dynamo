@@ -25,14 +25,14 @@ namespace dynamo{
         };
     }
 
-    inline bool is_cooperative(flecs::entity& e)
+    inline bool is_cooperative(const flecs::entity& e)
     {
         return e.has<type::Arity>() && e.get<type::Arity>()->value > 1;
     }
 
-    inline bool is_mastered(flecs::entity& agent, flecs::entity& action)
+    inline bool is_mastered(const flecs::entity& agent, const flecs::entity& action)
     {
-        return agent.get<type::Qualification>()->value >= action.get<type::Qualification>()->value;
+        return agent.has<type::Qualification>() && (agent.get<type::Qualification>()->value >= action.get<type::Qualification>()->value);
     }
 
     namespace module{

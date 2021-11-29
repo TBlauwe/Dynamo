@@ -18,9 +18,9 @@ namespace dynamo {
         };
     }
 
-    inline bool is_pressured(flecs::entity& e)
+    inline bool is_pressured(const flecs::entity& e)
     {
-        return e.has<type::Stress>() && e.get<type::Stress>()->value > 50;
+        return e.has<type::Stress>() && e.get<type::Stress>()->value > 10;
     }
 
     namespace module {

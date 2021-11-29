@@ -145,15 +145,15 @@ namespace dynamo::widgets {
                                             ImGui::EndTabItem();
                                         }
                                     }
-                                   /* if (entity.has<type::InfluenceGraphViewer<Action>>())
+                                    if (entity.has<type::InfluenceGraphViewer<Action>>())
                                     {
                                         if (ImGui::BeginTabItem("Influence Graph (Action)"))
                                         {
                                             entity.get_mut<type::InfluenceGraphViewer<Action>>()->viewer.render();
                                             ImGui::EndTabItem();
                                         }
-                                    }*/
-                                   ImGui::EndTabBar();
+                                    }
+                                    ImGui::EndTabBar();
                                 }
                             }
                             ImGui::TableSetColumnIndex(1);
@@ -177,10 +177,10 @@ namespace dynamo::widgets {
             }
             ImGui::EndTable();
             ImGui::EndChild();
-
-            inspect(entity);
-            ImGui::EndGroup();
         }
+
+        inspect(entity);
+        ImGui::EndGroup();
         ImGui::End();
     }
 
