@@ -7,7 +7,16 @@
 #include <unordered_map>
 
 #include <dynamo/algorithm/influence_graph.hpp>
+#include <dynamo/internal/core.hpp>
 
+namespace dynamo::type
+{
+    template<typename T>
+    struct IGOutput
+    {
+        dynamo::InfluenceGraph<T> graph;
+    };
+}
 namespace dynamo::strat
 {
     /**
@@ -27,6 +36,7 @@ namespace dynamo::strat
         TOutput compute(AgentHandle agent, const std::vector<Behaviour_t const*> active_behaviours, Inputs inputs) const override
         {
             dynamo::InfluenceGraph<TOutput> graph(agent, active_behaviours, inputs);
+            agent.set<dynamo::type::IGOutput<TOutput>>({ graph });
             return graph.result();
         }
     };

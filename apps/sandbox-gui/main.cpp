@@ -81,7 +81,7 @@ public:
     Sandbox() :
         Application(1280,720,"Sandbox", "Sandbox")
     {
-        const size_t number_of_agents = 10;
+        const size_t number_of_agents = 1;
         // -- Setup
         sim.world().import<module::BasicStress>();
 

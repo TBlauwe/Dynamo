@@ -35,6 +35,20 @@ namespace dynamo{
                 e.set<type::BrainViewer>({ e, handle.taskflow, e.get<type::ProcessDetails>() });
             });
 
+        world.observer<type::IGOutput<int>>("OnSet_IGOutput_AddViewer")
+            .event(flecs::OnSet)
+            .each([](flecs::entity e, type::IGOutput<int>& output)
+                {
+                    if (e.has<type::InfluenceGraphViewer<int>>())
+                    {
+                        //auto* ptr = e.get_mut<type::InfluenceGraphViewer<int>>();
+                        //ptr->viewer
+                    }
+                    else {
+                        e.set<type::InfluenceGraphViewer<int>>({ &output.graph });
+                    }
+            });
+
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)
                 .iter([this](flecs::iter& iter){

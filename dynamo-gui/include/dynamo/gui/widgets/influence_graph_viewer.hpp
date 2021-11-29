@@ -6,7 +6,6 @@
 
 namespace dynamo::widgets
 {
-
     template<typename T>
     class InfluenceGraphViewer : public ImGui::Flow::BipartiteGraph
     {
@@ -14,13 +13,14 @@ namespace dynamo::widgets
 
     public:
         InfluenceGraphViewer() = default;
-        InfluenceGraphViewer(dynamo::InfluenceGraph<T> graph) : graph{ graph } { build(); };
+        InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph) : graph{ graph } { build(); };
 
     private:
+        //void change(dynamo::InfluenceGraph<T>* grah)
         void build()
         {
             std::unordered_map<const Behaviour_t *, ImGui::Flow::Node *> behaviour_imnodes{};
-            for (const auto* behaviour : graph.behaviours())
+            for (const auto* behaviour : graph->behaviours())
             {
                 auto& imnode = left_node(behaviour->name());
                 imnode.output_pin("");
@@ -28,21 +28,23 @@ namespace dynamo::widgets
             }
 
             std::unordered_map<const T *, ImGui::Flow::Node *> object_imnodes{};
-            for (const auto& t : graph.values())
+            for (const auto& object : graph->values())
             {
                 auto& imnode = right_node("-");
                 imnode.input_pin("");
-                object_imnodes.emplace(&t, &imnode);
+                object_imnodes.emplace(&object, &imnode);
+                if (graph->is_highest(graph->index(object)))
+                    highest.emplace(&imnode);
             }
 
-            for (const auto [behaviour, object] : graph.positive_influences())
+            for (const auto [behaviour_index, object_index] : graph->positive_influences())
             {
-                positive_link(behaviour_imnodes[behaviour], object_imnodes[object]);
+                positive_link(behaviour_imnodes[graph->behaviour(behaviour_index)], object_imnodes[&graph->value(object_index)]);
             }
 
-            for (const auto [behaviour, object] : graph.negative_influences())
+            for (const auto [behaviour_index, object_index] : graph->negative_influences())
             {
-                negative_link(behaviour_imnodes[behaviour], object_imnodes[object]);
+                negative_link(behaviour_imnodes[graph->behaviour(behaviour_index)], object_imnodes[&graph->value(object_index)]);
             }
         }
 
@@ -72,18 +74,19 @@ namespace dynamo::widgets
             cursor.y = origin.y;
             cursor.x += max_length + offset.x;
 
-            for (const auto& node : left_nodes) {
+            for (const auto& node : right_nodes) {
                 {// SET STYLE
-                    //if (V_highest.contains(name)) {
-                    //    ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
-                    //    ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
-                    //    ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
-                    //}
-                    //else {
+                    if (highest.contains(&node))
+                    {
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
+                    }
+                    else {
                         ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::ORANGE_n);
                         ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::ORANGE_h);
                         ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::ORANGE_s);
-                    //}
+                    }
                 }
                 ImVec2 dimensions = node.render();
 
@@ -119,7 +122,8 @@ namespace dynamo::widgets
         }
 
     private:
-        dynamo::InfluenceGraph<T> graph{};
+        dynamo::InfluenceGraph<T>* graph {nullptr};
+        std::unordered_set<const ImGui::Flow::Node *>  highest{};
     };
 }
 

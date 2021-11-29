@@ -67,12 +67,13 @@ namespace dynamo
             BrainViewer(flecs::entity e, tf::Taskflow* taskflow, const type::ProcessDetails* details) : viewer(e, taskflow, details) {};
         };
 
-        struct InfluenceGraphViewerInt 
+        template<typename T>
+        struct InfluenceGraphViewer
         {
-            widgets::InfluenceGraphViewer<int> viewer {};
+            widgets::InfluenceGraphViewer<T> viewer {};
 
-            InfluenceGraphViewerInt() = default;
-            InfluenceGraphViewerInt(dynamo::InfluenceGraph<int> graph) : viewer(graph) {};
+            InfluenceGraphViewer() = default;
+            InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph) : viewer(graph) {};
         };
 
         struct ActiveTasks

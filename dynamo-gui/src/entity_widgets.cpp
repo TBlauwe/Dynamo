@@ -161,6 +161,10 @@ namespace dynamo::widgets {
             ImGui::EndTable();
         }
         ImGui::EndChild();
+        if (entity.has<type::InfluenceGraphViewer<int>>())
+        {
+            entity.get_mut<type::InfluenceGraphViewer<int>>()->viewer.render();
+        }
         inspect(entity);
         ImGui::EndGroup();
         ImGui::End();
