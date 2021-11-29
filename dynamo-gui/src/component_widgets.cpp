@@ -4,8 +4,32 @@
 #include <dynamo/gui/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
 #include <dynamo/modules/basic_stress.hpp>
+#include <dynamo/modules/basic_action.hpp>
 
 namespace dynamo::widgets {
+    template<>
+    void show<type::Arity>(flecs::entity& e) {
+        auto* arity = e.get_mut<type::Arity>();
+        ImGui::InputInt("Arity", &arity->value);
+    }
+
+    template<>
+    void show<type::Cost>(flecs::entity& e) {
+        auto* cost = e.get_mut<type::Cost>();
+        ImGui::InputInt("Cost", &cost->value);
+    }
+
+    template<>
+    void show<type::ReglementaryCost>(flecs::entity& e) {
+        auto* cost = e.get_mut<type::ReglementaryCost>();
+        ImGui::InputInt("Reglementary cost", &cost->value);
+    }
+
+    template<>
+    void show<type::Qualification>(flecs::entity& e) {
+        auto* qualification = e.get_mut<type::Qualification>();
+        ImGui::InputInt("Qualification", &qualification->value);
+    }
 
     template<>
     void show<type::Stress>(flecs::entity& e) {
@@ -79,7 +103,15 @@ namespace dynamo::widgets {
         flecs::world world = id.world();
         switch (type) {
             case ID_TYPE::COMPONENT:
-                if(id == world.id<type::Decay>()) {
+                if (id == world.id<type::Qualification>()) {
+                    show<type::Qualification>(entity);
+                }else if (id == world.id<type::Arity>()) {
+                    show<type::Arity>(entity);
+                }else if (id == world.id<type::Cost>()) {
+                    show<type::Cost>(entity);
+                }else if (id == world.id<type::ReglementaryCost>()) {
+                    show<type::ReglementaryCost>(entity);
+                }else if (id == world.id<type::ReglementaryCost>()) {
                     show<type::Decay>(entity);
                 }else if(id == world.id<type::PeriodicEmitter>()) {
                     show<type::PeriodicEmitter>(entity);

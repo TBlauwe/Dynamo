@@ -139,12 +139,20 @@ namespace dynamo::widgets {
                                     }
                                     if (entity.has<type::InfluenceGraphViewer<int>>())
                                     {
-                                        if (ImGui::BeginTabItem("Influence Graph"))
+                                        if (ImGui::BeginTabItem("Influence Graph (Test)"))
                                         {
                                             entity.get_mut<type::InfluenceGraphViewer<int>>()->viewer.render();
                                             ImGui::EndTabItem();
                                         }
                                     }
+                                   /* if (entity.has<type::InfluenceGraphViewer<Action>>())
+                                    {
+                                        if (ImGui::BeginTabItem("Influence Graph (Action)"))
+                                        {
+                                            entity.get_mut<type::InfluenceGraphViewer<Action>>()->viewer.render();
+                                            ImGui::EndTabItem();
+                                        }
+                                    }*/
                                    ImGui::EndTabBar();
                                 }
                             }

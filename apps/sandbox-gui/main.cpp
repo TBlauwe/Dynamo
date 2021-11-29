@@ -82,6 +82,7 @@ public:
         Application(1280,720,"Sandbox", "Sandbox")
     {
         const size_t number_of_agents = 1;
+
         // -- Setup
         sim.world().import<module::BasicStress>();
 
@@ -142,6 +143,21 @@ public:
             )
             ;
 
+        sim.strategy<strat::InfluenceGraph<Action, std::vector<Action>>>()
+            .behaviour(
+                "WantEven",
+                [](AgentHandle agent) {return true; },
+                [](AgentHandle agent, const std::vector<Action>& arg){
+                    std::vector<dynamo::Influence<Action>> output;
+                    for (const auto& v : arg)
+                    {
+                        output.emplace_back(&v, false);
+                    }
+                    return output;
+                }
+            )
+            ;
+
         // -- Register some processes/reasonner
         // You must register them before populating the simulation.
         sim.agent_model<SimpleReasonner>();
@@ -151,12 +167,35 @@ public:
         // First, let's create a prefab for our agents, or an archetype :
         auto archetype = sim.agent_archetype("Archetype_Basic")
             .add<type::Stress>()
+            .add<type::Qualification>()
             .agent_model<SimpleReasonner>()
+            ;
+
+        sim.action("Rester en alerte")
+            .set<type::Cost>({0})
+            ;
+        sim.action("Poser un garrot avec un bout de tissu")
+            .set<type::Cost>({1})
+            .set<type::Qualification>({3})
+            ;
+        sim.action("Poser un pansement compressif")
+            .set<type::Cost>({3})
+            .set<type::Qualification>({2})
+            ;
+        sim.action("Poser un garrot rapidement")
+            .set<type::Cost>({2})
+            .set<type::Qualification>({1})
+            ;
+        sim.action("Poser un garrot dans les règles de l'art")
+            .set<type::Cost>({2})
+            .set<type::ReglementaryCost>({1})
+            .set<type::Qualification>({2})
             ;
 
         // Then, we can create agent using our archetype :
         for (int i = 0; i < number_of_agents; i++) {
-            sim.agent(archetype, fmt::format("Agent {}", i).c_str());
+            sim.agent(archetype, fmt::format("Agent {}", i).c_str())
+                .set<type::Qualification>({rand()%3+1});
         }
 
         std::vector<flecs::entity_view> agents {};

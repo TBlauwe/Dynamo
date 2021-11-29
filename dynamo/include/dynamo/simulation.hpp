@@ -7,6 +7,7 @@
 #include <dynamo/internal/archetype.hpp>
 #include <dynamo/internal/core.hpp>
 #include <dynamo/modules/basic_perception.hpp>
+#include <dynamo/modules/basic_action.hpp>
 
 /**
 @file dynamo/Simulation.hpp
@@ -132,6 +133,10 @@ namespace dynamo {
             agents_query.iter(std::forward<std::function<void(flecs::iter&)>>(func));
         }
 
+        /**
+        @brief Construct an action entity with specified name.
+        */
+        Action action(const char* name = "");
 
         /**
         @brief Construct an agent entity with specified name.

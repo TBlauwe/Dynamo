@@ -18,6 +18,11 @@ namespace dynamo {
         };
     }
 
+    inline bool is_pressured(flecs::entity& e)
+    {
+        return e.has<type::Stress>() && e.get<type::Stress>()->value > 50;
+    }
+
     namespace module {
         /**
         @brief Example module for adding stress to agent with passive decreasing.

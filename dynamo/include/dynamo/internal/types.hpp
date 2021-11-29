@@ -62,13 +62,14 @@ namespace dynamo {
         */
         explicit EntityWrapper(flecs::entity entity) : m_entity{ entity } {};
 
+        friend bool operator== (const EntityWrapper& a, const EntityWrapper& b);
         /**
         @brief Returns entity's name. /!\ Can be null (most likely for percepts
         entities) !
 
         For more information see : https://flecs.docsforge.com/master/manual/#entity.
         */
-        const char* name() { return m_entity.name(); }
+        const char* name() const { return m_entity.name(); }
 
         /**
         @brief Returns @c true or @ false, if has given component.
@@ -118,6 +119,11 @@ namespace dynamo {
     protected:
         flecs::entity m_entity;
     };
+
+    inline bool operator== (const EntityWrapper& a, const EntityWrapper& b)
+    { 
+        return a.m_entity.id() == b.m_entity.id();
+    }
 
     /**
     @class EntityManipulator

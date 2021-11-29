@@ -5,6 +5,7 @@ dynamo::Simulation::Simulation() : Simulation(std::thread::hardware_concurrency(
 dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_threads } {
     _world.import<module::Core>();
     _world.import<module::GlobalPerception>();
+    _world.import<module::BasicAction>();
     _world.set<flecs::rest::Rest>({});
 
     agents_query = _world.query<dynamo::type::Agent>();
@@ -17,6 +18,10 @@ void dynamo::Simulation::shutdown() {
             Agent(e).cancel_all_reasonning();
         });
     executor.wait_for_all();
+}
+
+dynamo::Action dynamo::Simulation::action(const char * name) {
+    return ActionBuilder(_world, name).build();
 }
 
 dynamo::Agent dynamo::Simulation::agent(const char * name) {

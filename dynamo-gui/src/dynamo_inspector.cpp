@@ -49,6 +49,20 @@ namespace dynamo{
                     }
             });
 
+        //world.observer<type::IGOutput<flecs::entity>>("OnSet_IGOutput_Action_AddViewer")
+        //    .event(flecs::OnSet)
+        //    .each([](flecs::entity e, type::IGOutput<flecs::entity>& output)
+        //        {
+        //            if (e.has<type::InfluenceGraphViewer<flecs::entity>>())
+        //            {
+        //                dynamo::widgets::InfluenceGraphViewer<flecs::entity>* ptr = const_cast<dynamo::widgets::InfluenceGraphViewer<flecs::entity>*>(&e.get<type::InfluenceGraphViewer<flecs::entity>>()->viewer);
+        //                ptr->change(&output.graph);
+        //            }
+        //            else {
+        //                e.set<type::InfluenceGraphViewer<flecs::entity>>({ &output.graph, [](const flecs::entity& value) {return value.name(); }});
+        //            }
+        //    });
+
         world.system<const type::Percept>("UpdatePlot_PerceptsCount")
                 .kind(flecs::PreStore)
                 .iter([this](flecs::iter& iter){
