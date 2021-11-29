@@ -141,8 +141,8 @@ namespace dynamo::widgets {
                                     {
                                         if (ImGui::BeginTabItem("Influence Graph"))
                                         {
-                                        entity.get_mut<type::InfluenceGraphViewer<int>>()->viewer.render();
-                                        ImGui::EndTabItem();
+                                            entity.get_mut<type::InfluenceGraphViewer<int>>()->viewer.render();
+                                            ImGui::EndTabItem();
                                         }
                                     }
                                    ImGui::EndTabBar();

@@ -22,6 +22,7 @@ namespace ImGui{
             size_t count{ 0 };
 
             inline size_t next_id() { return count++; }
+            inline void reset() { count = 0; }
         };
 
         class EditorContext {
@@ -46,15 +47,15 @@ namespace ImGui{
 
         struct Pin {
             size_t id;
-            const char * name;
+            std::string name;
 
-            Pin(const size_t id, const char * name) :
+            Pin(const size_t id, std::string name) :
                 id{ id },
                 name{ name }
             {}
 
             inline void render() const {
-                ImGui::Text(name);
+                ImGui::Text(name.c_str());
             }
         };
 
@@ -84,22 +85,22 @@ namespace ImGui{
 
             Counter*        counter;
             size_t          id;
-            const char*     name;
+            std::string     name;
             std::list<Pin>	input_pins{};
             std::list<Pin>	output_pins{};
 
-            Node(Counter* counter, const char * name) :
+            Node(Counter* counter, std::string name) :
                 counter { counter },
                 id      { counter->next_id()},
                 name    { name }
             {}
 
-            inline Pin& input_pin(const char * _name)
+            inline Pin& input_pin(std::string _name)
             {
                 return input_pins.emplace_back(counter->next_id(), _name);
             }
 
-            inline Pin& output_pin(const char * _name)
+            inline Pin& output_pin(std::string _name)
             {
                 return output_pins.emplace_back(counter->next_id(), _name);
             }
@@ -110,7 +111,7 @@ namespace ImGui{
                 ImNodes::BeginNode(id);
                 {//TITLE BAR
                     ImNodes::BeginNodeTitleBar();
-                    ImGui::TextUnformatted(name);
+                    ImGui::TextUnformatted(name.c_str());
                     ImNodes::EndNodeTitleBar();
                 }
                 {//Input pin
@@ -161,8 +162,8 @@ namespace ImGui{
         public:
             Graph() = default;
 
-            Node& node(const char* name);
-            void link(Node* a, const char* output_name, Node* b, const char* input_name);
+            Node& node(std::string name);
+            void link(Node* a, std::string output_name, Node* b, std::string input_name);
             void link(const Pin* a, const Pin* b);
             void clear();
             void render() const;
@@ -182,10 +183,11 @@ namespace ImGui{
         public:
             BipartiteGraph() = default;
 
-            Node& left_node(const char* name);
-            Node& right_node(const char* name);
+            Node& left_node(std::string name);
+            Node& right_node(std::string name);
             void positive_link(const Node* a, const Node* b);
             void negative_link(const Node* a, const Node* b);
+            void clear();
             void render() const;
 
         private:

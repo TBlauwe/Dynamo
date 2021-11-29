@@ -13,10 +13,21 @@ namespace dynamo::widgets
 
     public:
         InfluenceGraphViewer() = default;
-        InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph) : graph{ graph } { build(); };
+        InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph, std::function<std::string(const T&)> get_name) 
+            : graph{ graph }, name_of { get_name }
+        {
+            build();
+        }
+
+        void change(dynamo::InfluenceGraph<T>* new_graph)
+        {
+            graph = new_graph;
+            highest.clear();
+            clear();
+            build();
+        }
 
     private:
-        //void change(dynamo::InfluenceGraph<T>* grah)
         void build()
         {
             std::unordered_map<const Behaviour_t *, ImGui::Flow::Node *> behaviour_imnodes{};
@@ -30,13 +41,13 @@ namespace dynamo::widgets
             std::unordered_map<const T *, ImGui::Flow::Node *> object_imnodes{};
             for (const auto& object : graph->values())
             {
-                auto& imnode = right_node("-");
+                auto& imnode = right_node(name_of(object).c_str());
                 imnode.input_pin("");
                 object_imnodes.emplace(&object, &imnode);
                 size_t index = graph->index(object);
                 if (graph->is_highest(index))
                     highest.emplace(&imnode);
-                if (index = graph->result_index())
+                if (index == graph->result_index())
                     selected = &imnode;
             }
 
@@ -79,17 +90,17 @@ namespace dynamo::widgets
 
             for (const auto& node : right_nodes) {
                 {// SET STYLE
-                    if (highest.contains(&node))
-                    {
-                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
-                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
-                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
-                    }
-                    else if(&node == selected)
+                    if(&node == selected)
                     {
                         ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_s);
                         ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
                         ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_n);
+                    }
+                    else if (highest.contains(&node))
+                    {
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::GREEN_n);
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::GREEN_h);
+                        ImNodes::PushColorStyle(ImNodesCol_TitleBarSelected, ImGui::Color::GREEN_s);
                     }
                     else {
                         ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::ORANGE_n);
@@ -133,7 +144,7 @@ namespace dynamo::widgets
     private:
         dynamo::InfluenceGraph<T>* graph {nullptr};
         std::unordered_set<const ImGui::Flow::Node *>  highest{};
-        //std::function<const char* (T&)> name_of {};
+        std::function<std::string(const T&)> name_of {};
         ImGui::Flow::Node *  selected {nullptr};
     };
 }

@@ -41,11 +41,11 @@ namespace dynamo{
                 {
                     if (e.has<type::InfluenceGraphViewer<int>>())
                     {
-                        //auto* ptr = e.get_mut<type::InfluenceGraphViewer<int>>();
-                        //ptr->viewer
+                        dynamo::widgets::InfluenceGraphViewer<int>* ptr = const_cast<dynamo::widgets::InfluenceGraphViewer<int>*>(&e.get<type::InfluenceGraphViewer<int>>()->viewer);
+                        ptr->change(&output.graph);
                     }
                     else {
-                        e.set<type::InfluenceGraphViewer<int>>({ &output.graph });
+                        e.set<type::InfluenceGraphViewer<int>>({ &output.graph, [](const int& value) {return std::to_string(value); } });
                     }
             });
 

@@ -38,12 +38,12 @@ void ImGui::Flow::EditorContext::end() const
     ImNodes::EndNodeEditor();
 }
 
-ImGui::Flow::Node& ImGui::Flow::Graph::node(const char* name)
+ImGui::Flow::Node& ImGui::Flow::Graph::node(std::string name)
 {
     return nodes.emplace_back(&id_count, name);
 }
 
-void ImGui::Flow::Graph::link(Node* a, const char* output_name, Node* b, const char* input_name)
+void ImGui::Flow::Graph::link(Node* a, std::string output_name, Node* b, std::string input_name)
 {
     links.emplace_back(id_count.next_id(), a->output_pin(output_name), b->input_pin(input_name));
 }
@@ -60,18 +60,19 @@ void ImGui::Flow::Graph::render() const
     context.end();
 }
 
-inline void ImGui::Flow::Graph::clear()
+void ImGui::Flow::Graph::clear()
 {
+    id_count.reset();
     nodes.clear();
     links.clear();
 }
 
-ImGui::Flow::Node& ImGui::Flow::BipartiteGraph::left_node(const char* name)
+ImGui::Flow::Node& ImGui::Flow::BipartiteGraph::left_node(std::string name)
 {
     return left_nodes.emplace_back(&id_count, name);
 }
 
-ImGui::Flow::Node& ImGui::Flow::BipartiteGraph::right_node(const char* name)
+ImGui::Flow::Node& ImGui::Flow::BipartiteGraph::right_node(std::string name)
 {
     return right_nodes.emplace_back(&id_count, name);
 }
@@ -91,4 +92,13 @@ void ImGui::Flow::BipartiteGraph::render() const
     context.begin();
     this->render_graph();
     context.end();
+}
+
+void ImGui::Flow::BipartiteGraph::clear()
+{
+    id_count.reset();
+    right_nodes.clear();
+    left_nodes.clear();
+    positive_links.clear();
+    negative_links.clear();
 }

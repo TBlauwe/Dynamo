@@ -73,7 +73,7 @@ namespace dynamo
             widgets::InfluenceGraphViewer<T> viewer {};
 
             InfluenceGraphViewer() = default;
-            InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph) : viewer(graph) {};
+            InfluenceGraphViewer(dynamo::InfluenceGraph<T>* graph, std::function<std::string(const T&)> name_of) : viewer(graph, name_of) {};
         };
 
         struct ActiveTasks
