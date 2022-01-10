@@ -60,7 +60,7 @@ namespace dynamo {
         We can't check if entity has the corresponding @c Type tag as it may be
         staged.
         */
-        EntityWrapper() : m_entity{ 0 } {};
+        EntityWrapper() : m_entity{} {};
         explicit EntityWrapper(flecs::entity entity) : m_entity{ entity } {};
 
         friend bool operator== (const EntityWrapper& a, const EntityWrapper& b);

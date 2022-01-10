@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
     }
 
     std::vector<flecs::entity_view> agents{};
-    sim.for_each([&agents](flecs::entity agent, type::Agent& _) {
+    sim.for_each([&agents](flecs::entity agent, const type::Agent _) {
         agents.emplace_back(agent);
         });
 

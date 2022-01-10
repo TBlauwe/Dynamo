@@ -25,7 +25,7 @@ namespace dynamo::widgets {
         void build();
 
     private:
-        flecs::entity entity{ 0 };
+        flecs::entity entity{};
         const tf::Taskflow* taskflow{ nullptr };
         const type::ProcessDetails* _details{ nullptr };
 

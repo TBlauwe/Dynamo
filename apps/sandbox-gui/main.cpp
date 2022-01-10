@@ -56,19 +56,19 @@ public:
         p_c.input_name(p_a, "A string");
         p_c.input_name(p_b, "An integer");
 
-        auto v = static_value<std::vector<int>>(0, 1, 2, 3, 4, 5);
-        v.name("Integers Vector");
+        //auto v = static_value<std::vector<int>>(0, 1, 2, 3, 4, 5);
+        //v.name("Integers Vector");
 
-        auto p_d = process<strat::InfluenceGraph, int, std::vector<int>>(v);
-        p_d.name("Integer selection");
-        p_d.input_name(v, "Integers");
+        //auto p_d = process<strat::InfluenceGraph, int, std::vector<int>>(v);
+        //p_d.name("Integer selection");
+        //p_d.input_name(v, "Integers");
 
-        auto p_e = process<strat::Random, std::vector<Action>>();
-        p_e.name("Potential actions");
+        //auto p_e = process<strat::Random, std::vector<Action>>();
+        //p_e.name("Potential actions");
 
-        auto p_f = process<strat::InfluenceGraph, Action, std::vector<Action>>(p_e);
-        p_f.name("Action selection");
-        p_f.input_name(p_e, "Actions");
+        //auto p_f = process<strat::InfluenceGraph, Action, std::vector<Action>>(p_e);
+        //p_f.name("Action selection");
+        //p_f.input_name(p_e, "Actions");
     }
 };
 
@@ -255,7 +255,7 @@ public:
         }
 
         std::vector<flecs::entity_view> agents {};
-        sim.for_each([&agents](flecs::entity agent, dynamo::type::Agent& _){
+        sim.for_each([&agents](flecs::entity agent, const dynamo::type::Agent _){
             agents.emplace_back(agent);
         });
 

@@ -8,12 +8,12 @@ dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_t
     _world.import<module::BasicAction>();
     _world.set<flecs::rest::Rest>({});
 
-    agents_query = _world.query<dynamo::type::Agent>();
+    agents_query = _world.query<const dynamo::type::Agent>();
     _world.set<type::CommandsQueueHandle>({&commands_queue});
 }
 
 void dynamo::Simulation::shutdown() {
-    for_each([](flecs::entity e, type::Agent& _)
+    for_each([](flecs::entity e, const type::Agent _)
         {
             Agent(e).cancel_all_reasonning();
         });

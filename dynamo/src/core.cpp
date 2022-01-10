@@ -33,7 +33,7 @@ namespace dynamo {
             for (auto i : iter) {
                 cooldown[i].remaining_time -= iter.delta_time();
                 if (cooldown[i].remaining_time <= 0) {
-                    iter.entity(i).remove<type::Cooldown>(iter.term_id(1).object());
+                    iter.entity(i).remove<type::Cooldown>(iter.id(1).object());
                 }
             }
                 });

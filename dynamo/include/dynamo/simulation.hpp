@@ -56,9 +56,9 @@ namespace dynamo {
             would be recreated. It seems preferable to set a child entity containing the taskflow so we can have as many
             processes and relation between them for more control.
             */
-            _world.observer<type::AddProcess<T>>()
+            _world.observer<const type::AddProcess<T>>()
                 .event(flecs::OnAdd)
-                .each([this](flecs::entity e, type::AddProcess<T>& _)
+                .each([this](flecs::entity e, const type::AddProcess<T> _)
                     {
                         auto parent = e.get_object(flecs::ChildOf);
                         if (parent.has(flecs::Prefab))
@@ -94,13 +94,13 @@ namespace dynamo {
         /**
         @brief Iterate over all agents for_each.
 
-        @tparam T Accept function with following signature : @c std::function<void(flecs::entity, type::Agent&)>
+        @tparam T Accept function with following signature : @c std::function<void(flecs::entity, const type::Agent)>
 
         TODO : Add constraint
 
         Usage :
         @code{.cpp}
-        sim.for_each([](flecs::entity e, type::Agent& agent){
+        sim.for_each([](flecs::entity e, const type::Agent agent){
             //...
         });
         @endcode
@@ -108,7 +108,7 @@ namespace dynamo {
         template<typename T>
         void for_each(T&& func)
         {
-            agents_query.each(std::forward<std::function<void(flecs::entity, type::Agent&)>>(func));
+            agents_query.each(std::forward<std::function<void(flecs::entity, const type::Agent)>>(func));
         }
 
         /**
@@ -229,7 +229,7 @@ namespace dynamo {
 
         For more information, see https://flecs.docsforge.com/master/quickstart/#query .
         */
-        flecs::query<type::Agent> agents_query;
+        flecs::query<const type::Agent> agents_query;
 
         /**
         @brief Keep all taskflow alive so we do not have to build them again.
