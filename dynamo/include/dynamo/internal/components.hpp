@@ -105,6 +105,21 @@ namespace dynamo::type {
         tf::Taskflow* taskflow;
     };
 
+    struct ProcessCounter
+    {
+        size_t value {0};
+    };
+
+    struct Duration 
+    {
+        std::chrono::duration<double, std::milli> value {0};
+    };
+
+    struct Timestamp
+    {
+        std::chrono::system_clock::time_point value {std::chrono::system_clock::now()};
+    };
+
     using CommandsQueue = ThreadsafeQueue<std::function<void(flecs::world&)>>;
     /**
     @brief Component holding a ref to command queue to delay commands set during async tasks.

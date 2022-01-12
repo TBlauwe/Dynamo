@@ -55,7 +55,7 @@ public:
 
 int main(int argc, char** argv) {
 
-    const size_t number_of_agents = 100;
+    const size_t number_of_agents = 1400;
     const size_t number_of_ticks = 10000;
     const size_t number_of_threads = std::thread::hardware_concurrency();
 
@@ -143,7 +143,6 @@ int main(int argc, char** argv) {
         ;
 
     // Then, we can create agent using our archetype :
-    auto arthur = sim.agent(archetype, "Arthur");
     for (int i = 0; i < number_of_agents; i++) {
         sim.agent(archetype, fmt::format("Agent {}", i).c_str());
     }
@@ -161,19 +160,38 @@ int main(int argc, char** argv) {
     // 3. Create a percept seen by all entities
     sim.percept<type::Hearing>(radio)
         .perceived_by(radio)
-        .perceived_by(arthur)
         ;
 
     sim.step_n(number_of_ticks);
 
     const std::chrono::duration<double, std::milli> duration_ticks = std::chrono::system_clock::now() - start_time;
     std::cout << " -- Simulation (ticks) ending in : " << duration_ticks.count() << "ms" << std::endl;
+    std::cout << "TPS : " << duration_ticks.count() / number_of_ticks << "ms" << std::endl;
+    std::cout << "TPS per agent : " << duration_ticks.count() / number_of_ticks / number_of_agents << "ms" << std::endl;
     std::cout << "Waiting for reasonning to finish ..." << std::endl;
     sim.shutdown();
+
 
     const std::chrono::duration<double, std::milli> duration = std::chrono::system_clock::now() - start_time;
     std::cout << "Done waiting ! " << std::endl;
     std::cout << "Total elapsed time : " << duration.count() << "ms" << std::endl;
+
+    int sum{ 0 };
+    sim.world().each([&sum](flecs::entity e, const type::ProcessCounter counter) {
+        sum += counter.value;
+        });
+
+    double avg{ 0 };
+    sim.world().each([&avg](flecs::entity e, const type::Duration duration) {
+        avg += (duration.value.count() / e.get<type::ProcessCounter>()->value);
+        });
+
+    std::cout << "Number of process computed : " << sum << std::endl;
+    std::cout << "Time spent computing processes : " << avg << "ms" << std::endl;
+    avg /= number_of_agents;
+    std::cout << "Average time spent computing processes : " << avg << "ms" << std::endl;
+    sum /= number_of_agents;
+    std::cout << "Average count of process computed per agent : " << sum << std::endl;
 
     return 0;
 }

@@ -63,32 +63,52 @@ namespace dynamo {
                         auto parent = e.get_object(flecs::ChildOf);
                         if (parent.has(flecs::Prefab))
                             return;
-                        // By construction, only entity agent can be a parent of these entities (except for the prefab we checked earlier)
+                        // By construction, only entity agent can be a parent of these entities (except for the prefab we checked for earlier)
                         auto process = T(&strategies, AgentHandle(parent));
                         process.build();
                         e.set_name(process.name());
-                        e.set<type::ProcessDetails>({ process.process_details() });
+                        e.set<type::ProcessDetails>({ process.process_details() }); // TODO Isn't this a problem with the move below ?
                         e.set<type::ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
+                        e.add<type::ProcessCounter>();
+                        e.add<type::Duration>();
                         e.remove<type::AddProcess<T>>();
                     }
             );
 
             _world.system<type::ProcessHandle>()
                 .term<type::IsProcessing>().oper(flecs::Not)
+                .term<type::Cooldown>().oper(flecs::Not)
                 .kind(flecs::PreUpdate)
                 .each([this](flecs::entity e, type::ProcessHandle& process)
                     {
+                        e.add<type::Timestamp>();
                         e.set<type::IsProcessing>({
                             executor.run(*process.taskflow,[id = e.id(), this]()
                                 {
                                     commands_queue.push([id] (flecs::world& world) mutable {
                                         flecs::entity(world, id).remove<type::IsProcessing>();
+                                        flecs::entity(world, id).set<type::Cooldown>({Random::get(0.9f, 1.1f)});
                                         });
                                 })
                         });
                     }
             );
 
+            _world.observer<const type::IsProcessing>()
+                .event(flecs::OnSet)
+                .each([this](flecs::entity e, const type::IsProcessing& process)
+                    {
+                        e.get_mut<type::ProcessCounter>()->value++;
+                    }
+            );
+
+            _world.observer<const type::IsProcessing>()
+                .event(flecs::OnRemove)
+                .each([this](flecs::entity e, const type::IsProcessing& process)
+                    {
+                        e.get_mut<type::Duration>()->value += std::chrono::system_clock::now() - e.get<type::Timestamp>()->value;
+                    }
+            );
         };
 
         /**

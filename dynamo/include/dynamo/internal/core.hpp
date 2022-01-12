@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <effolkronium/random.hpp>
+
 #include <dynamo/internal/types.hpp>
 
 /**
@@ -14,16 +16,23 @@
 /**
 @brief Namespace containing modules
 */
-namespace dynamo::module {
-    /**
-    @brief Core module to setup core functionnalities
-    */
-    struct Core {
+
+namespace dynamo
+{
+    using Random    = effolkronium::random_static;
+    using RandomTS  = effolkronium::random_thread_local;
+
+    namespace module {
         /**
-        @brief Core is a flecs::module that requires a world to instantiate.
+        @brief Core module to setup core functionnalities
         */
-        explicit Core(flecs::world& world);
-    };
+        struct Core {
+            /**
+            @brief Core is a flecs::module that requires a world to instantiate.
+            */
+            explicit Core(flecs::world& world);
+        };
+    }
 }
 
 #endif //DYNAMO_CORE_HPP

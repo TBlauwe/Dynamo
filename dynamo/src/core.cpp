@@ -26,7 +26,7 @@ namespace dynamo {
             }
                 });
 
-        world.system<type::Cooldown>("Cooldown")
+        world.system<type::Cooldown>("Cooldown linked")
             .arg(1).obj(flecs::Wildcard) // <- Cooldown is actually a pair type with anything
             .kind(flecs::PreFrame)
             .iter([](flecs::iter& iter, type::Cooldown* cooldown) {
@@ -37,6 +37,17 @@ namespace dynamo {
                 }
             }
                 });
+
+        world.system<type::Cooldown>("Cooldown single")
+            .kind(flecs::PreFrame)
+            .iter([](flecs::iter& iter, type::Cooldown* cooldown) {
+            for (auto i : iter) {
+                cooldown[i].remaining_time -= iter.delta_time();
+                if (cooldown[i].remaining_time <= 0) {
+                    iter.entity(i).remove<type::Cooldown>();
+                }
+            }
+        });
 
         world.system<type::CurrentFrame>("RemoveCurrentFrameTag")
             .kind(flecs::PostFrame)

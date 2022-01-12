@@ -57,7 +57,7 @@ MESSAGE(STATUS "Fetching taskflow ...")
 CPMAddPackage(
         NAME taskflow
         GITHUB_REPOSITORY taskflow/taskflow
-        GIT_TAG v3.2.0
+        GIT_TAG v3.3.0
         OPTIONS
         "TF_BUILD_TESTS OFF"
         "TF_BUILD_EXAMPLES OFF"
@@ -67,6 +67,19 @@ if (taskflow_ADDED)
     MESSAGE(STATUS "------------------------")
 else()
     MESSAGE(FATAL_ERROR "Could not fetch taskflow")
+endif ()
+
+MESSAGE(STATUS "Fetching RandomLib ...")
+CPMAddPackage(
+        NAME RandomLib 
+        GITHUB_REPOSITORY effolkronium/random
+        GIT_TAG master
+)
+if (RandomLib_ADDED)
+    MESSAGE(STATUS "Fetching RandomLib - done")
+    MESSAGE(STATUS "------------------------")
+else()
+    MESSAGE(FATAL_ERROR "Could not fetch RandomLib")
 endif ()
 
 MESSAGE(STATUS "Fetching boost ... (via boost-cmake)")

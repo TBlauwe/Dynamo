@@ -3,6 +3,13 @@
 
 #include <dynamo/simulation.hpp>
 
+struct Parameters
+{
+	size_t number_of_agents	{ 10 };
+	size_t number_of_thread	{ std::thread::hardware_concurrency };
+	size_t number_of_ticks	{ 10000 };
+};
+
 class Example
 {
 public:
