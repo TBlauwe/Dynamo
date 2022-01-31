@@ -6,7 +6,32 @@
 #include <dynamo/simulation.hpp>
 #include <dynamo/modules/basic_stress.hpp>
 
+
+struct BrainTag {};
+class Brain : public dynamo::EntityWrapper
+{
+public:
+
+    /**
+    @brief Create a brain entity without attachement
+    */
+    Brain(flecs::world& world)
+        : EntityWrapper(world.entity())
+    {
+    }
+
+    Brain(flecs::entity& agent)
+        : EntityWrapper(agent.world().entity())
+    {
+	    m_entity 
+            .child_of(agent)
+	        .add<BrainTag>()
+			;
+    }
+};
+
 using namespace dynamo;
+
 
 class SimpleReasonner : public AgentModel
 {
@@ -59,11 +84,13 @@ int main(int argc, char** argv) {
     const size_t number_of_ticks = 10000;
     const size_t number_of_threads = std::thread::hardware_concurrency();
 
+    std::cout << " -- PARAMETERS --" << std::endl;
     std::cout << "Number of agents : " << number_of_agents << std::endl;
     std::cout << "Number of ticks : " << number_of_ticks << std::endl;
     std::cout << "Number of threads : " << number_of_threads << std::endl;
-    std::cout << " -- Simulation starting --" << std::endl;
+    std::cout << " -- START --" << std::endl;
     const auto start_time = std::chrono::system_clock::now();
+    std::cout << "setup in progress ..." << std::endl;
 
     // -----------------------------
     // SETUP
@@ -162,19 +189,32 @@ int main(int argc, char** argv) {
         .perceived_by(radio)
         ;
 
+    std::cout << "Done ! Launching ..." << std::endl;
     sim.step_n(number_of_ticks);
 
-    const std::chrono::duration<double, std::milli> duration_ticks = std::chrono::system_clock::now() - start_time;
-    std::cout << " -- Simulation (ticks) ending in : " << duration_ticks.count() << "ms" << std::endl;
-    std::cout << "TPS : " << duration_ticks.count() / number_of_ticks << "ms" << std::endl;
-    std::cout << "TPS per agent : " << duration_ticks.count() / number_of_ticks / number_of_agents << "ms" << std::endl;
     std::cout << "Waiting for reasonning to finish ..." << std::endl;
+    const std::chrono::duration<double, std::milli> duration_ticks = std::chrono::system_clock::now() - start_time;
     sim.shutdown();
-
 
     const std::chrono::duration<double, std::milli> duration = std::chrono::system_clock::now() - start_time;
     std::cout << "Done waiting ! " << std::endl;
     std::cout << "Total elapsed time : " << duration.count() << "ms" << std::endl;
+
+    std::cout << " -- END --" << std::endl;
+
+
+    std::cout << " -- STATISTICS --" << std::endl;
+
+    std::chrono::duration<double, std::milli> ben_tps{ 884.9 };
+
+    std::cout << "Total time elapsed : " << duration_ticks.count() << "ms" << std::endl;
+    std::cout << "Average time per tick : " << duration_ticks.count() / number_of_ticks << "ms" << std::endl;
+    std::cout << "Average time per tick (BEN) : " << ben_tps.count() << "ms" << std::endl;
+    std::cout << "Ratio : " << ben_tps.count() / (duration_ticks.count() / number_of_ticks) << "x" << std::endl;
+    std::cout << "Average time per tick per agent : " << duration_ticks.count() / number_of_ticks / number_of_agents << "ms" << std::endl;
+    std::cout << "---" << std::endl;
+
+
 
     int sum{ 0 };
     sim.world().each([&sum](flecs::entity e, const type::ProcessCounter counter) {
@@ -189,9 +229,11 @@ int main(int argc, char** argv) {
     std::cout << "Number of process computed : " << sum << std::endl;
     std::cout << "Time spent computing processes : " << avg << "ms" << std::endl;
     avg /= number_of_agents;
-    std::cout << "Average time spent computing processes : " << avg << "ms" << std::endl;
-    sum /= number_of_agents;
-    std::cout << "Average count of process computed per agent : " << sum << std::endl;
+    std::cout << "Average time spent computing processes per agent : " << avg << "ms" << std::endl;
+    std::cout << "Average count of process computed per agent : " << sum / number_of_agents << std::endl;
+    std::cout << "Average process computed per tick : " << sum / number_of_ticks << std::endl;
+    std::cout << "Average process computed per tick BEN : " << number_of_agents << std::endl;
+    std::cout << "Diff : " << number_of_agents / (sum / number_of_ticks) << "x" << std::endl;
 
     return 0;
 }

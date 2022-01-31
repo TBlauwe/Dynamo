@@ -104,7 +104,7 @@ class ThreadsafeQueue {
 
   std::optional<T> pop() {
     if (queue_.empty()) {
-      return {};
+      return std::nullopt;
     }
     T tmp = queue_.front();
     queue_.pop();

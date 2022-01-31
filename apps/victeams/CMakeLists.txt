@@ -1,4 +1,4 @@
-MESSAGE(STATUS "Building Sandbox console")
+MESSAGE(STATUS "Building Victeams")
 
 
 #MESSAGE(STATUS "Fetching gRPC ...")
@@ -19,7 +19,7 @@ MESSAGE(STATUS "Building Sandbox console")
 #    MESSAGE(FATAL_ERROR "Could not fetch grpc")
 #endif ()
 
-add_executable(Sandbox-console main.cpp)
-target_compile_features(Sandbox-console PRIVATE cxx_std_20)
-target_link_libraries(Sandbox-console PRIVATE dynamo)
-set_target_properties(Sandbox-console PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${Dynamo_SOURCE_DIR}/bin/Sandbox-console")
+add_executable(Victeams main.cpp)
+target_compile_features(Victeams PRIVATE cxx_std_20)
+target_link_libraries(Victeams PRIVATE dynamo)
+set_target_properties(Victeams PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${Dynamo_SOURCE_DIR}/bin/Sandbox-console")

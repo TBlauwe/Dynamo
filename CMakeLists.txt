@@ -4,7 +4,7 @@
 
 # CMake version
 # -------------
-cmake_minimum_required(VERSION 3.12...3.21)
+cmake_minimum_required(VERSION 3.15...3.21)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
@@ -41,7 +41,7 @@ project(Dynamo
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF)
-set(FETCHCONTENT_QUIET TRUE)
+set(FETCHCONTENT_QUIET ON)
 
 # Build options
 # -------------
@@ -50,14 +50,17 @@ option(DYN_BUILD_APPS           "Build several applications to showcase the libr
 option(DYN_BUILD_BENCHMARKS     "Build benchmarks using google benchmarks." OFF)
 option(DYN_BUILD_DOCS           "Build documentation using doxygen (must be installed)." OFF)
 option(DYN_BUILD_TESTS          "Build tests using doctest." OFF)
+option(DYN_BUILD_VICTEAMS       "Build VICTEAMS app" ON)
 option(DYN_ENABLE_TEST_COVERAGE "Enable test coverage. --UNUSED FEATURE--" OFF)
 MESSAGE(STATUS "Build options :")
 MESSAGE(STATUS "===============")
+cmake_print_variables(CMAKE_VERSION)
 cmake_print_variables(DYN_BUILD_DYNAMO_GUI)
 cmake_print_variables(DYN_BUILD_APPS)
 cmake_print_variables(DYN_BUILD_BENCHMARKS)
 cmake_print_variables(DYN_BUILD_DOCS)
 cmake_print_variables(DYN_BUILD_TESTS)
+cmake_print_variables(DYN_BUILD_VICTEAMS)
 cmake_print_variables(DYN_ENABLE_TEST_COVERAGE)
 MESSAGE(STATUS "")
 

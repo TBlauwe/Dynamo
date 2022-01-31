@@ -79,18 +79,22 @@ namespace dynamo {
                 .term<type::IsProcessing>().oper(flecs::Not)
                 .term<type::Cooldown>().oper(flecs::Not)
                 .kind(flecs::PreUpdate)
-                .each([this](flecs::entity e, type::ProcessHandle& process)
+                .iter([this](flecs::iter& it, type::ProcessHandle* process)
                     {
-                        e.add<type::Timestamp>();
-                        e.set<type::IsProcessing>({
-                            executor.run(*process.taskflow,[id = e.id(), this]()
-                                {
-                                    commands_queue.push([id] (flecs::world& world) mutable {
-                                        flecs::entity(world, id).remove<type::IsProcessing>();
-                                        flecs::entity(world, id).set<type::Cooldown>({Random::get(0.9f, 1.1f)});
-                                        });
-                                })
-                        });
+                        for (auto i : it)
+                        {
+							auto e = it.entity(i);
+							e.add<type::Timestamp>();
+							e.set<type::IsProcessing>({
+								executor.run(*process[i].taskflow,[id = e.id(), this]()
+									{
+										commands_queue.push([id] (flecs::world& world) mutable {
+											flecs::entity(world, id).remove<type::IsProcessing>();
+											flecs::entity(world, id).set<type::Cooldown>({1.0f});
+											});
+									})
+							});
+                        }
                     }
             );
 
@@ -195,10 +199,10 @@ namespace dynamo {
         };
 
         /**
-        @brief Advance simulation by one-step and specify elapsed time.
+        @brief Advance simulation by one-step and specify elapsed time. Return false, if application should quit.
         @param elapsed_time time elapsed. If 0 (default), then it is automatically measured;
         */
-        void step(float elapsed_time = 0.0f);
+        bool step(float elapsed_time = 0.0f);
 
         /**
         @brief Advance simulation by @c n step and specify elapsed time between each step.
@@ -206,6 +210,11 @@ namespace dynamo {
         @param elapsed_time time elapsed. If 0 (default), then it is automatically measured;
         */
         void step_n(unsigned int n = 0, float elapsed_time = 0.0f);
+
+        /**
+        @brief Return number of commands left in the queue. Warning lock the queue so it's costly to check !.
+        */
+        inline size_t commands_queue_size() { return commands_queue.size(); }
 
         /**
         @brief Return a ref to world - an ecs "database".

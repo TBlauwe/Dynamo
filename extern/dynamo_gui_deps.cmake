@@ -8,7 +8,7 @@ include(${Dynamo_SOURCE_DIR}/cmake/CPM.cmake)
 
 # Dependencies
 # ----------------
-CPMAddPackage("gh:ocornut/imgui#docking")
+CPMAddPackage("gh:ocornut/imgui#f84c93d8347617326952dfb1dbb921c53df071cc")
 if (NOT imgui_ADDED)
     MESSAGE(FATAL_ERROR "Could not fetch imgui")
 endif ()

@@ -70,7 +70,8 @@ However, some dependencies needs to be downloaded manually (for some targets) :
 
 > Only if `BUILD_APPS ON` !
 
-Download and install [Vulkan](https://vulkan.lunarg.com/sdk/home)
+Download and install [Vulkan](https://vulkan.lunarg.com/sdk/home) and add it to PATH
+Download and install [NASM](https://www.nasm.us/) (only for example apps using grpc) and add it to PATH
 
 :warning: __Don't forget to install 32bit libraries if you want to build for 32bit targets !__
 

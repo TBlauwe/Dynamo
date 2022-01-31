@@ -15,7 +15,10 @@ dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_t
 void dynamo::Simulation::shutdown() {
     for_each([](flecs::entity e, const type::Agent _)
         {
-            Agent(e).cancel_all_reasonning();
+            if (e.is_alive())
+                Agent(e).cancel_all_reasonning();
+            else
+                std::cout << "Agent " << e.name() << "died unexpectedly ! \n";
         });
     executor.wait_for_all();
 }
@@ -46,17 +49,19 @@ dynamo::Artefact dynamo::Simulation::artefact(const char *name) {
     return ArtefactBuilder(_world, name).build();
 }
 
-void dynamo::Simulation::step(float elapsed_time) {
-    _world.progress(elapsed_time);
+bool dynamo::Simulation::step(float elapsed_time) {
+    auto should_quit = _world.progress(elapsed_time);
 
     size_t size = commands_queue.size();    // Since size can be updated between for loop (async),
                                             // we must check only once, not at every loop !
     for (int i = 0; i<size; i++)
     {
         auto command = commands_queue.pop();
-        if(command)
+        if(command && command.value()) // BUG : Somehow some commands are empty
             command.value()(_world);
     }
+
+    return should_quit;
 }
 
 void dynamo::Simulation::step_n(unsigned int n, float elapsed_time) {

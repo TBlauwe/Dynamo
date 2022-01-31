@@ -60,7 +60,7 @@ auto my_strat = sim.get<MyStrategy>();
 random_strat.add(Behaviour<TBehaviourOutput, ... TInputs>{
     "MyFirstBehaviour",
         [](Agent agent) -> bool {return true; },
-        [](Agent agent, TInputs ...) -> TBehaviourOutput {return "Yeah"; }
+        [](Agent agent, TInputs ...) -> TBehaviourOutput {return ...; }
 });
 
 @endcode
@@ -242,6 +242,14 @@ namespace dynamo {
         inline void input_name(Process<U>& p, const char* name)
         {
             process.input_name(p, name);
+        }
+
+        /**
+        @brief Return underlying shared_ptr.
+        */
+        inline std::shared_ptr<T> output()
+        {
+            return result;
         }
 
     protected:
@@ -445,6 +453,7 @@ namespace dynamo {
 
     @endcode
     */
+
     class AgentModel
     {
     public:

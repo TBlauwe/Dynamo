@@ -214,6 +214,15 @@ namespace dynamo {
             return *static_cast<T*>(this);
         }
 
+        template<typename R, typename V>
+        T& add(V&& value)
+        {
+            commands_queue->push([id = m_entity.id(), args = std::forward<V>(value)](flecs::world& world) mutable {
+                flecs::entity(world, id).add<R>(args);
+            });
+            return *static_cast<T*>(this);
+        }
+
         /**
         @brief Set a component (with provided value).
         @tparam TType Component's type.
