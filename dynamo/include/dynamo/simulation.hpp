@@ -41,11 +41,11 @@ namespace dynamo {
 
         //TODO add constraint
         /**
-        @brief Register an agent model so that it can be instantiaed for each relevant agent and executed when required.
+        @brief Register a flow builder so that it can be instantiaed for each relevant agent and executed when required.
         @tparam Must be a callable of type std::function<void(Agent)>. /!\ Not enforced ! /!\
         */
         template<typename T>
-        void agent_model()
+        void flow()
         {
             /**
             When an @c AddFlow<T> is added and if the parent is not a prefab (to circumvent copying),
@@ -63,6 +63,7 @@ namespace dynamo {
                         auto parent = e.get_object(flecs::ChildOf);
                         if (parent.has(flecs::Prefab))
                             return;
+
                         // By construction, only entity agent can be a parent of these entities (except for the prefab we checked for earlier)
                         auto process = T(&strategies, AgentHandle(parent));
                         process.build();

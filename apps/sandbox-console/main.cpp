@@ -10,10 +10,10 @@
 using namespace dynamo;
 
 
-class SimpleReasonner : public AgentModel
+class SimpleReasonner : public FlowBuilder
 {
 public:
-    using AgentModel::AgentModel;
+    using FlowBuilder::FlowBuilder;
 
     virtual constexpr const char* name() const { return "MySuperReasonner"; }
 
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
     // -- Register some processes/reasonner
     // You must register them before populating the simulation.
-    sim.agent_model<SimpleReasonner>();
+    sim.flow<SimpleReasonner>();
 
 
     // -- Create some entities to populate the simulation;

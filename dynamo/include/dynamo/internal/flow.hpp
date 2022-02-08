@@ -102,7 +102,7 @@ namespace dynamo {
     */
     class ProcessBase
     {
-        friend class AgentModel;
+        friend class FlowBuilder;
 
         template <typename U>
         friend class Process;
@@ -202,7 +202,7 @@ namespace dynamo {
     template<typename T>
     class Process
     {
-        friend class AgentModel;
+        friend class FlowBuilder;
     public:
         Process(ProcessBase& process, std::shared_ptr<T> result) :
             process{ process }, result {result}
@@ -424,25 +424,25 @@ namespace dynamo {
 
     using Strategies = TypeMap;
     /**
-    @class AgentModel
+    @class FlowBuilder
 
-    @brief An agent model is a graph of tasks/computation to represent cognitive processes
+    @brief A flow is a graph of tasks to represent cognitive processes
 
-    An agent model must be register before the simulation starts (otherwise, it will not be
-    triggered until it is registered).
+    A flow must be registed before the simulation starts (otherwise, it will not be
+    triggered, until it is registered).
 
-    To create an agent model, inherit this class and implement the @c build() function.
+    To create a flow, inherit this class and implement the @c build() function.
 
-    You should not manually create an agent. It will be automatically created for you.
+    You should not manually create a flow. It will be automatically created for you.
     See below :
 
     @code{.cpp}
     Simulation sim;
     //...
-    sim.agent_model<YourAgentModel>();
+    sim.flow<YourFlow>();
     //...
-    // For an agent to use your agent model, use this :
-    agent.reason<YourAgentModel>();
+    // For an agent to use your flow, use this :
+    agent.flow<YourFlow>();
     //...
     while(run())
     {
@@ -452,13 +452,13 @@ namespace dynamo {
     @endcode
     */
 
-    class AgentModel
+    class FlowBuilder
     {
     public:
         /**
         @brief Construct an agent model for the specified agent.
         */
-        AgentModel(Strategies const * const  strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
+        FlowBuilder(Strategies const * const  strategies, AgentHandle agent) : strategies{ strategies }, agent { agent } {}
 
         /**
         @brief Pure virtual function used to build a graph of cognitives processes.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <dynamo/internal/process.hpp>
+#include <dynamo/internal/flow.hpp>
 
 namespace dynamo
 {
@@ -120,7 +120,7 @@ namespace dynamo
         template<typename T>
         AgentArchetype& flow()
         {
-            static_assert(std::is_base_of<AgentModel, T>::value, "Wrong type passed : T is not inheriting from AgentModel.");
+            static_assert(std::is_base_of<FlowBuilder, T>::value, "Wrong type passed : T is not inheriting from FlowBuilder.");
 
             auto reasonnner_entity = m_entity.world().entity();
             reasonnner_entity

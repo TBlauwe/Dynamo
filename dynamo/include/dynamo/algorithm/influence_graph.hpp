@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include <dynamo/internal/process.hpp>
+#include <dynamo/internal/flow.hpp>
 
 namespace dynamo
 {
