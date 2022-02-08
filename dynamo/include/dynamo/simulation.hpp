@@ -67,7 +67,7 @@ namespace dynamo {
                         auto process = T(&strategies, AgentHandle(parent));
                         process.build();
                         e.set_name(process.name());
-                        e.set<type::ProcessDetails>({ process.process_details() }); // TODO Isn't this a problem with the move below ?
+                        //e.set<type::ProcessDetails>({ process.process_details() }); // TODO Isn't this a problem with the move below ?
                         e.set<type::ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
                         e.add<type::ProcessCounter>();
                         e.add<type::Duration>();
@@ -78,13 +78,13 @@ namespace dynamo {
             _world.system<type::ProcessHandle>()
                 .term<type::IsProcessing>().oper(flecs::Not)
                 .term<type::Cooldown>().oper(flecs::Not)
-                .kind(flecs::PreUpdate)
+                .kind(flecs::PostFrame)
                 .iter([this](flecs::iter& it, type::ProcessHandle* process)
                     {
                         for (auto i : it)
                         {
 							auto e = it.entity(i);
-							e.add<type::Timestamp>();
+                            e.add<type::Timestamp>();
 							e.set<type::IsProcessing>({
 								executor.run(*process[i].taskflow,[id = e.id(), this]()
 									{

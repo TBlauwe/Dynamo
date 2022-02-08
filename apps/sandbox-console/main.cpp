@@ -7,29 +7,6 @@
 #include <dynamo/modules/basic_stress.hpp>
 
 
-struct BrainTag {};
-class Brain : public dynamo::EntityWrapper
-{
-public:
-
-    /**
-    @brief Create a brain entity without attachement
-    */
-    Brain(flecs::world& world)
-        : EntityWrapper(world.entity())
-    {
-    }
-
-    Brain(flecs::entity& agent)
-        : EntityWrapper(agent.world().entity())
-    {
-	    m_entity 
-            .child_of(agent)
-	        .add<BrainTag>()
-			;
-    }
-};
-
 using namespace dynamo;
 
 
@@ -57,7 +34,7 @@ public:
 
         auto t2 = emplace([](AgentHandle agent)
             {
-                agent.set<type::Stress>({ 12.0f });
+				agent.entity().each<const type::Agent>([](flecs::entity e) {});
             }
         );
         t2.name("Random task");
@@ -72,25 +49,23 @@ public:
         process_c.name("Random aggregator");
         process_c.input_name(process_a, "From random string");
         process_c.input_name(process_b, "From random int");
-
-        //auto v = static_value(std::vector<int>{0, 1, 2, 3, 4, 5});
-        //auto t4 = process<strat::InfluenceGraph, int, std::vector<int>>(v);
     }
 };
 
 int main(int argc, char** argv) {
 
-    const size_t number_of_agents = 1400;
-    const size_t number_of_ticks = 10000;
-    const size_t number_of_threads = std::thread::hardware_concurrency();
+    const size_t number_of_agents   = 1400;
+    const size_t number_of_ticks    = 10000;
+    const size_t number_of_threads  = std::thread::hardware_concurrency();
 
     std::cout << " -- PARAMETERS --" << std::endl;
-    std::cout << "Number of agents : " << number_of_agents << std::endl;
-    std::cout << "Number of ticks : " << number_of_ticks << std::endl;
+    std::cout << "Number of agents  : " << number_of_agents << std::endl;
+    std::cout << "Number of ticks   : " << number_of_ticks << std::endl;
     std::cout << "Number of threads : " << number_of_threads << std::endl;
+    std::cout << std::endl;
     std::cout << " -- START --" << std::endl;
     const auto start_time = std::chrono::system_clock::now();
-    std::cout << "setup in progress ..." << std::endl;
+    std::cout << "setup in progress ...";
 
     // -----------------------------
     // SETUP
@@ -99,16 +74,6 @@ int main(int argc, char** argv) {
     // -- Create an empty simulation
     Simulation sim{number_of_threads};
     sim.world().import<module::BasicStress>();
-
-    // -- System to print the beginning of a tick
-    //std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
-    //sim.world().system<>()
-    //    .kind(flecs::PreFrame)
-    //    .iter([](flecs::iter& iter)
-    //        {
-    //            std::cout << "\n -- Simulation : Tick " << iter.world().get_tick() << " - " << iter.delta_time() << "s" << std::endl;
-    //        }
-    //);
 
     // -- Define strategies and behaviours
     sim.strategy<strat::Random<std::string>>()
@@ -150,13 +115,6 @@ int main(int argc, char** argv) {
                 return "Arff " + arg; }
         );
 
-    //auto& influence_graph_strat = sim.add<strat::InfluenceGraph<int>>();
-    //influence_graph_strat.add(Behaviour<std::vector<dynamo::strat::Influence<int>>, const std::vector<int const*>&>{
-    //    "MyOtherBehaviour",
-    //        [](AgentHandle agent) -> bool {return true; },
-    //        [](AgentHandle agent) -> std::string {return "Yeah"; }
-    //});
-
     // -- Register some processes/reasonner
     // You must register them before populating the simulation.
     sim.agent_model<SimpleReasonner>();
@@ -174,22 +132,8 @@ int main(int argc, char** argv) {
         sim.agent(archetype, fmt::format("Agent {}", i).c_str());
     }
 
-    std::vector<flecs::entity_view> agents{};
-    sim.for_each([&agents](flecs::entity agent, const type::Agent _) {
-        agents.emplace_back(agent);
-        });
-
-    auto radio = sim.artefact("Radio");
-    radio.entity()
-        .set<dynamo::type::PeriodicEmitter, dynamo::type::Message>({ 2.5f })
-        .set<dynamo::type::Targets>({ agents });
-
-    // 3. Create a percept seen by all entities
-    sim.percept<type::Hearing>(radio)
-        .perceived_by(radio)
-        ;
-
-    std::cout << "Done ! Launching ..." << std::endl;
+    std::cout << "Done !\n"; 
+    std::cout << "Launching ..." << std::endl;
     sim.step_n(number_of_ticks);
 
     std::cout << "Waiting for reasonning to finish ..." << std::endl;
@@ -200,21 +144,18 @@ int main(int argc, char** argv) {
     std::cout << "Done waiting ! " << std::endl;
     std::cout << "Total elapsed time : " << duration.count() << "ms" << std::endl;
 
-    std::cout << " -- END --" << std::endl;
-
+    std::cout << " -- END --\n\n";
 
     std::cout << " -- STATISTICS --" << std::endl;
 
     std::chrono::duration<double, std::milli> ben_tps{ 884.9 };
 
-    std::cout << "Total time elapsed : " << duration_ticks.count() << "ms" << std::endl;
-    std::cout << "Average time per tick : " << duration_ticks.count() / number_of_ticks << "ms" << std::endl;
-    std::cout << "Average time per tick (BEN) : " << ben_tps.count() << "ms" << std::endl;
-    std::cout << "Ratio : " << ben_tps.count() / (duration_ticks.count() / number_of_ticks) << "x" << std::endl;
+    std::cout << "             Total time elapsed : " << duration_ticks.count() << "ms" << std::endl;
+    std::cout << "          Average time per tick : " << duration_ticks.count() / number_of_ticks << "ms" << std::endl;
+    std::cout << "    Average time per tick (BEN) : " << ben_tps.count() << "ms" << std::endl;
+    std::cout << "                          Ratio : " << ben_tps.count() / (duration_ticks.count() / number_of_ticks) << "x" << std::endl;
     std::cout << "Average time per tick per agent : " << duration_ticks.count() / number_of_ticks / number_of_agents << "ms" << std::endl;
     std::cout << "---" << std::endl;
-
-
 
     int sum{ 0 };
     sim.world().each([&sum](flecs::entity e, const type::ProcessCounter counter) {
@@ -226,14 +167,14 @@ int main(int argc, char** argv) {
         avg += (duration.value.count() / e.get<type::ProcessCounter>()->value);
         });
 
-    std::cout << "Number of process computed : " << sum << std::endl;
-    std::cout << "Time spent computing processes : " << avg << "ms" << std::endl;
+    std::cout << "                      Number of process computed : " << sum << std::endl;
+    std::cout << "                  Time spent computing processes : " << avg << "ms" << std::endl;
     avg /= number_of_agents;
     std::cout << "Average time spent computing processes per agent : " << avg << "ms" << std::endl;
-    std::cout << "Average count of process computed per agent : " << sum / number_of_agents << std::endl;
-    std::cout << "Average process computed per tick : " << sum / number_of_ticks << std::endl;
-    std::cout << "Average process computed per tick BEN : " << number_of_agents << std::endl;
-    std::cout << "Diff : " << number_of_agents / (sum / number_of_ticks) << "x" << std::endl;
+    std::cout << "     Average count of process computed per agent : " << sum / number_of_agents << std::endl;
+    std::cout << "               Average process computed per tick : " << sum / number_of_ticks << std::endl;
+    std::cout << "           Average process computed per tick BEN : " << number_of_agents << std::endl;
+    std::cout << "                                            Diff : " << number_of_agents / (sum / number_of_ticks) << "x" << std::endl;
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <sstream>
 
 #include <dynamo/strategies/all.hpp>
 #include <dynamo/simulation.hpp>
@@ -56,6 +57,11 @@ struct Type
 	struct Attention {};
 };
 
+struct Result
+{
+	std::stringstream ss;
+};
+
 int main(int argc, char** argv) {
 
 	// -----------------------------
@@ -68,12 +74,13 @@ int main(int argc, char** argv) {
 	sim.world().import<module::BasicAction>();
 	sim.world().import<module::ADL>();
 
+	sim.world().component<act>().add(flecs::Exclusive);
+
 	sim.world().type<State>()
 		.add<State::Well>()
         .add<State::Unwell>();
 
 	auto root = sim.world().entity("Root").add<type::Root>();
-
 
 	sim.action("Do nothing")
 		.add<Idle>()
@@ -90,66 +97,78 @@ int main(int argc, char** argv) {
 	sim.action("March")
 		.add<Work>();
 
-	//sim.world().entity("Examiner");
-
 	sim.artefact("Patient 1")
 		.add<Patient>()
 		.entity()
 		.add_switch<State>()
 		.add_case<State::Unwell>()
 		;
-			
 
-	// -- System to print the beginning of a tick
-	std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
-	sim.world().system<>("TickBegin")
-		.kind(flecs::PreFrame)
-		.iter([](flecs::iter& iter)
-			{
-				std::cout << "-- Simulation : Tick " << iter.world().get_tick() + 1 << " - " << iter.delta_time() << "s\n";
-			}
-	);
+	//// -- System to print the beginning of a tick
+	//std::cout << std::boolalpha; // Tells to ouput "true" or "false" instead of "1" or "0".
+	//sim.world().system<>("TickBegin")
+	//	.kind(flecs::PreFrame)
+	//	.iter([](flecs::iter& iter)
+	//		{
+	//			std::cout << "-- Simulation : Tick " << iter.world().get_tick() + 1 << " - " << iter.delta_time() << "s\n";
+	//		}
+	//);
 
-	sim.world().system<const Patient>("PatientStatus")
-		.term<State>().role(flecs::Switch)
-		.kind(flecs::PreFrame)
-		.iter([](flecs::iter& iter, const Patient * _)
-			{
-				std::cout << "- Patient status :" << std::endl;
-				auto state = iter.term<flecs::entity_t>(2);
-				bool all_safe{ false };
-				for (auto i : iter)
-				{
-					std::cout << iter.entity(i).name() << " : " << iter.world().entity(state[i]).name() << "\n";
-				}
-				if (all_safe || iter.world().get_tick() >= 10000)
-				{
-					iter.world().quit();
-				}
-			}
-	);
+	//sim.world().system<const Patient>("PatientStatus")
+	//	.term<State>().role(flecs::Switch)
+	//	.kind(flecs::PreFrame)
+	//	.iter([](flecs::iter& iter, const Patient * _)
+	//		{
+	//			std::cout << "- Patient status :" << std::endl;
+	//			auto state = iter.term<flecs::entity_t>(2);
+	//			bool all_safe{ false };
+	//			for (auto i : iter)
+	//			{
+	//				std::cout << iter.entity(i).name() << " : " << iter.world().entity(state[i]).name() << "\n";
+	//			}
+	//			if (all_safe || iter.world().get_tick() >= 100)
+	//			{
+	//				iter.world().quit();
+	//			}
+	//		}
+	//);
 
-	sim.world().system<const type::Agent>("AgentStatus")
-		.kind(flecs::PreFrame)
-		.iter([](flecs::iter& iter, const type::Agent * _)
-			{
-				std::cout << "- PVA status :" << std::endl;
-				for (auto i : iter)
-				{
-					std::cout << iter.entity(i).name() << " : " << iter.entity(i).is_alive() << "\n";
-					iter.entity(i).each<type::feasible>([](flecs::entity action) { std::cout << action.name() << " "; });
-				}
-			}
-	);
+	//sim.world().system<const type::Agent>("AgentStatus")
+	//	.kind(flecs::PreFrame)
+	//	.iter([](flecs::iter& iter, const type::Agent * _)
+	//		{
+	//			std::cout << "- PVA status :" << std::endl;
+	//			for (auto i : iter)
+	//			{
+	//				iter.entity(i).each<const act>([](flecs::entity action) { std::cout << action.name() << " "; });
+	//			}
+	//		}
+	//);
 
-    sim.world().system<const type::ProcessCounter>("ProcessCounter")
-		.iter([](flecs::iter& it, const type::ProcessCounter * counter) {
-				std::cout << "- Process status :" << std::endl;
-				for (auto i : it)
-				{
-					std::cout << it.entity(i).name() << " : " << counter[i].value << "\n";
-				}
-        });
+ //   sim.world().system<const type::ProcessCounter>("ProcessCounter")
+	//	.iter([](flecs::iter& it, const type::ProcessCounter * counter) {
+	//			std::cout << "- Process status :" << std::endl;
+	//			for (auto i : it)
+	//			{
+	//				std::cout << it.entity(i).name() << " : " << counter[i].value << "\n";
+	//			}
+ //       });
+
+ //   sim.world().system<Result>("Logging")
+	//	.each([](flecs::entity e, Result& result) {
+	//			e.each<const act>([&result](flecs::entity action) { result.ss << action.name() << ";"; });
+ //       });
+
+	//sim.world().observer<const act>()
+	//	.arg(1).obj(flecs::Wildcard)
+	//	.event(flecs::OnAdd)
+	//	.iter([](flecs::iter& iter, const act * _) {
+	//			for (auto i : iter)
+	//			{
+	//				std::cout << iter.entity(i).name() << " is doing  ";
+	//				iter.entity(i).each<const act>([](flecs::entity action) { std::cout << action.name() << "\n"; });
+	//			}
+	//		});
 
 
     sim.strategy<strat::ContainerAccumulator<std::vector<flecs::entity>>>()
@@ -198,7 +217,7 @@ int main(int argc, char** argv) {
 	        [](AgentHandle agent) -> bool {return true; },
 	        [](AgentHandle agent, flecs::entity arg)
 			{
-				std::cout << "Agent : " << agent.name() << " is doing " << arg.name() << "\n";
+				agent.add<act>(arg);
 				return arg;
 			}
 	);
@@ -211,6 +230,7 @@ int main(int argc, char** argv) {
 	// First, let's create a prefab for our agents, or an archetype :
 	auto archetype = sim.agent_archetype("Archetype_Basic")
 		.add<type::Stress>()
+		.add<Result>()
 		.agent_model<SimpleReasonner>()
 		;
 
@@ -225,7 +245,9 @@ int main(int argc, char** argv) {
 	std::cout << "-----------\n";
 	std::cout << "Stopping...\n";
 
-	//r_all_well.destruct();
-
 	sim.shutdown();
+
+	sim.world().each([](flecs::entity e, const Result& result) {
+		std::cout << e.name() << result.ss.str() << "\n";
+		});
 }
