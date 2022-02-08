@@ -1,5 +1,4 @@
-#ifndef DYNAMO_COMPONENTS_HPP
-#define DYNAMO_COMPONENTS_HPP
+#pragma once
 
 #include <vector>
 
@@ -23,7 +22,8 @@ By convention :
     - components and tags names are written using PascalCase.
     - relation names are written using snake_case.
 */
-namespace dynamo::type {
+namespace dynamo
+{
 
     /**
      @brief Tag removed at the end of the current frame.
@@ -32,8 +32,7 @@ namespace dynamo::type {
     struct CurrentFrame {};
 
     /**
-    @brief When @c ttl (in seconds) reaches 0, the entity holding this component
-    is destroyed.
+    @brief When @c ttl (in seconds) reaches 0, the entity holding this component is destroyed.
     */
     struct Decay
     {
@@ -88,14 +87,13 @@ namespace dynamo::type {
     };
 
     /**
-    @brief Little hack to delay the creation of @c type::Process as it isn't copyable.
+    @brief Little hack to delay the creation of @c Flow as it isn't copyable.
     */
     template<typename T>
-    struct AddProcess {};
+    struct AddFlow {};
 
     /**
-    @brief Component indicating that the associated process should be
-    triggered.
+    @brief Holds a pointer to a process should be triggered.
     */
     struct ProcessHandle
     {
@@ -105,50 +103,61 @@ namespace dynamo::type {
         tf::Taskflow* taskflow;
     };
 
-    struct ProcessCounter
+    /**
+    @brief Explicit.
+    */
+    struct Counter 
     {
         size_t value {0};
     };
 
+    /**
+    @brief Holds a duration in milliseconds
+    */
     struct Duration 
     {
         std::chrono::duration<double, std::milli> value {0};
     };
 
+    /**
+    @brief Holds a timestamp, initialized with current system clock when added.
+    */
     struct Timestamp
     {
         std::chrono::system_clock::time_point value {std::chrono::system_clock::now()};
     };
 
     using CommandsQueue = ThreadsafeQueue<std::function<void(flecs::world&)>>;
+
     /**
-    @brief Component holding a ref to command queue to delay commands set during async tasks.
+    @brief Holds a pointer to the command queue to delay commands set during async tasks.
     */
     struct CommandsQueueHandle
     {
-        /**
-        @brief Pointer to an existing taskflow.
-        */
         CommandsQueue* queue {};
     };
 
     /**
-    @brief Component containing the status of the associated process.
+    @brief Holds running status of the associated process.
     */
-    struct IsProcessing
+    struct Status 
     {
         /**
         @brief Current status of a running taskflow.
         */
-        tf::Future<void> status;
+        tf::Future<void> value;
         
         /**
-        @brief Returns @c true or @false if the process is finished or not.
+        @brief Returns @c true or @c false if the process is finished or not.
         */
-        const bool is_finished() {
-            return !static_cast<bool>(status.wait_for(std::chrono::seconds(0)));
+        const bool is_finished()
+        {
+            return !static_cast<bool>(value.wait_for(std::chrono::seconds(0)));
+        }
+
+        void cancel()
+        {
+            value.cancel();
         }
     };
-}  // namespace dynamo::type
-
-#endif  // DYNAMO_COMPONENTS_HPP
+}  // namespace dynamo

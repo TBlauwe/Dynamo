@@ -9,7 +9,7 @@ dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_t
     //_world.set<flecs::rest::Rest>({});
 
     agents_query = _world.query<const dynamo::type::Agent>();
-    _world.set<type::CommandsQueueHandle>({&commands_queue});
+    _world.set<CommandsQueueHandle>({&commands_queue});
 }
 
 void dynamo::Simulation::shutdown() {

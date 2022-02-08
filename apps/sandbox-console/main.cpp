@@ -27,7 +27,7 @@ public:
 
         auto t1 = emplace([](AgentHandle agent)
             {
-                agent.set<type::Stress>({ 9.0f });
+                agent.set<Stress>({ 9.0f });
             }
         );
         t1.name("Random task");
@@ -123,8 +123,8 @@ int main(int argc, char** argv) {
     // -- Create some entities to populate the simulation;
     // First, let's create a prefab for our agents, or an archetype :
     auto archetype = sim.agent_archetype("Archetype_Basic")
-        .add<type::Stress>()
-        .agent_model<SimpleReasonner>()
+        .add<Stress>()
+        .flow<SimpleReasonner>()
         ;
 
     // Then, we can create agent using our archetype :
@@ -158,13 +158,13 @@ int main(int argc, char** argv) {
     std::cout << "---" << std::endl;
 
     int sum{ 0 };
-    sim.world().each([&sum](flecs::entity e, const type::ProcessCounter counter) {
+    sim.world().each([&sum](flecs::entity e, const Counter counter) {
         sum += counter.value;
         });
 
     double avg{ 0 };
-    sim.world().each([&avg](flecs::entity e, const type::Duration duration) {
-        avg += (duration.value.count() / e.get<type::ProcessCounter>()->value);
+    sim.world().each([&avg](flecs::entity e, const Duration duration) {
+        avg += (duration.value.count() / e.get<Counter>()->value);
         });
 
     std::cout << "                      Number of process computed : " << sum << std::endl;

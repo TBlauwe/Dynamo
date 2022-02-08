@@ -1,8 +1,6 @@
-#ifndef DYNAMO_PROCESS_HPP
-#define DYNAMO_PROCESS_HPP
+#pragma once
 
 #include <assert.h>
-
 #include <chrono>
 #include <thread>
 #include <functional>
@@ -569,4 +567,3 @@ namespace dynamo {
         };
     }
 }
-#endif //DYNAMO_PROCESS_HPP

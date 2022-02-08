@@ -1,26 +1,23 @@
-#ifndef DYNAMO_MODULES_BASIC_STRESS_HPP
-#define DYNAMO_MODULES_BASIC_STRESS_HPP
+#pragma once
 
 #include <dynamo/internal/core.hpp>
 #include <string>
 
 namespace dynamo {
 
-    namespace type {
-        /**
-        @brief Struct holding a value correspoding to the current stress
-        */
-        struct Stress {
-            /**
-            @brief Stress' value oscillating between 0 and 100.
-            */
-            float value { 100};
-        };
-    }
+	/**
+	@brief Struct holding a value correspoding to the current stress
+	*/
+	struct Stress {
+		/**
+		@brief Stress' value oscillating between 0 and 100.
+		*/
+		float value { 100};
+	};
 
     inline bool is_pressured(const flecs::entity& e)
     {
-        return e.has<type::Stress>() && e.get<type::Stress>()->value > 10;
+        return e.has<Stress>() && e.get<Stress>()->value > 10;
     }
 
     namespace module {
@@ -35,9 +32,9 @@ namespace dynamo {
                 world.module<BasicStress>();
                 world.import<module::Core>();
 
-                world.system<type::Stress>()
+                world.system<Stress>()
                     .kind(flecs::PreUpdate)
-                    .each([](flecs::entity entity, type::Stress& stress)
+                    .each([](flecs::entity entity, Stress& stress)
                         {
                             if (stress.value > 0.f)
                             {
@@ -49,4 +46,3 @@ namespace dynamo {
         };
     }
 }
-#endif//DYNAMO_MODULES_BASIC_STRESS_HPP

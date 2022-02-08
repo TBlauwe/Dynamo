@@ -8,16 +8,16 @@ namespace dynamo {
         // Components
         // =========================================================================== 
 
-        auto e = world.component<type::perceive>();
+        auto e = world.component<perceive>();
         e.add(flecs::Transitive);
 
         // =========================================================================== 
         // Pipeline
         // =========================================================================== 
 
-        auto decay_system = world.system<type::Decay>("Decay")
+        auto decay_system = world.system<Decay>("Decay")
             .kind(flecs::PreFrame)
-            .each([](flecs::entity e, type::Decay& decay) {
+            .each([](flecs::entity e, Decay& decay) {
             if (decay.ttl <= 0.f) {
                 e.destruct();
             }
@@ -26,33 +26,33 @@ namespace dynamo {
             }
                 });
 
-        world.system<type::Cooldown>("Cooldown linked")
+        world.system<Cooldown>("Cooldown linked")
             .arg(1).obj(flecs::Wildcard) // <- Cooldown is actually a pair type with anything
             .kind(flecs::PreFrame)
-            .iter([](flecs::iter& iter, type::Cooldown* cooldown) {
+            .iter([](flecs::iter& iter, Cooldown* cooldown) {
             for (auto i : iter) {
                 cooldown[i].remaining_time -= iter.delta_time();
                 if (cooldown[i].remaining_time <= 0) {
-                    iter.entity(i).remove<type::Cooldown>(iter.id(1).object());
+                    iter.entity(i).remove<Cooldown>(iter.id(1).object());
                 }
             }
                 });
 
-        world.system<type::Cooldown>("Cooldown single")
+        world.system<Cooldown>("Cooldown single")
             .kind(flecs::PreFrame)
-            .iter([](flecs::iter& iter, type::Cooldown* cooldown) {
+            .iter([](flecs::iter& iter, Cooldown* cooldown) {
             for (auto i : iter) {
                 cooldown[i].remaining_time -= iter.delta_time();
                 if (cooldown[i].remaining_time <= 0) {
-                    iter.entity(i).remove<type::Cooldown>();
+                    iter.entity(i).remove<Cooldown>();
                 }
             }
         });
 
-        world.system<type::CurrentFrame>("RemoveCurrentFrameTag")
+        world.system<CurrentFrame>("RemoveCurrentFrameTag")
             .kind(flecs::PostFrame)
-            .each([](flecs::entity e, type::CurrentFrame) {
-            e.remove<type::CurrentFrame>();
+            .each([](flecs::entity e, CurrentFrame) {
+            e.remove<CurrentFrame>();
                 });
 
         // =========================================================================== 

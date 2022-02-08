@@ -1,5 +1,4 @@
-#ifndef DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP
-#define DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP
+#pragma once
 
 #include <functional>
 #include <algorithm>
@@ -41,5 +40,3 @@ namespace dynamo::strat
         }
     };
 }
-
-#endif //DYNAMO_STRATEGIES_INFLUENCE_GRAPH_HPP

@@ -1,5 +1,4 @@
-#ifndef DYNAMO_RELATIONS_HPP
-#define DYNAMO_RELATIONS_HPP
+#pragma once
 
 /**
 @file dynamo/internal/relations.hpp
@@ -11,8 +10,9 @@ By convention :
 
 For more information, see https://flecs.docsforge.com/master/relations-manual/.
 */
-namespace dynamo::type {
 
+namespace dynamo
+{
     /**
     @brief Relation from an entity A to a percept B, meaning that "A perceives B".
     */
@@ -30,6 +30,4 @@ namespace dynamo::type {
     */
     struct belongs_to {};
 
-}  // namespace dynamo::type
-
-#endif  // DYNAMO_RELATIONS_HPP
+} // namespace dynamo

@@ -1,5 +1,4 @@
-#ifndef DYNAMO_ALGORITHM_INFLUENCE_GRAPH_HPP
-#define DYNAMO_ALGORITHM_INFLUENCE_GRAPH_HPP
+#pragma once
 
 #include <functional>
 #include <algorithm>
@@ -193,5 +192,3 @@ namespace dynamo
         std::vector<size_t>                 highest_scores {};
     };
 }
-
-#endif

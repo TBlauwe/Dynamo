@@ -1,5 +1,4 @@
-#ifndef DYNAMO_TYPES_HPP
-#define DYNAMO_TYPES_HPP
+#pragma once
 
 #include <iostream>
 
@@ -63,10 +62,14 @@ namespace dynamo {
         EntityWrapper() : m_entity{} {};
         explicit EntityWrapper(flecs::entity entity) : m_entity{ entity } {};
 
-        friend bool operator== (const EntityWrapper& a, const EntityWrapper& b);
         /**
-        @brief Returns entity's name. /!\ Can be null (most likely for percepts
-        entities) !
+        Operator override
+        */
+        friend bool operator== (const EntityWrapper& a, const EntityWrapper& b);
+
+        /**
+        @brief Returns entity's name. 
+        /!\ Can be null (most likely the case for "percept" entities) !
 
         For more information see : https://flecs.docsforge.com/master/manual/#entity.
         */
@@ -89,9 +92,6 @@ namespace dynamo {
         /**
         @brief Returns a pointer to the component.
         @tparam TType Component's type.
-
-        if you need to modify a component, prefer using set function as it will defer modification when possible. Otherwise, if you use
-        this pointer to modify the component while the world is in read-only (assume always when in a process), it will crash.
         */
         template<typename TType>
         TType* get_mut() { return m_entity.get_mut<TType>(); }
@@ -171,18 +171,6 @@ namespace dynamo {
             m_entity.remove<TType>();
             return *static_cast<T*>(this);
         }
-    private:
-        /**
-        @brief Test whether the world is in read-only mode or not.
-        
-        Sometimes an entity refers to a read-only world (especially while reasonning due to
-        async processes outside conventionnal progress loop). We need to check before hand if we should defer
-        or not the modification
-        */
-        bool should_defer()
-        {
-            return m_entity.world().is_readonly();
-        }
     };
 
     /**
@@ -198,7 +186,7 @@ namespace dynamo {
     public:
         explicit DefferedEntityManipulator(flecs::entity entity) : EntityWrapper{ entity }
         {
-            commands_queue = m_entity.world().template get<type::CommandsQueueHandle>()->queue;
+            queue = m_entity.world().template get<CommandsQueueHandle>()->queue;
         };
 
         /**
@@ -208,7 +196,7 @@ namespace dynamo {
         template<typename TType>
         T& add()
         {
-            commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
+            queue->push([id = m_entity.id()](flecs::world& world) mutable {
                 flecs::entity(world, id).add<TType>();
             });
             return *static_cast<T*>(this);
@@ -217,7 +205,7 @@ namespace dynamo {
         template<typename R, typename V>
         T& add(V&& value)
         {
-            commands_queue->push([id = m_entity.id(), args = std::forward<V>(value)](flecs::world& world) mutable {
+            queue->push([id = m_entity.id(), args = std::forward<V>(value)](flecs::world& world) mutable {
                 flecs::entity(world, id).add<R>(args);
             });
             return *static_cast<T*>(this);
@@ -230,7 +218,7 @@ namespace dynamo {
         template<typename TType>
         T& set(TType&& value)
         {
-            commands_queue->push([id = m_entity.id(), args = std::forward<TType>(value)](flecs::world& world) mutable {
+            queue->push([id = m_entity.id(), args = std::forward<TType>(value)](flecs::world& world) mutable {
                 flecs::entity(world, id).set<TType>(args);
             });
             return *static_cast<T*>(this);
@@ -243,7 +231,7 @@ namespace dynamo {
         template<typename TType>
         T& remove()
         {
-            commands_queue->push([id = m_entity.id()](flecs::world& world) mutable {
+            queue->push([id = m_entity.id()](flecs::world& world) mutable {
                 auto entity = flecs::entity(world, id);
                 if (entity.has<TType>())
                     entity.remove<TType>();
@@ -255,7 +243,7 @@ namespace dynamo {
         /**
         @brief Pointer to simulations' commands queue to defer modifications when world is in read only.
         */
-        type::CommandsQueue* commands_queue;
+        CommandsQueue* queue;
     };
 
     /**
@@ -311,9 +299,9 @@ namespace dynamo {
             std::vector<std::string> models{};
             m_entity.children([&models](flecs::entity e) 
                 {
-                    if (e.has<type::ProcessHandle>())
+                    if (e.has<ProcessHandle>())
                     {
-                        models.emplace_back(e.get<type::ProcessHandle>()->taskflow->dump());
+                        models.emplace_back(e.get<ProcessHandle>()->taskflow->dump());
                     }
                 }
             );
@@ -329,10 +317,9 @@ namespace dynamo {
         void cancel_all_reasonning()
         {
             m_entity.children([](flecs::entity child) {
-                if (child.has<type::IsProcessing>())
+                if (child.has<Status>())
                 {
-                    auto* p = child.get_mut<type::IsProcessing>();
-                    p->status.cancel();
+                    child.get_mut<Status>()->cancel();
                 }
             });
         }
@@ -409,7 +396,7 @@ namespace dynamo {
         @param e entity perceiving this percept
         */
         Percept& perceived_by(flecs::entity e) {
-            e.mut(m_entity).add<type::perceive>(m_entity);
+            e.mut(m_entity).add<perceive>(m_entity);
             return *this;
         }
 
@@ -420,7 +407,7 @@ namespace dynamo {
         @param e entity perceiving this percept
         */
         Percept& perceived_by(flecs::entity_view e) {
-            e.mut(m_entity).add<type::perceive>(m_entity);
+            e.mut(m_entity).add<perceive>(m_entity);
             return *this;
         }
 
@@ -430,7 +417,7 @@ namespace dynamo {
         @param ttl how much time should this entity live ?
         */
         Percept& decay(float ttl = 2.0f) {
-            m_entity.set<type::Decay>({ ttl });
+            m_entity.set<Decay>({ ttl });
             return *this;
         }
     };
@@ -565,11 +552,10 @@ namespace dynamo {
         @param source entity responsible for the creation of this percept.
         */
         template <typename TSense>
-        Percept source(flecs::entity source) {
-            return Percept(entity.add<type::source>(source)
-                .add<type::perceive>(source)
+        Percept source(flecs::entity e) {
+            return Percept(entity.add<::dynamo::source>(e)
+                .add<perceive>(e)
                 .add<TSense>());
         }
     };
 }  // namespace dynamo
-#endif  // DYNAMO_TYPES_HPP

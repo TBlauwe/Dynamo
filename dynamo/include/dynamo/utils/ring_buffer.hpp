@@ -9,9 +9,7 @@
  * \copyright CC0 License
  * \date 22 Jun 2017
  */
-
-#ifndef RINGBUFFER_HPP
-#define RINGBUFFER_HPP
+#pragma once
 
 #include <stdint.h>
 #include <stddef.h>
@@ -469,5 +467,3 @@ namespace jnk0le
 	}
 
 } // namespace
-
-#endif //RINGBUFFER_HPP

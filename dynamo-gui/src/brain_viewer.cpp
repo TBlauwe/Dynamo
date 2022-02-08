@@ -32,7 +32,7 @@ void dynamo::widgets::BrainViewer::render_graph() const
         auto hash = imnodes_hash.at(&node);
         //auto target_details = _details->find(hash);
         { // SET STYLE
-            if (!entity.has<type::IsProcessing>())
+            if (!entity.has<type::Status>())
             {
                 ImNodes::PushColorStyle(ImNodesCol_TitleBar, ImGui::Color::ORANGE_n);
                 ImNodes::PushColorStyle(ImNodesCol_TitleBarHovered, ImGui::Color::ORANGE_h);

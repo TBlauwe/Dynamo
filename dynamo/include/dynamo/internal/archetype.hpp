@@ -1,5 +1,4 @@
-#ifndef DYNAMO_ARCHETYPE_HPP
-#define DYNAMO_ARCHETYPE_HPP
+#pragma once
 
 #include <dynamo/internal/process.hpp>
 
@@ -119,18 +118,17 @@ namespace dynamo
         AgentArchetype(flecs::world& world, AgentArchetype& archetype, const char* name) : Archetype<AgentArchetype>{ world, archetype, name } {}
 
         template<typename T>
-        AgentArchetype& agent_model()
+        AgentArchetype& flow()
         {
             static_assert(std::is_base_of<AgentModel, T>::value, "Wrong type passed : T is not inheriting from AgentModel.");
 
             auto reasonnner_entity = m_entity.world().entity();
             reasonnner_entity
                 .child_of(m_entity)
-                .add<type::AddProcess<T>>()
+                .add<AddFlow<T>>()
                 ;
 
             return *this;
         }
     };
 }  // namespace dynamo
-#endif  // DYNAMO_ARCHETYPE_HPP

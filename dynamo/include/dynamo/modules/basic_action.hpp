@@ -1,15 +1,12 @@
-#ifndef DYNAMO_BASIC_ACTION_HPP
-#define DYNAMO_BASIC_ACTION_HPP
+#pragma once
 
 #include <flecs.h>
 
 namespace dynamo{
 
-    namespace type{
-        struct Cost{
-            int value {0};
-        };
-    }
+	struct Cost{
+		int value {0};
+	};
 
     namespace module{
         /**
@@ -25,5 +22,3 @@ namespace dynamo{
         };
     }
 }
-
-#endif //DYNAMO_BASIC_PERCEPTION_HPP

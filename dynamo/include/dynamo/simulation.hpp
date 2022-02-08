@@ -48,17 +48,17 @@ namespace dynamo {
         void agent_model()
         {
             /**
-            When an @c type::AddProcess<T> is added and if the parent is not a prefab (to circumvent copying),
-            then create a child entity containing @c type::Process with T
+            When an @c AddFlow<T> is added and if the parent is not a prefab (to circumvent copying),
+            then create a child entity containing @c Process with T
 
             Since a taskflow is not copyable and unique for each agent, we must create one for each. We could add it
             as a component to an agent, but we need to set relation between them. We could still do it but the component,
             would be recreated. It seems preferable to set a child entity containing the taskflow so we can have as many
             processes and relation between them for more control.
             */
-            _world.observer<const type::AddProcess<T>>()
+            _world.observer<const AddFlow<T>>()
                 .event(flecs::OnAdd)
-                .each([this](flecs::entity e, const type::AddProcess<T> _)
+                .each([this](flecs::entity e, const AddFlow<T> _)
                     {
                         auto parent = e.get_object(flecs::ChildOf);
                         if (parent.has(flecs::Prefab))
@@ -67,30 +67,30 @@ namespace dynamo {
                         auto process = T(&strategies, AgentHandle(parent));
                         process.build();
                         e.set_name(process.name());
-                        //e.set<type::ProcessDetails>({ process.process_details() }); // TODO Isn't this a problem with the move below ?
-                        e.set<type::ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
-                        e.add<type::ProcessCounter>();
-                        e.add<type::Duration>();
-                        e.remove<type::AddProcess<T>>();
+                        //e.set<ProcessDetails>({ process.process_details() }); // TODO Isn't this a problem with the move below ?
+                        e.set<ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
+                        e.add<Counter>();
+                        e.add<Duration>();
+                        e.remove<AddFlow<T>>();
                     }
             );
 
-            _world.system<type::ProcessHandle>()
-                .term<type::IsProcessing>().oper(flecs::Not)
-                .term<type::Cooldown>().oper(flecs::Not)
+            _world.system<ProcessHandle>()
+                .term<Status>().oper(flecs::Not)
+                .term<Cooldown>().oper(flecs::Not)
                 .kind(flecs::PostFrame)
-                .iter([this](flecs::iter& it, type::ProcessHandle* process)
+                .iter([this](flecs::iter& it, ProcessHandle* process)
                     {
                         for (auto i : it)
                         {
 							auto e = it.entity(i);
-                            e.add<type::Timestamp>();
-							e.set<type::IsProcessing>({
+                            e.add<Timestamp>();
+							e.set<Status>({
 								executor.run(*process[i].taskflow,[id = e.id(), this]()
 									{
 										commands_queue.push([id] (flecs::world& world) mutable {
-											flecs::entity(world, id).remove<type::IsProcessing>();
-											flecs::entity(world, id).set<type::Cooldown>({1.0f});
+											flecs::entity(world, id).remove<Status>();
+											flecs::entity(world, id).set<Cooldown>({1.0f});
 											});
 									})
 							});
@@ -98,19 +98,19 @@ namespace dynamo {
                     }
             );
 
-            _world.observer<const type::IsProcessing>()
+            _world.observer<const Status>()
                 .event(flecs::OnSet)
-                .each([this](flecs::entity e, const type::IsProcessing& process)
+                .each([this](flecs::entity e, const Status& process)
                     {
-                        e.get_mut<type::ProcessCounter>()->value++;
+                        e.get_mut<Counter>()->value++;
                     }
             );
 
-            _world.observer<const type::IsProcessing>()
+            _world.observer<const Status>()
                 .event(flecs::OnRemove)
-                .each([this](flecs::entity e, const type::IsProcessing& process)
+                .each([this](flecs::entity e, const Status& process)
                     {
-                        e.get_mut<type::Duration>()->value += std::chrono::system_clock::now() - e.get<type::Timestamp>()->value;
+                        e.get_mut<Duration>()->value += std::chrono::system_clock::now() - e.get<Timestamp>()->value;
                     }
             );
         };
@@ -118,7 +118,7 @@ namespace dynamo {
         /**
         @brief Iterate over all agents for_each.
 
-        @tparam T Accept function with following signature : @c std::function<void(flecs::entity, const type::Agent)>
+        @tparam T Accept function with following signature : @c std::function<void(flecs::entity, const Agent)>
 
         TODO : Add constraint
 
@@ -268,7 +268,7 @@ namespace dynamo {
         /**
         @brief Defer modification to entities to a command queue called after the end of frame.
         */
-        type::CommandsQueue commands_queue{};
+        CommandsQueue commands_queue{};
 
         /**
         @brief Associative container to store strategies by their types. So only one strategy of a same type can be defined.

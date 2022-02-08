@@ -95,10 +95,10 @@ TEST_CASE("Basics") {
 
         CHECK(percept.has<type::Percept>());
         CHECK(percept.has<Default>());
-        CHECK(percept.has<type::Decay>());
-        CHECK(percept.get<type::Decay>()->ttl);
-        CHECK(percept.has<type::perceive>(radio));
-        CHECK(arthur.entity().has<type::perceive>(percept));
+        CHECK(percept.has<Decay>());
+        CHECK(percept.get<Decay>()->ttl);
+        CHECK(percept.has<perceive>(radio));
+        CHECK(arthur.entity().has<perceive>(percept));
 
         sim.step(ttl); // To deplete decay cooldown
         sim.step(); // To delete entity

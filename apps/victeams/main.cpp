@@ -84,11 +84,11 @@ int main(int argc, char** argv) {
 
 	sim.action("Do nothing")
 		.add<Idle>()
-		.set<type::Cost>({ 0 });
+		.set<Cost>({ 0 });
 
 	sim.action("Read a book")
 		.add<Idle>()
-		.set<type::Cost>({ 1 });
+		.set<Cost>({ 1 });
 
 	sim.action("Overwatch")
 		.add<Idle>()
@@ -229,9 +229,9 @@ int main(int argc, char** argv) {
 	// -- Create some entities to populate the simulation;
 	// First, let's create a prefab for our agents, or an archetype :
 	auto archetype = sim.agent_archetype("Archetype_Basic")
-		.add<type::Stress>()
+		.add<Stress>()
 		.add<Result>()
-		.agent_model<SimpleReasonner>()
+		.flow<SimpleReasonner>()
 		;
 
 	sim.agent(archetype, "PVA 1");

@@ -1,5 +1,4 @@
-#ifndef DYNAMO_CORE_HPP
-#define DYNAMO_CORE_HPP
+#pragma once
 
 #include <vector>
 
@@ -16,7 +15,6 @@
 /**
 @brief Namespace containing modules
 */
-
 namespace dynamo
 {
     using Random    = effolkronium::random_static;
@@ -34,5 +32,3 @@ namespace dynamo
         };
     }
 }
-
-#endif //DYNAMO_CORE_HPP
