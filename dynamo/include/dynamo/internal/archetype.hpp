@@ -118,17 +118,11 @@ namespace dynamo
         AgentArchetype(flecs::world& world, AgentArchetype& archetype, const char* name) : Archetype<AgentArchetype>{ world, archetype, name } {}
 
         template<typename T>
-        AgentArchetype& flow()
+        void flow(AddFlow<T>&& value)
         {
             static_assert(std::is_base_of<FlowBuilder, T>::value, "Wrong type passed : T is not inheriting from FlowBuilder.");
 
-            auto reasonnner_entity = m_entity.world().entity();
-            reasonnner_entity
-                .child_of(m_entity)
-                .add<AddFlow<T>>()
-                ;
-
-            return *this;
+            m_entity.set<AddFlow<T>>(std::forward<AddFlow<T>>(value));
         }
     };
 }  // namespace dynamo

@@ -56,46 +56,59 @@ namespace dynamo {
             would be recreated. It seems preferable to set a child entity containing the taskflow so we can have as many
             processes and relation between them for more control.
             */
-            _world.observer<const AddFlow<T>>()
+            _world.observer<const AddFlow<T>>(fmt::format("AddFlow_{}", typeid(T).name()).c_str())
                 .event(flecs::OnAdd)
-                .each([this](flecs::entity e, const AddFlow<T> _)
+                .iter([this](flecs::iter& it, const AddFlow<T>* details)
                     {
-                        auto parent = e.get_object(flecs::ChildOf);
-                        if (parent.has(flecs::Prefab))
-                            return;
+                        for (auto i : it)
+                        {
+                            auto agent_entity   = it.entity(i);
+                            if (agent_entity.has(flecs::Prefab))
+                                return; // No reason to add a flow for a prefab
 
-                        // By construction, only entity agent can be a parent of these entities (except for the prefab we checked for earlier)
-                        auto process = T(&strategies, AgentHandle(parent));
-                        process.build();
-                        e.set_name(process.name());
-                        //e.set<ProcessDetails>({ process.process_details() }); // TODO Isn't this a problem with the move below ?
-                        e.set<ProcessHandle>({ &taskflows.emplace_back(std::move(process))});
-                        e.add<Counter>();
-                        e.add<Duration>();
-                        e.remove<AddFlow<T>>();
+                            auto flow = T(&strategies, AgentHandle(agent_entity));
+                            flow.build();
+
+                            auto flow_entity = it.world().entity()
+                                .set_name(flow.name())
+                                //  .set<ProcessDetails>({ flow.process_details() }); // TODO Isn't this a problem with the move below ?
+                                .set<Flow>({ std::move(flow) })
+                                .add<Counter>()
+                                .add<Duration>();
+
+                            auto params = details[i];
+                            if (params.is_cyclic)
+                                flow_entity.set<Cyclic>({ params.period });
+
+							agent_entity.remove<AddFlow<T>>();
+                        }
                     }
             );
 
-            _world.system<ProcessHandle>()
+            _world.system<Flow, const Cyclic>()
                 .term<Status>().oper(flecs::Not)
                 .term<Cooldown>().oper(flecs::Not)
                 .kind(flecs::PostFrame)
-                .iter([this](flecs::iter& it, ProcessHandle* process)
+                .iter([this](flecs::iter& it, Flow* flow, const Cyclic* cycle)
                     {
                         for (auto i : it)
                         {
 							auto e = it.entity(i);
                             e.add<Timestamp>();
-							e.set<Status>({
-								executor.run(*process[i].taskflow,[id = e.id(), this]()
-									{
-										commands_queue.push([id] (flecs::world& world) mutable {
-											flecs::entity(world, id).remove<Status>();
-											flecs::entity(world, id).set<Cooldown>({1.0f});
-											});
-									})
-							});
+                            e.add<Launch>();
+                            e.add<Status>();
+							//e.set<Status>({
+							//	executor.run(flow[i].taskflow, 
+       //                             [id = e.id(), period = cycle[i].period, this]()
+       //                             {
+       //                                 commands_queue.push([id, period](flecs::world& world) mutable {
+							//				flecs::entity(world, id).remove<Status>();
+							//				flecs::entity(world, id).set<Cooldown>({period});
+							//				});
+							//		})
+							//});
                         }
+
                     }
             );
 
@@ -262,9 +275,11 @@ namespace dynamo {
         flecs::query<const type::Agent> agents_query;
 
         /**
-        @brief Keep all taskflow alive so we do not have to build them again.
+        @brief Query to iterate over all taskflows that need to be launched 
+
+        For more information, see https://flecs.docsforge.com/master/quickstart/#query .
         */
-        std::list<tf::Taskflow> taskflows{};
+        flecs::query<Flow, Status, const Cyclic, const Launch> flows;
 
         /**
         @brief Defer modification to entities to a command queue called after the end of frame.

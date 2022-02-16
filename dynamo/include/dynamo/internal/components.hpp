@@ -90,17 +90,21 @@ namespace dynamo
     @brief Little hack to delay the creation of @c Flow as it isn't copyable.
     */
     template<typename T>
-    struct AddFlow {};
+    struct AddFlow 
+    {
+        bool    is_cyclic   { true };
+        float   period      { 1.0f };
+    };
 
     /**
-    @brief Holds a pointer to a process should be triggered.
+    @brief Contains a flow
     */
-    struct ProcessHandle
+    struct Flow 
     {
         /**
-        @brief Pointer to an existing taskflow.
+        @brief Taskflow.
         */
-        tf::Taskflow* taskflow;
+        tf::Taskflow taskflow;
     };
 
     /**

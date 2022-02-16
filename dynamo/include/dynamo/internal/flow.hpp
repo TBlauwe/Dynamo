@@ -65,6 +65,14 @@ random_strat.add(Behaviour<TBehaviourOutput, ... TInputs>{
 */
 namespace dynamo {
 
+    struct Cyclic
+    { 
+        float period{ 1.0f };
+    };
+    struct Always {};
+    struct Trigger {};
+    struct Launch {};
+
     //Forward Declaration
     class AgentHandle;
 
@@ -96,9 +104,9 @@ namespace dynamo {
     }
     
     /**
-    @class ProcessBase
+    @class Operation 
 
-    @brief A process is a small addon to a task to store information for visualization.
+    @brief An operation is a  addon to a task to store information for visualization.
     */
     class ProcessBase
     {

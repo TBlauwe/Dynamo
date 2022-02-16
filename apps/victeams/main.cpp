@@ -196,6 +196,8 @@ int main(int argc, char** argv) {
 			}
         );
 
+			flecs::world newone;
+
 	sim.strategy<strat::InfluenceGraph<flecs::entity, std::vector<flecs::entity>>>()
 		.behaviour(
 			"First",
@@ -231,8 +233,9 @@ int main(int argc, char** argv) {
 	auto archetype = sim.agent_archetype("Archetype_Basic")
 		.add<Stress>()
 		.add<Result>()
-		.flow<SimpleReasonner>()
 		;
+
+	archetype.flow<SimpleReasonner>({true, 1.0f});
 
 	sim.agent(archetype, "PVA 1");
 	sim.agent(archetype, "PVA 2");

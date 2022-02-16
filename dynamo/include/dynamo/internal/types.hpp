@@ -299,9 +299,9 @@ namespace dynamo {
             std::vector<std::string> models{};
             m_entity.children([&models](flecs::entity e) 
                 {
-                    if (e.has<ProcessHandle>())
+                    if (e.has<Flow>())
                     {
-                        models.emplace_back(e.get<ProcessHandle>()->taskflow->dump());
+                        models.emplace_back(e.get<Flow>()->taskflow.dump());
                     }
                 }
             );

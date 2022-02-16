@@ -9,6 +9,17 @@
 
 using namespace dynamo;
 
+struct Test1 {};
+struct Test2 {};
+struct Test3 {};
+struct Test4 {};
+struct Test5 {};
+struct Test6 {};
+struct Test7 {};
+struct Test8 {};
+struct Test9 {};
+struct Test10 {};
+struct Test11 {};
 
 class SimpleReasonner : public FlowBuilder
 {
@@ -21,6 +32,14 @@ public:
     {
         auto t0 = emplace([](AgentHandle agent)
             {
+                agent.has<Stress>();
+                agent.has<Test1>();
+                agent.has<Test2>();
+                agent.has<Test3>();
+                agent.has<Test5>();
+                agent.has<Test7>();
+                agent.has<Test9>();
+                agent.has<Test11>();
             }
         );
         t0.name("Random task");
@@ -32,30 +51,31 @@ public:
         );
         t1.name("Random task");
 
-        auto t2 = emplace([](AgentHandle agent)
-            {
-				agent.entity().each<const type::Agent>([](flecs::entity e) {});
-            }
-        );
-        t2.name("Random task");
+        //auto t2 = emplace([](AgentHandle agent)
+        //    {
+        //        //auto f = agent.entity().world().query<const type::Agent>();
+        //        //f.each([](flecs::entity e, const type::Agent) {});
+        //    }
+        //);
+        //t2.name("Random task");
 
-        t0.succeed(t1, t2);
+        //t0.succeed(t1, t2);
 
-        auto process_a = process<strat::Random, std::string>();
-        process_a.succeed(t0);
-        auto process_b = process<strat::Random, int>();
-        process_b.name("Random int");
-        auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
-        process_c.name("Random aggregator");
-        process_c.input_name(process_a, "From random string");
-        process_c.input_name(process_b, "From random int");
+        //auto process_a = process<strat::Random, std::string>();
+        //process_a.succeed(t0);
+        //auto process_b = process<strat::Random, int>();
+        //process_b.name("Random int");
+        //auto process_c = process<strat::Random, std::string, std::string, int>(process_a, process_b);
+        //process_c.name("Random aggregator");
+        //process_c.input_name(process_a, "From random string");
+        //process_c.input_name(process_b, "From random int");
     }
 };
 
 int main(int argc, char** argv) {
 
     const size_t number_of_agents   = 1400;
-    const size_t number_of_ticks    = 10000;
+    const size_t number_of_ticks    = 50000;
     const size_t number_of_threads  = std::thread::hardware_concurrency();
 
     std::cout << " -- PARAMETERS --" << std::endl;
@@ -122,10 +142,17 @@ int main(int argc, char** argv) {
 
     // -- Create some entities to populate the simulation;
     // First, let's create a prefab for our agents, or an archetype :
+
     auto archetype = sim.agent_archetype("Archetype_Basic")
-        .add<Stress>()
-        .flow<SimpleReasonner>()
-        ;
+        .add<Test1>()
+        .add<Test3>()
+        .add<Test5>()
+        .add<Test7>()
+        .add<Test9>()
+        .add<Test11>()
+        .add<Stress>();
+
+	archetype.flow<SimpleReasonner>({true, 1.0f});
 
     // Then, we can create agent using our archetype :
     for (int i = 0; i < number_of_agents; i++) {
@@ -133,6 +160,11 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "Done !\n"; 
+
+    int num_flow{ 0 };
+    sim.world().each<const Flow>([&num_flow](flecs::entity e, const Flow& flow) { num_flow++; });
+    std::cout << "Num of flow : " << num_flow << "\n";
+
     std::cout << "Launching ..." << std::endl;
     sim.step_n(number_of_ticks);
 
@@ -174,7 +206,7 @@ int main(int argc, char** argv) {
     std::cout << "     Average count of process computed per agent : " << sum / number_of_agents << std::endl;
     std::cout << "               Average process computed per tick : " << sum / number_of_ticks << std::endl;
     std::cout << "           Average process computed per tick BEN : " << number_of_agents << std::endl;
-    std::cout << "                                            Diff : " << number_of_agents / (sum / number_of_ticks) << "x" << std::endl;
+    std::cout << "                                            Diff : " << number_of_agents / (sum / (number_of_ticks * 1.0f)) << "x" << std::endl;
 
     return 0;
 }
