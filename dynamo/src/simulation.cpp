@@ -12,22 +12,66 @@ dynamo::Simulation::Simulation(size_t number_of_threads) : executor{ number_of_t
 	agents_query = _world.query<const dynamo::type::Agent>();
 	flows = _world.system<Flow, Status, const Cyclic, const Launch>()
 		.iter([this](flecs::iter& it, Flow* flow, Status* status, const Cyclic* cycle, const Launch* _)
-		{
-			for (auto i : it)
 			{
-				auto e = it.entity(i);
-				status[i].value = executor.run(flow[i].taskflow);
-				//status[i].value = executor.run(flow[i].taskflow,
-				//	[id = e.id(), period = cycle[i].period, this]()
-				//{
-				//	commands_queue.push([id, period](flecs::world& world) mutable {
-				//		flecs::entity(world, id).remove<Status>();
-				//		flecs::entity(world, id).set<Cooldown>({ period });
-				//		});
-				//});
+				for (auto i : it)
+				{
+					auto e = it.entity(i);
+					status[i].value = executor.run(flow[i].taskflow);
+					//status[i].value = executor.run(flow[i].taskflow,
+					//	[id = e.id(), period = cycle[i].period, this]()
+					//{
+					//	commands_queue.push([id, period](flecs::world& world) mutable {
+					//		flecs::entity(world, id).remove<Status>();
+					//		flecs::entity(world, id).set<Cooldown>({ period });
+					//		});
+					//});
+				}
 			}
-		}
 	);
+
+	_world.system<Flow, const Cyclic>()
+		.term<Status>().oper(flecs::Not)
+		.term<Cooldown>().oper(flecs::Not)
+		.kind(flecs::PostFrame)
+		.iter([this](flecs::iter& it, Flow* flow, const Cyclic* cycle)
+			{
+				for (auto i : it)
+				{
+					auto e = it.entity(i);
+					e.add<Timestamp>();
+					e.add<Launch>();
+					e.add<Status>();
+					//e.set<Status>({
+					//	executor.run(flow[i].taskflow, 
+//                             [id = e.id(), period = cycle[i].period, this]()
+//                             {
+//                                 commands_queue.push([id, period](flecs::world& world) mutable {
+					 //				flecs::entity(world, id).remove<Status>();
+					 //				flecs::entity(world, id).set<Cooldown>({period});
+					 //				});
+					 //		})
+					 //});
+				}
+
+			}
+	);
+
+	_world.observer<const Status>()
+		.event(flecs::OnSet)
+		.each([this](flecs::entity e, const Status& process)
+			{
+				e.get_mut<Counter>()->value++;
+			}
+	);
+
+	_world.observer<const Status>()
+		.event(flecs::OnRemove)
+		.each([this](flecs::entity e, const Status& process)
+			{
+				e.get_mut<Duration>()->value += std::chrono::system_clock::now() - e.get<Timestamp>()->value;
+			}
+	);
+
 }
 
 void dynamo::Simulation::shutdown() {

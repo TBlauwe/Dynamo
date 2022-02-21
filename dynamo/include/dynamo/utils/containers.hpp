@@ -24,7 +24,7 @@ auto elt = map.add<MyType>(); // Add and return an element by type.
 auto elt = map.get<MyType>(); // Get element by type.
 @endcode
 */
-class TypeMap
+class TypeSet
 {
 
 public:
@@ -58,6 +58,46 @@ public:
 			return std::any_cast<T&>(container[typeid(T)]);
 		else
 			return std::any_cast<T&>(container[typeid(T)] = T());
+	}
+
+private:
+	std::unordered_map<std::type_index, std::any> container;
+};
+
+class TypeMap
+{
+
+public:
+	/**
+	@brief Get const element by type @c T.
+	*/
+	template<class K, class V>
+	const V& get() const
+	{
+		return std::any_cast<const V&>(container.at(typeid(K)));
+	}
+
+	/**
+	@brief Get mutable element by type @c T.
+	*/
+	template<class K, class V>
+	V& get_mut()
+	{
+		return std::any_cast<V&>(container.at(typeid(K)));
+	}
+
+	/**
+	@brief Add a new element @c T. Only one element of a specific type can be added.
+
+	@tparam Must be @c DefaultConstructible.
+	*/
+	template<class K, class V>
+	V& add()
+	{
+		if (container.contains(typeid(K)))
+			return std::any_cast<V&>(container[typeid(K)]);
+		else
+			return std::any_cast<V&>(container[typeid(K)] = V());
 	}
 
 private:

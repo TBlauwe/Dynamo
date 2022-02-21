@@ -84,49 +84,6 @@ namespace dynamo {
                         }
                     }
             );
-
-            _world.system<Flow, const Cyclic>()
-                .term<Status>().oper(flecs::Not)
-                .term<Cooldown>().oper(flecs::Not)
-                .kind(flecs::PostFrame)
-                .iter([this](flecs::iter& it, Flow* flow, const Cyclic* cycle)
-                    {
-                        for (auto i : it)
-                        {
-							auto e = it.entity(i);
-                            e.add<Timestamp>();
-                            e.add<Launch>();
-                            e.add<Status>();
-							//e.set<Status>({
-							//	executor.run(flow[i].taskflow, 
-       //                             [id = e.id(), period = cycle[i].period, this]()
-       //                             {
-       //                                 commands_queue.push([id, period](flecs::world& world) mutable {
-							//				flecs::entity(world, id).remove<Status>();
-							//				flecs::entity(world, id).set<Cooldown>({period});
-							//				});
-							//		})
-							//});
-                        }
-
-                    }
-            );
-
-            _world.observer<const Status>()
-                .event(flecs::OnSet)
-                .each([this](flecs::entity e, const Status& process)
-                    {
-                        e.get_mut<Counter>()->value++;
-                    }
-            );
-
-            _world.observer<const Status>()
-                .event(flecs::OnRemove)
-                .each([this](flecs::entity e, const Status& process)
-                    {
-                        e.get_mut<Duration>()->value += std::chrono::system_clock::now() - e.get<Timestamp>()->value;
-                    }
-            );
         };
 
         /**
