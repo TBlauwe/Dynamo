@@ -66,6 +66,31 @@ struct Proactive {};
 struct Stressed {};
 struct Experienced {};
 
+// Models; 
+struct Demary {};
+struct Driskell {};
+struct Fadier {};
+
+struct Mesure
+{
+	float ord{};
+	float com{};
+	float alu{};
+	float coop{};
+	float qual{};
+};
+
+std::ostream& operator<<(std::ostream& os, const Mesure& obj)
+{
+    // write obj to stream
+	os << "ORD : " << obj.ord;
+	os << " | COM : " << obj.com;
+	os << " | ALU : " << obj.alu;
+	os << " | COOP : " << obj.coop;
+	os << " | QUAL : " << obj.qual;
+    return os;
+}
+
 struct Qualification
 {
 	Qualif value{ Qualif::None };
@@ -166,6 +191,79 @@ float percentage(const SelectionLog& log, std::function<bool(const flecs::entity
 	return nb_choosed / nb_proposed;
 }
 
+std::vector<Mesure> compute_mesure(const std::vector<flecs::entity>& vec)
+{
+	std::vector<Mesure> res{};
+	for (auto agent : vec)
+	{
+		Mesure m
+		{
+			percentage(*agent.get<SelectionLog>(), M::ORD(agent)),
+			percentage(*agent.get<SelectionLog>(), M::COM(agent)),
+			percentage(*agent.get<SelectionLog>(), M::ALU(agent)),
+			percentage(*agent.get<SelectionLog>(), M::COOP(agent)),
+			percentage(*agent.get<SelectionLog>(), M::QUAL(agent))
+		};
+		res.push_back(m);
+	}
+	return res;
+}
+
+Mesure compute_mean(const std::vector<Mesure>& mesures)
+{
+	Mesure res{};
+	for (const auto& m : mesures)
+	{
+		res.ord += m.ord;
+		res.com += m.com;
+		res.alu += m.alu;
+		res.coop += m.coop;
+		res.qual += m.qual;
+	}
+	res.ord /= mesures.size();
+	res.com /= mesures.size() ;
+	res.alu /=  mesures.size();
+	res.coop /=  mesures.size();
+	res.qual /=  mesures.size();
+
+	return res;
+}
+
+Mesure compute_var(const std::vector<Mesure>& mesures, const Mesure& mean)
+{
+	Mesure res{};
+	for (const auto& m : mesures)
+	{
+		res.ord += std::powf(m.ord - mean.ord, 2.0);
+		res.com += std::powf(m.com - mean.com, 2.0);
+		res.alu += std::powf(m.alu - mean.alu, 2.0);
+		res.coop += std::powf(m.coop - mean.coop, 2.0);
+		res.qual += std::powf(m.qual - mean.qual, 2.0);
+	}
+	res.ord /= mesures.size();
+	res.com /= mesures.size() ;
+	res.alu /=  mesures.size();
+	res.coop /=  mesures.size();
+	res.qual /=  mesures.size();
+
+	return res;
+}
+
+void print_results(const std::vector<flecs::entity>& A, const std::vector<flecs::entity>& B)
+{
+	auto mesures_A = compute_mesure(A);
+	auto mesures_B = compute_mesure(B);
+	auto mean_A = compute_mean(mesures_A);
+	auto mean_B = compute_mean(mesures_B);
+	auto var_A = compute_var(mesures_A, mean_A);
+	auto var_B = compute_var(mesures_B, mean_B);
+
+	std::cout << "Group A avg : " << mean_A << "\n";
+	std::cout << "Group B avg : " << mean_B << "\n";
+	std::cout << "Group A var : " << var_A << "\n";
+	std::cout << "Group B var : " << var_B << "\n";
+}
+
 void add_action(flecs::entity agent, std::vector<flecs::entity>& actions, const char* name)
 {
 	auto action = agent.world().lookup(name);
@@ -183,7 +281,7 @@ public:
 	{
 		auto perception = emplace([](AgentHandle agent)
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				std::this_thread::sleep_for(std::chrono::milliseconds(20));
 				agent.get_mut<Counter>()->value++;
 			}
 		);
@@ -411,7 +509,7 @@ int main(int argc, char** argv) {
 	//struct Stressed {}; 2
 	//struct Experienced {}; 2
 	//struct Qualif {}; 3
-	std::vector<int> trait_tag{ 1, 2, 3, 4};
+	std::vector<int> trait_tag{ 1, 2, 3, 4 };
 	auto trait_tag_comb = combinatorial(trait_tag, trait_tag.size());
 
 	flecs::entity agent;
@@ -481,6 +579,14 @@ int main(int argc, char** argv) {
 
 
 	std::cout << "----- RESULTS -----\n";
+
+	std::vector<flecs::entity> group_demary{};
+	std::vector<flecs::entity> group_driskell{};
+	std::vector<flecs::entity> group_not_demary{};
+	std::vector<flecs::entity> group_not_driskell{};
+	std::vector<flecs::entity> group_fadier{};
+	std::vector<flecs::entity> group_not_fadier{};
+
 	int nb_agent{ 0 };
 	sim.world().each([&nb_agent](flecs::entity e, const type::Agent _) { nb_agent++; });
 	std::cout << "Nombre d'agents : " << nb_agent << "\n";
@@ -499,8 +605,24 @@ int main(int argc, char** argv) {
 				}
 				std::cout << "\nChoice : " << choices.choice.name() << "\n";
 			}
+
+			if (!e.has<Proactive>())
+				group_demary.push_back(e);
+			else
+				group_not_demary.push_back(e);
+
+			if (e.has<Stressed>())
+				group_driskell.push_back(e);
+			else
+				group_not_driskell.push_back(e);
+
+			if (e.has<Experienced>())
+				group_fadier.push_back(e);
+			else
+				group_not_fadier.push_back(e);
 		}
 	);
+
 
 	sim.world().each([&](flecs::entity e, const SelectionLog& log)
 		{
@@ -511,11 +633,11 @@ int main(int argc, char** argv) {
 			float p_mastered{ 0.0f };
 			std::cout << "\n--" << e.name() << "--" << "\n";
 
-			p_follow_order += percentage(log, [e](const flecs::entity action) {return action.has<Order>(); });
-			p_communicate += percentage(log, [e](const flecs::entity action) {return action.has<Communication>(); });
-			p_follow_alu += percentage(log, [e](const flecs::entity action) {return action.has<ALU>(); });
-			p_cooperate += percentage(log, [e](const flecs::entity action) {return action.has<Coop>(); });
-			p_mastered += percentage(log, [e](const flecs::entity action) {return e.get<Qualification>()->value >= action.get<Qualification>()->value; });
+			p_follow_order += percentage(log, M::ORD(e));
+			p_communicate += percentage(log, M::COM(e));
+			p_follow_alu += percentage(log, M::ALU(e));
+			p_cooperate += percentage(log, M::COOP(e));
+			p_mastered += percentage(log, M::QUAL(e));
 
 			std::cout << "--- Agent : " << e.name() << "\n";
 			std::cout << "Profil : ";
@@ -531,4 +653,19 @@ int main(int argc, char** argv) {
 			std::cout << "Taux \"mastered\" : " << p_mastered << "\n";
 		}
 	);
+
+	std::cout << "----- COMPILATION -----\n";
+	std::cout << "Group A : Demary" ;
+	std::cout << "Group B : Not demary" ;
+	print_results(group_demary, group_not_demary);
+
+	std::cout << "-----------------------\n";
+	std::cout << "Group A : Driskell" ;
+	std::cout << "Group B : Not driskell" ;
+	print_results(group_driskell, group_not_driskell);
+
+	std::cout << "-----------------------\n";
+	std::cout << "Group A : Fadier" ;
+	std::cout << "Group B : Not Fadier" ;
+	print_results(group_fadier, group_not_fadier);
 }
