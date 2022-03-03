@@ -1,5 +1,4 @@
-#ifndef DYNAMO_ALGORITHM_INFLUENCE_GRAPH_HPP
-#define DYNAMO_ALGORITHM_INFLUENCE_GRAPH_HPP
+#pragma once
 
 #include <functional>
 #include <algorithm>
@@ -17,7 +16,7 @@ namespace dynamo
     template<typename T>
     struct Influence
     {
-        const T *   object;
+        const T     object;
         bool        positive;
     };
 
@@ -76,7 +75,7 @@ namespace dynamo
             {
                 for (const auto& influence : (*behaviour)(agent, _values))
                 {
-                    size_t object_index = index(*influence.object);
+                    size_t object_index = index(influence.object);
                     if (influence.positive)
                     {
                         _positive_influences.emplace(behaviour_index, object_index);
@@ -193,5 +192,3 @@ namespace dynamo
         std::vector<size_t>                 highest_scores {};
     };
 }
-
-#endif

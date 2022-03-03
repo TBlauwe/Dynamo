@@ -398,7 +398,6 @@ namespace dynamo {
         */
         TOutput operator()(AgentHandle agent, TInputs ... inputs) const
         {
-            assert(behaviours.size() > 0 && "Strategy with no behaviour. Add behaviour with your_strat.behaviour(args..).");
             return compute(agent, active_behaviours(agent), inputs ...);
         }
 
@@ -419,7 +418,6 @@ namespace dynamo {
                 if (behaviour.is_active(agent))
                     container.emplace_back(&behaviour);
             }
-            assert(container.size() > 0 && "Strategy with no active behaviour !");
             return container;
         }
     };
@@ -525,6 +523,26 @@ namespace dynamo {
             );
 
             return p;
+        };
+
+        /**
+        @brief Emplace a process.
+        */
+        template<template<typename, typename ...> typename T, typename ... TInputs>
+        tf::Task process_no(Process<TInputs>& ... inputs)
+        {
+            auto task       = taskflow.placeholder();
+            ProcessBase& pb = task_to_process.emplace(task.hash_value(), ProcessBase{task, typeid(T<TInputs...>), ProcessType::Simple}).first->second;
+            (pb.succeed(inputs), ...);
+            
+            task.work(
+                [strat = this->strategies, a = this->agent, ... args = inputs.result]() mutable
+                {
+                    strat->get<T<TInputs...>>()(a, *args ...);
+                }
+            );
+
+            return task;
         };
 
         template<typename T, typename ... Args>

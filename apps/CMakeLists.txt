@@ -1,5 +1,6 @@
 add_subdirectory(sandbox-console)
 if(DYN_BUILD_VICTEAMS)
+	add_subdirectory(jfsma)
 	add_subdirectory(victeams)
 endif()
 if(DYN_BUILD_DYNAMO_GUI)

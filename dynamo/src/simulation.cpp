@@ -52,6 +52,7 @@ dynamo::Artefact dynamo::Simulation::artefact(const char *name) {
 bool dynamo::Simulation::step(float elapsed_time) {
     bool should_quit = _world.progress(elapsed_time);
 
+    executor.wait_for_all();
     size_t size = commands_queue.size();    // Since size can be updated between for loop (async),
                                             // we must check only once, not at every loop !
     for (int i = 0; i<size; i++)

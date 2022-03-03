@@ -1,0 +1,6 @@
+MESSAGE(STATUS "Building JFSMA")
+
+add_executable(JFSMA jfsma.cpp)
+target_compile_features(JFSMA PRIVATE cxx_std_20)
+target_link_libraries(JFSMA PRIVATE dynamo)
+set_target_properties(JFSMA PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${Dynamo_SOURCE_DIR}/bin/JFSMA")

@@ -36,7 +36,11 @@ namespace dynamo::strat{
             for (auto behaviour : active_behaviours)
             {
                 TOutput tmp = (*behaviour)(agent);
-                results.insert(results.end(), tmp.begin(), tmp.end());
+                for(const auto value : tmp)
+                {
+                    if(std::find(results.begin(), results.end(), value) == results.end())
+                        results.push_back(value);
+                }
             }
             return results;
         }
@@ -55,6 +59,21 @@ namespace dynamo::strat{
                 input = (*behaviour)(agent, input);
             }
             return input;
+        }
+    };
+
+    template<typename ... TInputs>
+    class Parallel : public Strategy<void, void, TInputs ...>
+    {
+        using Behaviour_t = Behaviour<void, TInputs ...>;
+    public:
+
+        void compute(AgentHandle agent, const std::vector<Behaviour_t const*> active_behaviours, TInputs ... inputs) const override
+        {
+            for (auto behaviour : active_behaviours)
+            {
+                (*behaviour)(agent, std::forward<TInputs>(inputs)...);
+            }
         }
     };
 }
