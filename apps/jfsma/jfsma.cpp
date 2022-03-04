@@ -12,8 +12,9 @@
 #include <dynamo/modules/activity_dl.hpp>
 
 #define DEMARY
-#define DRISKELL
+//#define DRISKELL
 #define FADIER
+
 
 template <typename T>
 std::vector<std::vector<T>> combinatorial(const std::vector<T> container, int n)
@@ -78,6 +79,17 @@ struct Mesure
 	float alu{};
 	float coop{};
 	float qual{};
+
+	std::string to_csv() 
+	{ 
+		return 
+			std::to_string(ord) + ";"
+			+ std::to_string(com) + ";"
+			+ std::to_string(alu) + ";"
+			+ std::to_string(coop) + ";"
+			+ std::to_string(qual) + ";"
+			;
+	}
 };
 
 std::ostream& operator<<(std::ostream& os, const Mesure& obj)
@@ -262,6 +274,32 @@ void print_results(const std::vector<flecs::entity>& A, const std::vector<flecs:
 	std::cout << "Group B avg : " << mean_B << "\n";
 	std::cout << "Group A var : " << var_A << "\n";
 	std::cout << "Group B var : " << var_B << "\n";
+}
+
+void print_csv_mean(const char * name_a, const char * name_b, const std::vector<flecs::entity>& A, const std::vector<flecs::entity>& B)
+{
+	auto mesures_A = compute_mesure(A);
+	auto mesures_B = compute_mesure(B);
+	auto mean_A = compute_mean(mesures_A);
+	auto mean_B = compute_mean(mesures_B);
+	auto var_A = compute_var(mesures_A, mean_A);
+	auto var_B = compute_var(mesures_B, mean_B);
+
+	std::cout << name_a <<";" << mean_A.to_csv() << "\n";
+	std::cout << name_b <<";" << mean_B.to_csv() << "\n";
+}
+
+void print_csv_var(const char * name_a, const char * name_b, const std::vector<flecs::entity>& A, const std::vector<flecs::entity>& B)
+{
+	auto mesures_A = compute_mesure(A);
+	auto mesures_B = compute_mesure(B);
+	auto mean_A = compute_mean(mesures_A);
+	auto mean_B = compute_mean(mesures_B);
+	auto var_A = compute_var(mesures_A, mean_A);
+	auto var_B = compute_var(mesures_B, mean_B);
+
+	std::cout << name_a <<";" << var_A.to_csv() << "\n";
+	std::cout << name_b <<";" << var_B.to_csv() << "\n";
 }
 
 void add_action(flecs::entity agent, std::vector<flecs::entity>& actions, const char* name)
@@ -451,7 +489,7 @@ int main(int argc, char** argv) {
 							for (flecs::entity e : args)
 							{
 								if (agent.get<Qualification>()->value >= e.get<Qualification>()->value)
-									influences.emplace_back(e, false);
+									influences.emplace_back(e, true);
 							}
 							return influences;
 						}
@@ -655,17 +693,36 @@ int main(int argc, char** argv) {
 	);
 
 	std::cout << "----- COMPILATION -----\n";
-	std::cout << "Group A : Demary" ;
-	std::cout << "Group B : Not demary" ;
+#ifdef DEMARY
+	std::cout << "MC Demary" << "\n";
+#endif
+#ifdef DRISKELL
+	std::cout << "MC Driskell" << "\n";
+#endif
+#ifdef FADIER
+	std::cout << "MC Fadier" << "\n";
+#endif
+	std::cout << "Group A : Demary" << "\n";
+	std::cout << "Group B : Not demary" << "\n" ;
 	print_results(group_demary, group_not_demary);
 
 	std::cout << "-----------------------\n";
-	std::cout << "Group A : Driskell" ;
-	std::cout << "Group B : Not driskell" ;
+	std::cout << "Group A : Driskell" << "\n" ;
+	std::cout << "Group B : Not driskell" << "\n" ;
 	print_results(group_driskell, group_not_driskell);
 
 	std::cout << "-----------------------\n";
-	std::cout << "Group A : Fadier" ;
-	std::cout << "Group B : Not Fadier" ;
+	std::cout << "Group A : Fadier" << "\n" ;
+	std::cout << "Group B : Not Fadier" << "\n" ;
 	print_results(group_fadier, group_not_fadier);
+
+	std::cout << "----- CSV -----\n";
+	std::cout << "----- mean\n";
+	print_csv_mean("Demary", "Not Demary", group_demary, group_not_demary);
+	print_csv_mean("Driskell", "Not Driskell", group_driskell, group_not_driskell);
+	print_csv_mean("Fadier", "Not Fadier", group_fadier, group_not_fadier);
+	std::cout << "----- var\n";
+	print_csv_var("Demary", "Not Demary", group_demary, group_not_demary);
+	print_csv_var("Driskell", "Not Driskell", group_driskell, group_not_driskell);
+	print_csv_var("Fadier", "Not Fadier", group_fadier, group_not_fadier);
 }
