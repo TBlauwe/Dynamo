@@ -1,5 +1,4 @@
 MESSAGE(STATUS "Building JFSMA")
-
 add_executable(JFSMA jfsma.cpp)
 target_compile_features(JFSMA PRIVATE cxx_std_20)
 target_link_libraries(JFSMA PRIVATE dynamo)

@@ -12,7 +12,10 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
 endif()
 
 if(MSVC)
-    add_compile_options("/permissive- /W4" "$<$<CONFIG:RELEASE>:/O2>")
+    #add_compile_options("/permissive- /W4" "$<$<CONFIG:RELEASE>:/O2>")
+
+    #/NODEFAULTLIB:library
+    #add_definitions(-D_WIN32_WINNT=0x600)#for grpc
 else()
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         # nothing special for clang at the moment
@@ -35,7 +38,6 @@ project(Dynamo
         LANGUAGES CXX
 )
 
-
 # Meta-data
 # ---------
 set(CMAKE_CXX_STANDARD 20)
@@ -46,7 +48,7 @@ set(FETCHCONTENT_QUIET ON)
 # Build options
 # -------------
 option(DYN_BUILD_DYNAMO_GUI     "Build a library using imgui for debugging a simulation." OFF)
-option(DYN_BUILD_APPS           "Build several applications to showcase the library." OFF)
+option(DYN_BUILD_APPS           "Build several applications to showcase the library." ON)
 option(DYN_BUILD_BENCHMARKS     "Build benchmarks using google benchmarks." OFF)
 option(DYN_BUILD_DOCS           "Build documentation using doxygen (must be installed)." OFF)
 option(DYN_BUILD_TESTS          "Build tests using doctest." OFF)
