@@ -77,6 +77,7 @@ struct Message
 	std::string	dest{ };
 	std::string	performatif{ "INFORM_REF" };
 	std::string	content{ };
+	bool show_dest{ true };
 };
 
 class SimpleReasonner : public AgentModel
@@ -140,7 +141,7 @@ struct Inform
 };
 
 std::ostream& operator<<(std::ostream& stream, const Message& m) {
-	stream << m.src << " on [" << m.room << "]:" << (!m.dest.empty() ? "to " + m.dest + " :" : "") << m.content;
+	stream << m.src << " on [" << m.room << "]:" << (!m.dest.empty() && m.show_dest ? "to " + m.dest + " :" : "") << m.content;
     return stream;
  }
 
@@ -183,19 +184,16 @@ int main(int argc, char** argv) {
 		,
 		sim.action("Inform AAR DO")
 		.add<Communicative>()
-		.set<Inform>({"AAR DO"})
 		.set<Message>({"AWACS", "TAC C2 SUPPORT", "AAR DO", "INFORM_REF", "Ravitailleur 10 is down"})
 		,
 		sim.action("ACK")
 		.add<Communicative>()
 		.add<Unlimited>()
-		.set<Inform>({"None"})
 		.set<Message>({"", "", "", "ACK", "c"})
 		,
 		sim.action("Inform Current OPS")
 		.add<Communicative>()
-		.set<Inform>({"CAS DO"})
-		.set<Message>({"AAR DO", "CURRENT OPS", "", "INFORM_REF", "Ravitailleur 10 is down"})
+		.set<Message>({"AAR DO", "CURRENT OPS", "CAS DO", "INFORM_REF", "Ravitailleur 10 is down", false})
 		,
 		sim.action("Inform CAS DO")
 		.add<Communicative>()
@@ -274,7 +272,8 @@ int main(int argc, char** argv) {
 				if (agent.has<informed>())
 				{
 					add_action(agent, actions, "Inform Current OPS");
-					add_action(agent, actions, "Inform CAS DO");
+					if (!find_agent(agent, "CAS DO").has<informed>())
+						add_action(agent, actions, "Inform CAS DO");
 				}
 				return actions;
 			}
@@ -401,10 +400,12 @@ int main(int argc, char** argv) {
 		;
 
 	auto aar_do = sim.agent(archetype_sc1, "AAR DO")
+		.add<Proactive>()
 		.add<AAR_DO>()
 		;
 
 	auto cas_do = sim.agent(archetype_sc1, "CAS DO")
+		.add<Stressed>()
 		.add<CAS_DO>()
 		;
 
