@@ -213,6 +213,14 @@ int main(int argc, char** argv) {
 			}
 	);
 
+	//sim.world().system<type::Agent>("Debug")
+	//	.each([](flecs::entity entity, type::Agent _)
+	//		{
+	//			if (entity.has<CAS_DO>())
+	//				std::cout << "Is informed : " << entity.has<informed>() << "\n";
+	//		}
+	//);
+
 	sim.world().system<sending>("Message effect")
 		.each([&](flecs::entity entity, sending& message)
 			{
@@ -349,6 +357,20 @@ int main(int argc, char** argv) {
 					return influences;
 				}
 			)
+			.behaviour(
+				"Communicant",
+				[](AgentHandle agent) -> bool {return agent.has<Communicative>(); },
+				[](AgentHandle agent, std::vector<flecs::entity> args)
+				{
+					std::vector<Influence<flecs::entity>> influences{};
+					for (flecs::entity e : args)
+					{
+						if (e.has<Communicative>())
+							influences.emplace_back(e, true);
+					}
+					return influences;
+				}
+			)
 #endif
 #ifdef DRISKELL
 			.behaviour(
@@ -400,7 +422,6 @@ int main(int argc, char** argv) {
 		;
 
 	auto aar_do = sim.agent(archetype_sc1, "AAR DO")
-		.add<Proactive>()
 		.add<AAR_DO>()
 		;
 
