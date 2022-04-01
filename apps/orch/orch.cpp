@@ -428,12 +428,10 @@ int main(int argc, char** argv) {
 		;
 
 	sim.agent(archetype_sc1, "AAR DO")
-		.add<Proactive>()
 		.add<AAR_DO>()
 		;
 
 	sim.agent(archetype_sc1, "CAS DO")
-		.add<Stressed>()
 		.add<CAS_DO>()
 		;
 

@@ -37,10 +37,6 @@ project(Dynamo
         HOMEPAGE_URL "https://github.com/tblauwe/dynamo"
 )
 
-# Meta-data
-# ---------
-set(CMAKE_CXX_STANDARD 20)
-
 # Build options
 # -------------
 option(DYN_BUILD_DYNAMO_GUI     "Build a library using imgui for debugging a simulation." OFF)
