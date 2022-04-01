@@ -35,24 +35,20 @@ project(Dynamo
         VERSION 0.1
         DESCRIPTION "C++ library to simulate cognitive agents."
         HOMEPAGE_URL "https://github.com/tblauwe/dynamo"
-        LANGUAGES CXX
 )
 
 # Meta-data
 # ---------
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(BUILD_SHARED_LIBS OFF)
-set(FETCHCONTENT_QUIET ON)
 
 # Build options
 # -------------
 option(DYN_BUILD_DYNAMO_GUI     "Build a library using imgui for debugging a simulation." OFF)
-option(DYN_BUILD_APPS           "Build several applications to showcase the library." ON)
+option(DYN_BUILD_APPS           "Build several applications to showcase the library." OFF)
 option(DYN_BUILD_BENCHMARKS     "Build benchmarks using google benchmarks." OFF)
 option(DYN_BUILD_DOCS           "Build documentation using doxygen (must be installed)." OFF)
 option(DYN_BUILD_TESTS          "Build tests using doctest." OFF)
-option(DYN_BUILD_VICTEAMS       "Build VICTEAMS app" ON)
+option(DYN_BUILD_VICTEAMS       "Build VICTEAMS app" OFF)
 option(DYN_ENABLE_TEST_COVERAGE "Enable test coverage. --UNUSED FEATURE--" OFF)
 MESSAGE(STATUS "Build options :")
 MESSAGE(STATUS "===============")

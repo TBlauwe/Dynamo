@@ -1,8 +1,6 @@
 #ifndef DYNAMO_SIMULATION_HPP
 #define DYNAMO_SIMULATION_HPP
 
-#include <spdlog/fmt/bundled/format.h>
-
 #include <dynamo/utils/containers.hpp>
 #include <dynamo/internal/archetype.hpp>
 #include <dynamo/internal/core.hpp>
@@ -275,27 +273,6 @@ namespace dynamo {
         */
         Strategies strategies;
     };
-
-    /**
-    @brief Helper function to add a tag @c TTag, each time an entity with @c TTerm is added.
-
-    @tparam TTag Tag to add to TTerm
-    @tparam TTerm Trigger when this term is added.
-    @param world  Ref to world
-    @param tag_name Human readable name for the tag (for debugging)
-    @param term_name Human readable name for the term (for debugging)
-    */
-    template<typename TTag, typename TTerm>
-    void add_tag_to(flecs::world& world, const char* tag_name, const char* term_name)
-    {
-        world.observer<const TTerm>(fmt::format("OnAdd_{}_Add{}", term_name, tag_name).c_str())
-            .event(flecs::OnAdd)
-            .each([](flecs::entity e, const TTerm& term)
-                {
-                    e.set<TTag>({});
-                }
-        );
-    }
 }//namespace dynamo
 
 #endif //DYNAMO_SIMULATION_HPP

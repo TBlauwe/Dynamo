@@ -17,42 +17,35 @@
 # See cmake_externalproject/CMakeLists.txt for all-in-one cmake build
 # that automatically builds all the dependencies before building route_guide.
 
-cmake_minimum_required(VERSION 3.5.1)
-set(CMAKE_CXX_STANDARD 11)
-
 find_package(Threads REQUIRED)
 
 option(USE_SYSTEM_GRPC "Use system installed gRPC" OFF)
+set(gRPC_FETCH_CONTENT_VERSION "v1.45.0" CACHE STRING "If not using system gRPC, it will be build using fetch content with the specified version")
 if(USE_SYSTEM_GRPC)
   # Find system-installed gRPC
   find_package(gRPC CONFIG REQUIRED)
+  message(STATUS "Using system grpc")
 else()
 	# Build gRPC using FetchContent
-	include(FetchContent)
-	FetchContent_Declare(
-		grpc
-		GIT_REPOSITORY https://github.com/grpc/grpc.git
-		# when using gRPC, you will actually set this to an existing tag, such as
-		# v1.25.0, v1.26.0 etc..
-		# For the purpose of testing, we override the tag used to the commit
-		# that's currently under test.
-		GIT_TAG        v1.44.0
+	CPMAddPackage(
+        NAME grpc
+        GITHUB_REPOSITORY grpc/grpc
+		GIT_TAG        ${gRPC_FETCH_CONTENT_VERSION}
 	)
-	set(ABSL_PROPAGATE_CXX_STD ON)
-	set(BUILD_TESTING OFF)
-	set(gRPC_BUILD_TESTS OFF)
+	#set(ABSL_PROPAGATE_CXX_STD ON)
+	#set(BUILD_TESTING OFF)
+	#set(gRPC_BUILD_TESTS OFF)
 	#set(gRPC_BUILD_GRPC_NODE_PLUGIN OFF)
 	#set(gRPC_BUILD_GRPC_RUBY_PLUGIN OFF)
 	#set(gRPC_BUILD_GRPC_PYTHON_PLUGIN OFF)
 	#set(gRPC_BUILD_GRPC_PHP_PLUGIN OFF)
-	set(protobuf_MSVC_STATIC_RUNTIME ON)
-	set(Protobuf_USE_STATIC_LIBS ON)
-	set(BUILD_SHARED_LIBS OFF)
+	#set(protobuf_MSVC_STATIC_RUNTIME ON)
+	#set(Protobuf_USE_STATIC_LIBS ON)
+	#set(BUILD_SHARED_LIBS OFF)
 	#set(gRPC_BUILD_GRPC_CSHARP_PLUGIN OFF)
 	#set(gRPC_BUILD_GRPC_OBJECTIVE_C_PLUGIN OFF)
 	#set(gRPC_BUILD_CSHARP_EXT OFF)
-	set(OPENSSL_NO_ASM ON)
-	FetchContent_MakeAvailable(grpc)
+	#set(OPENSSL_NO_ASM ON)
 
 	# Since FetchContent uses add_subdirectory under the hood, we can use
 	# the grpc targets directly from this build.
@@ -67,7 +60,7 @@ else()
 	endif()
 endif()
 
-function(generate_proto_target _TARGET _GEN_DIR)
+function(generate_proto_target _TARGET)
   if(NOT ARGN)
     message(SEND_ERROR "Error: generate_proto() called without any proto files")
     return()
@@ -78,12 +71,12 @@ function(generate_proto_target _TARGET _GEN_DIR)
 	get_filename_component(hw_proto_name "${_proto}" NAME_WE)
 	get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
-
 	# Generated sources
-	set(hw_proto_srcs "${_GEN_DIR}/${hw_proto_name}.pb.cc")
-	set(hw_proto_hdrs "${_GEN_DIR}/${hw_proto_name}.pb.h")
-	set(hw_grpc_srcs "${_GEN_DIR}/${hw_proto_name}.grpc.pb.cc")
-	set(hw_grpc_hdrs "${_GEN_DIR}/${hw_proto_name}.grpc.pb.h")
+	set(_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto_gens")
+	set(hw_proto_srcs "${_GEN_DIR}/${_TARGET}/${hw_proto_name}.pb.cc")
+	set(hw_proto_hdrs "${_GEN_DIR}/${_TARGET}/${hw_proto_name}.pb.h")
+	set(hw_grpc_srcs "${_GEN_DIR}/${_TARGET}/${hw_proto_name}.grpc.pb.cc")
+	set(hw_grpc_hdrs "${_GEN_DIR}/${_TARGET}/${hw_proto_name}.grpc.pb.h")
 
 	LIST(APPEND PROTO_HDRS ${hw_proto_srcs} ${hw_grpc_srcs})
     LIST(APPEND PROTO_SRCS ${hw_proto_hdrs} ${hw_proto_hdrs})
@@ -91,8 +84,8 @@ function(generate_proto_target _TARGET _GEN_DIR)
 	add_custom_command(
 		  OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
 		  COMMAND ${_PROTOBUF_PROTOC}
-		  ARGS --grpc_out "${_GEN_DIR}"
-			--cpp_out "${_GEN_DIR}"
+		  ARGS --grpc_out "${_GEN_DIR}/${_TARGET}"
+			--cpp_out "${_GEN_DIR}/${_TARGET}"
 			-I "${hw_proto_path}"
 			--plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
 			"${hw_proto}"

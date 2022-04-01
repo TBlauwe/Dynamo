@@ -1,3 +1,5 @@
+syntax = "proto3";
+
 // The greeting service definition.
 service Greeter {
   // Sends a greeting

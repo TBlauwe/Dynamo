@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package expcmake;
 
-import "myproto/address.proto";
+import "address.proto";
 
 message NameQuerry {
     string name = 1;

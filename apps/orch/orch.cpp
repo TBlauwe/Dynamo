@@ -158,7 +158,16 @@ flecs::entity find_agent(flecs::entity agent, const char* name)
 	return agent.world().lookup(name);
 }
 
+struct Test{};
+
 int main(int argc, char** argv) {
+
+	flecs::world w1{};
+	w1.add<Test>();
+	w1.add<Stressed>();
+	flecs::world w2{};
+	assert(w1.has<Test>() == true);
+	assert(w2.has<Test>() == false);
 
 	// -----------------------------
 	// SETUP
@@ -184,7 +193,7 @@ int main(int argc, char** argv) {
 		,
 		sim.action("Inform AAR DO")
 		.add<Communicative>()
-		.set<Message>({"AWACS", "TAC C2 SUPPORT", "AAR DO", "INFORM_REF", "Ravitailleur 10 is down"})
+		.set<Message>({"AWACS", "TAC C2 SUPPORT", "AAR DO", "INFORM_REF", "Tanker down"})
 		,
 		sim.action("ACK")
 		.add<Communicative>()
@@ -193,13 +202,13 @@ int main(int argc, char** argv) {
 		,
 		sim.action("Inform Current OPS")
 		.add<Communicative>()
-		.set<Message>({"AAR DO", "CURRENT OPS", "CAS DO", "INFORM_REF", "Ravitailleur 10 is down", false})
+		.set<Message>({"AAR DO", "CURRENT OPS", "CAS DO", "INFORM_REF", "Tanker down", false})
 		,
 		sim.action("Inform CAS DO")
 		.add<Communicative>()
 		.add<Proactive>()
 		.set<Inform>({"CAS DO"})
-		.set<Message>({"AAR DO", "TAC C2 OFFENSIVE", "CAS DO", "INFORM_REF", "Ravitailleur 10 is down"})
+		.set<Message>({"AAR DO", "TAC C2 OFFENSIVE", "CAS DO", "INFORM_REF", "Tanker down"})
 	};
 
 	sim.world().system<Counter>("Counter")
@@ -418,19 +427,17 @@ int main(int argc, char** argv) {
 		.agent_model<SimpleReasonner>()
 		;
 
-	auto cur_ops = sim.agent("CURRENT OPS")
-		;
-
-	auto aar_do = sim.agent(archetype_sc1, "AAR DO")
+	sim.agent(archetype_sc1, "AAR DO")
+		.add<Proactive>()
 		.add<AAR_DO>()
 		;
 
-	auto cas_do = sim.agent(archetype_sc1, "CAS DO")
+	sim.agent(archetype_sc1, "CAS DO")
 		.add<Stressed>()
 		.add<CAS_DO>()
 		;
 
-	auto awacs = sim.agent(archetype_sc1, "AWACS")
+	sim.agent(archetype_sc1, "AWACS")
 		.add<AWACS>()
 		;
 

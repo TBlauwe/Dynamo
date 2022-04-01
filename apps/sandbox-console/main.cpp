@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 
     // Then, we can create agent using our archetype :
     for (int i = 0; i < number_of_agents; i++) {
-        sim.agent(archetype, fmt::format("Agent {}", i).c_str());
+        sim.agent(archetype);
     }
 
     std::cout << "Done !\n"; 
